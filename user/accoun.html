@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كشمير هوم | حسابي</title>
+<link rel="icon" href="icon-main.png">
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@160..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/user.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+/* ===== موقعي (My Location) ===== */
+#tab-location .location-map-wrap{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
+#tab-location #locationMap{width:100%;height:420px;background:#eef0f2}
+.loc-search-row{position:absolute;top:14px;right:14px;left:14px;display:flex;gap:10px;z-index:500;flex-wrap:wrap}
+.loc-use-current{display:flex;align-items:center;gap:8px;background:#fff;border:none;border-radius:10px;padding:10px 16px;font-family:'Almarai',sans-serif;font-size:13px;font-weight:700;color:#1a1a1a;box-shadow:0 2px 10px rgba(0,0,0,.15);cursor:pointer;white-space:nowrap}
+.loc-use-current i{color:var(--main-color,#c8a96e)}
+.loc-address-search{flex:1;min-width:180px;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.15);display:flex;align-items:center;padding:0 12px}
+.loc-address-search input{flex:1;border:none;outline:none;padding:10px 6px;font-family:'Almarai',sans-serif;font-size:13px;background:transparent}
+.loc-pin-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-220%);background:#1a1a1a;color:#fff;padding:6px 12px;border-radius:8px;font-family:'Almarai',sans-serif;font-size:12px;white-space:nowrap;z-index:400;pointer-events:none}
+.loc-fixed-pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);font-size:34px;color:#e53935;z-index:400;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
+.loc-current-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px 18px;border-top:1px solid rgba(0,0,0,.08);background:#fafafa}
+.loc-current-text{font-family:'Almarai',sans-serif}
+.loc-current-text .lbl{font-size:11px;color:var(--text-light,#888);font-weight:700;margin-bottom:2px}
+.loc-current-text .val{font-size:13px;color:#1a1a1a;font-weight:700}
+.loc-confirm-btn{background:#1a56db;color:#fff;border:none;border-radius:10px;padding:12px 26px;font-family:'Almarai',sans-serif;font-weight:800;font-size:14px;cursor:pointer;min-width:160px}
+.loc-confirm-btn:disabled{opacity:.6;cursor:not-allowed}
+.loc-saved-card{margin-top:16px}
+.loc-saved-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.loc-saved-row p{font-family:'Almarai',sans-serif;font-size:13px;line-height:2;color:var(--text-mid,#444)}
+.loc-edit-saved-btn{background:none;border:1px solid var(--main-color,#c8a96e);color:var(--main-color,#c8a96e);border-radius:8px;padding:8px 16px;font-family:'Almarai',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* address details modal */
+#addressDetailsModal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s}
+#addressDetailsModal.open{opacity:1;pointer-events:auto}
+#addressDetailsModal .modal-box{background:#fff;border-radius:16px;width:92%;max-width:540px;max-height:88vh;overflow-y:auto;padding:26px;font-family:'Almarai',sans-serif}
+#addressDetailsModal h4{margin:0 0 4px;font-size:18px}
+#addressDetailsModal .addr-sub{font-size:12px;color:var(--text-light,#888);}
+.addr-field{margin-bottom:14px}
+.addr-field label{display:block;font-size:12px;font-weight:700;color:#333;margin-bottom:6px}
+.addr-field label .opt{font-weight:400;color:var(--text-light,#999);font-size:11px}
+.addr-field input{     height: 40px;width:100%;padding:11px 12px;border:1px solid #ddd;border-radius:9px;font-family:'Almarai',sans-serif;font-size:13px;outline:none;box-sizing:border-box}
+.addr-field input:focus{border-color:var(--main-color,#c8a96e)}
+.addr-row2{display:flex;gap:10px}
+.addr-row2 .addr-field{flex:1}
+#addressDetailsModal .addr-error{color:#e53935;font-size:12px;min-height:16px;margin:2px 0 8px}
+.addr-modal-actions{display:flex;gap:10px;margin-top:6px}
+.btn-confirm-addr{ font-family: 'Almarai', sans-serif;flex:1;background:#1a56db;color:#fff;border:none;border-radius:9px;padding:12px;font-weight:700;font-size:14px;cursor:pointer}
+.btn-cancel-addr{ font-family: 'Almarai', sans-serif;background:#f1f1f1;color:#333;border:none;border-radius:9px;padding:12px 18px;font-weight:700;font-size:13px;cursor:pointer}
+
+/* address summary + tabs inside modal (noon-style) */
+.addr-summary-card{display:flex;align-items:center;gap:12px;background:#f7f7f8;border-radius:12px;padding:12px 14px;}
+.addr-change-btn{background:#fff;border:1.5px solid #1a56db;color:#1a56db;border-radius:8px;padding:8px 14px;font-family:'Almarai',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.addr-summary-text{flex:1;min-width:0}
+.addr-summary-text .line1{font-size:13px;font-weight:800;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.addr-summary-text .line2{font-size:11px;color:var(--text-light,#888);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.addr-summary-thumb{width:44px;height:44px;border-radius:8px;background:#e9ecf3;display:flex;align-items:center;justify-content:center;color:#8891a8;font-size:16px;flex-shrink:0}
+.addr-section-label{font-family:'Almarai',sans-serif;font-size:12px;font-weight:700;color:var(--text-light,#999);margin:16px 0 10px}
+.addr-type-tabs{display:flex;gap:22px;border-bottom:1px solid #eee;}
+.addr-type-tab{background:none;border:none;padding:0 0 10px;font-family:'Almarai',sans-serif;font-size:13px;font-weight:700;color:#999;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px}
+.addr-type-tab.active{color:#1a56db;border-bottom-color:#1a56db}
+
+/* address list (noon-style cards) */
+.addr-list-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:6px}
+.addr-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.addr-card-default{border-color:#1a56db;box-shadow:0 0 0 1px #1a56db inset}
+.addr-default-badge{background:#eaf1ff;color:#1a56db;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;margin-inline-start:auto}
+.addr-card-type{display:flex;align-items:center;gap:8px;font-family:'Almarai',sans-serif;font-weight:800;font-size:14px;color:#1a1a1a}
+.addr-card-type i{width:30px;height:30px;border-radius:50%;background:#f4f0e8;display:flex;align-items:center;justify-content:center;color:var(--main-color,#c8a96e);font-size:13px}
+.addr-card-text{font-family:'Almarai',sans-serif;font-size:13px;line-height:1.9;color:var(--text-mid,#555)}
+.addr-card-contact{display:flex;align-items:center;gap:6px;font-family:'Almarai',sans-serif;font-size:12px;color:#333}
+.addr-card-contact i{color:#2e7d32;font-size:11px}
+.addr-card-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f0f0f0;padding-top:10px;margin-top:2px}
+.addr-edit-link{background:none;border:none;color:#1a56db;font-family:'Almarai',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.addr-add-card{border:2px dashed #c9c9c9;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;cursor:pointer;color:#1a56db;font-family:'Almarai',sans-serif;font-weight:800;font-size:14px;background:#fbfbfb}
+.addr-add-card i{font-size:22px}
+.addr-add-card:hover{background:#f3f6ff}
+
+/* map step header action */
+.card-header-with-action{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.loc-map-back{background:none;border:1px solid #ddd;border-radius:8px;padding:7px 16px;font-family:'Almarai',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#555}
+
+/* ===== قسم تعليقاتي ===== */
+.my-comments-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:20px}
+.my-stat-card{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;font-family:'Almarai',sans-serif}
+.my-stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.my-stat-icon.gold{background:#fbf3e2;color:#c8a96e}
+.my-stat-icon.blue{background:#eaf1ff;color:#1a56db}
+.my-stat-icon.green{background:#e8f5e9;color:#2e7d32}
+.my-stat-icon.red{background:#fdecea;color:#e53935}
+.my-stat-text .num{font-size:20px;font-weight:800;color:#1a1a1a;line-height:1.2}
+.my-stat-text .lbl{font-size:12px;color:var(--text-light,#888);font-weight:700}
+.my-comments-list{display:flex;flex-direction:column;gap:14px}
+.my-comment-card{background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:14px;padding:18px;font-family:'Almarai',sans-serif;transition:box-shadow .2s}
+.my-comment-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.my-comment-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.my-comment-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;background-size:cover;background-position:center}
+.my-comment-meta{flex:1;min-width:0}
+.my-comment-product{font-size:14px;font-weight:800;color:#1a1a1a;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.my-comment-product i{color:var(--main-color,#c8a96e);font-size:12px}
+.my-comment-product a{color:#1a56db;text-decoration:none}
+.my-comment-product a:hover{text-decoration:underline}
+.my-comment-date{font-size:11px;color:var(--text-light,#999);margin-top:3px}
+.my-comment-stars{color:#f1c40f;font-size:13px;margin-top:4px;letter-spacing:1px}
+.my-comment-body{font-size:13.5px;line-height:1.9;color:var(--text-mid,#444);background:#fafafa;border-radius:10px;padding:12px 14px;margin:8px 0}
+.my-comment-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.my-comment-reactions{display:flex;align-items:center;gap:16px;font-size:12.5px;color:#666}
+.my-comment-reactions span{display:flex;align-items:center;gap:5px}
+.my-comment-reactions .fa-thumbs-up{color:#2e7d32}
+.my-comment-reactions .fa-thumbs-down{color:#e53935}
+.my-comment-actions{display:flex;gap:8px}
+.my-comment-btn{background:none;border:1px solid #ddd;border-radius:8px;padding:7px 14px;font-family:'Almarai',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#555;display:flex;align-items:center;gap:6px;transition:all .2s}
+.my-comment-btn:hover{background:#f5f5f5}
+.my-comment-btn.view{color:#1a56db;border-color:#1a56db}
+.my-comment-btn.view:hover{background:#eaf1ff}
+.my-comment-btn.del{color:#e53935;border-color:#e53935}
+.my-comment-btn.del:hover{background:#fdecea}
+.my-comments-empty{text-align:center;padding:50px 20px;font-family:'Almarai',sans-serif;color:var(--text-light,#888)}
+.my-comments-empty i{font-size:46px;color:#ddd;margin-bottom:14px;display:block}
+.my-comments-empty p{font-size:14px;margin-bottom:6px}
+.my-comments-empty a{color:#1a56db;font-weight:700;text-decoration:none}
+.my-comments-loading{text-align:center;padding:30px;color:var(--text-light,#888);font-family:'Almarai',sans-serif;font-size:13px}
+</style>
+</head>
+<body>
+<div class="cart">
+  <div class="top_cart"><h3>المنتجات : <span class="Count_item_cart">0</span></h3><span onclick="open_close_cart()" class="close_cart"><i class="fa-regular fa-circle-xmark"></i></span></div>
+  <div class="items_in_cart" id="cart_items"></div>
+  <div class="bottom_cart">
+    <div class="total"><p>السعر :</p><p class="price_cart_total">0</p></div>
+    <div class="button_cart"><a href="../chexkout.html" class="btn_cart btn">شراء</a><a href="../index.html" class="btn_cart btn"><span onclick="open_close_cart()" class="btn_cart trans_bg btn">تسوق</span></a></div>
+  </div>
+</div>
+
+
+     <!-- start-header  -->
+    <header>
+        <div class="top_top_header">
+            <div class="container">
+            <div class="help">
+                <a href="../callme.html"> الدعم </a>
+                <hr>
+                <a href="../Privacy.html"> السياسة و الخصوصية </a>
+            </div>
+            <div class="links">
+                         <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-brands fa-facebook"></i></a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+                    <a target="_blank" href="mailto:kashmirhome.00@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            </div>
+        </div>
+
+
+
+        <div class="top_header">
+            <div class="container">
+
+
+
+                <div class="logo">
+                    <div>
+                        <h1>كشمير <span>هوم</span></h1>
+                    </div>
+                </div>   
+                
+                <div>
+                  <ul class="nav_links">
+
+                        <li ><a href="../index.html">الرئيسية</a></li>
+
+                           <div class="category_nav">
+                        <div onclick="Open_Categ_list()" class="category_btn">
+                            <p>المنتجات</p>
+                            <i class="fa-solid fa-sort-down"></i>
+                            
+                        </div>
+
+
+                        <div class="categoru_nav_list">
+                            <a href="Furniture/feyat/feyat1.html" >الفوط</a>
+                            <a href="Furniture/mlayat/mlayat1.html">الملايات</a>
+                            <a href="Furniture/paranes/paranes.html">البرانس</a>
+                            <a href="Furniture/patatin/patatin1.html">البطاطين</a>
+                            <a href="Furniture/ellehaf/ellehaf1.html">اللحاف</a>
+                            <a href="Furniture/coferta/coferta1.html">كوفرتا</a>
+                            <!-- <a href="">omar omar</a> -->
+
+
+                           
+
+
+                        </div>
+
+                    </div>
+                                            <span onclick="open_Menu()" class="close_menu"><i class="fa-regular fa-circle-xmark"></i></span>
+
+
+                        <li><a href="../callme.html">المساعدة </a></li>
+                        <li><a href="../Privacy.html">السياسة و الخصوصية</a></li>
+
+
+                    </ul>
+                </div>
+
+
+                <div class="icon_header">
+
+                <form action="/search.html" method="get" class="search_box">
+                    <input type="text" id="search" name="search" placeholder=" ابدأ البحث..." required autocomplete="off">
+                    
+                    <button type="submit" aria-label="بحث">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+
+
+<span onclick="open_Menu()" class="open_menu"><i class="fa-solid fa-bars"></i></span>
+
+
+
+
+
+
+
+                   <!-- قسم الترحيب (مخفي في البداية) -->
+    
+
+                <div class="header_icons" style="margin-right: 10px;">
+                    <div class="icon">
+                        <!-- <a href="">
+                            <i class="fa-regular fa-heart"></i>
+                            <span class="count count_favourite">0</span>
+                        </a> -->
+                    </div>
+
+                    <div onclick="goToCart()" class="icon">
+                        <!-- <i class="fa-solid fa-cart-shopping"></i> -->
+                         <i class="fa-solid fa-bag-shopping"></i>
+                        <span class="count count_item_header">0</span>
+                    </div>
+
+
+                </div>
+
+
+    </div>
+
+            </div>
+        </div>
+
+
+</a> 
+
+
+
+        
+
+    </header>
+    <!-- end-header -->
+
+
+<div class="all_formation"><div class="container">
+
+  <!-- SIDEBAR -->
+  <div class="formation">
+    <div class="profile-card">
+      <div class="avatar-wrap" onclick="document.getElementById('fileInput').click()">
+        <img id="profileImage" src="" alt="صورة الملف الشخصي">
+        <i id="icon_person" class="fa-solid fa-circle-user"></i>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+      <h1 id="welcomeName">مرحباً</h1>
+      <h2 id="userEmailDisplay"></h2>
+    </div>
+
+    <div class="nav-card">
+      <button class="nav-btn active" onclick="switchTab('account',this)">حسابي <i class="fa-solid fa-user"></i></button>
+      <button class="nav-btn" onclick="switchTab('location',this)">العناوين <i class="fa-solid fa-location-dot"></i></button>
+      <button class="nav-btn" onclick="switchTab('discount',this)">أكواد الخصم <i class="fa-solid fa-barcode"></i></button>
+      <button class="nav-btn" onclick="switchTab('comments',this)">تعليقاتي <i class="fa-solid fa-comments"></i></button>
+      <button class="nav-btn" onclick="switchTab('settings',this)">الإعدادات <i class="fa-solid fa-gear"></i></button>
+      <div class="nav-divider"></div>
+      <div></div>
+      <button class="nav-btn danger" id="logoutBtn">تسجيل الخروج <i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-panel">
+
+    <!-- حسابي -->
+    <div class="tab-panel active" id="tab-account">
+      <div class="panel-title"><h2>حسابي</h2><p>معلوماتك الشخصية في كشمير هوم</p></div>
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>معلومات الاتصال</h3></div>
+        <div class="input-grid">
+          <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="userEmail" readonly><div class="hint">يُستخدم هذا البريد على كشمير هوم</div></div>
+          <div class="input-group"><label>رقم الهاتف</label><input type="text" id="userPhone" readonly><div class="hint">يُستخدم هذا الرقم على كشمير هوم</div></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>المعلومات الشخصية</h3></div>
+        <div class="input-grid">
+          <div class="input-group"><label>الاسم الأول</label><input type="text" id="userName"><i class="fa-solid fa-pen i-icon"></i></div>
+          <div class="input-group"><label>اسم العائلة</label><input type="text" id="userFamily"><i class="fa-solid fa-pen i-icon"></i></div>
+          <div class="input-group"><label>البلد</label><input type="text" value="مصر" readonly><i class="fa-solid fa-flag i-icon"></i></div>
+          <div class="input-group">
+            <label>الجنس</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="gender" value="male"> ذكر</label>
+              <label class="radio-label"><input type="radio" name="gender" value="female"> أنثى</label>
+            </div>
+          </div>
+          <p class="info-note">سيُطبَّق تعديل واحد فقط — تأكد أن جميع معلوماتك صحيحة</p>
+        </div>
+      </div>
+      <div><button class="btn-primary" id="updateNamesBtn" disabled>تحديث الحساب</button></div>
+    </div>
+
+    <!-- العناوين -->
+    <div class="tab-panel" id="tab-location">
+      <div class="panel-title"><h2>العناوين</h2><p>قم بإدارة عناوينك المحفوظة لتتمكن من إنهاء عمليات الشراء بسرعة وسهولة</p></div>
+
+      <div class="addr-list-grid" id="addrListGrid">
+        <p style="grid-column:1/-1;text-align:center;color:var(--text-light);padding:20px;font-family:'Almarai',sans-serif;font-size:13px">جاري التحميل...</p>
+      </div>
+
+      <!-- خطوة تحديد الموقع على الخريطة -->
+      <div class="info-card" id="locMapCard" style="display:none">
+        <div class="card-header card-header-with-action">
+          <div style="display:flex;align-items:center;gap:10px"><div class="card-header-bar"></div><h3>تحديد الموقع على الخريطة</h3></div>
+          <button type="button" class="loc-map-back" id="locMapBackBtn">إلغاء</button>
+        </div>
+        <div class="location-map-wrap">
+          <div class="loc-search-row">
+            <button type="button" class="loc-use-current" id="locUseCurrentBtn"><i class="fa-solid fa-location-crosshairs"></i> استخدم موقعك الحالي</button>
+            <div class="loc-address-search">
+              <i class="fa-solid fa-magnifying-glass" style="color:#999;font-size:12px"></i>
+              <input type="text" id="locSearchInput" placeholder="ابحث عن عنوانك، رقم المبنى..">
+            </div>
+          </div>
+          <div id="locationMap"></div>
+          <div class="loc-pin-label">اسحب الخريطة لتحديد موقعك بدقة</div>
+          <div class="loc-fixed-pin"><i class="fa-solid fa-location-dot"></i></div>
+        </div>
+        <div class="loc-current-bar">
+          <div class="loc-current-text">
+            <div class="lbl">الموقع الحالي</div>
+            <div class="val" id="locCurrentAddrText">حدد نقطة على الخريطة</div>
+          </div>
+          <button type="button" class="loc-confirm-btn" id="locConfirmBtn" disabled>تأكيد الموقع</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- أكواد الخصم -->
+    <div class="tab-panel" id="tab-discount">
+      <div class="panel-title"><h2>أكواد الخصم</h2><p>أكواد خصم مجانية مقدمة من كشمير هوم</p></div>
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>الأكواد المتاحة</h3></div>
+        <!-- <div class="coupon-card">
+          <div class="coupon-badge"><p>خصم<br>10%</p></div>
+          <div class="coupon-body">
+            <div class="coupon-meta">
+              <div class="coupon-info">
+                <h3>كوبون خصم مقدم من كشمير هوم بخصومات تصل إلى 50% على جميع المنتجات</h3>
+                <div class="exp">انتهاء الخصم: 2-3-2022</div>
+              </div>
+              <div class="coupon-store"><img src="../login.png" alt=""></div>
+            </div>
+            <div class="coupon-code-row" onclick="copyCoupon(this,'a64k97fm')">
+              <h4>a64k97fm</h4>
+            </div>
+          </div>
+        </div> -->
+      </div>
+    </div>
+
+    <!-- كود QR (منقول إلى الإعدادات) -->
+
+    <!-- تعليقاتي -->
+    <div class="tab-panel" id="tab-comments">
+      <div class="panel-title"><h2>تعليقاتي</h2><p>كل التعليقات والتقييمات اللي عملتها على المنتجات</p></div>
+      <div class="my-comments-stats" id="myCommentsStats"></div>
+      <div class="my-comments-list" id="myCommentsList">
+        <p class="my-comments-loading">جاري التحميل...</p>
+      </div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="panel-title"><h2>الإعدادات</h2><p>تخصيص تجربتك على كشمير هوم</p></div>
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>تفضيلات العرض والصوت</h3></div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-icon-wrap blue"><i class="fa-solid fa-moon"></i></div>
+            <div class="setting-text"><h4>الوضع المظلم</h4><p>تبديل بين الوضع الفاتح والمظلم</p></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="darkModeToggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-icon-wrap yellow"><i id="muteIcon" class="fa-solid fa-volume-high"></i></div>
+            <div class="setting-text"><h4>كتم الأصوات</h4><p>إيقاف جميع أصوات الموقع والإشعارات</p></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="muteToggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-icon-wrap green"><i class="fa-solid fa-language"></i></div>
+            <div class="setting-text"><h4>اللغة</h4><p>العربية — اللغة الافتراضية</p></div>
+          </div>
+          <span style="font-size:12px;color:var(--text-light);font-weight:600">قريباً</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>الأجهزة المتصلة</h3></div>
+        <div id="devices-list"><p style="color:var(--text-light);text-align:center;padding:20px;font-size:13px;">جاري التحميل...</p></div>
+        <button class="btn-danger-outline" onclick="logoutAllDevices()"><i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج من كل الأجهزة</button>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>كود كشمير هوم</h3></div>
+        <div class="qr-wrap">
+          <img src="qr-code.png" alt="QR Code">
+          <a target="_blank" href="https://kashmair.netlify.app">https://kashmair.netlify.app</a>
+          <span class="qr-hint">شارك موقعنا 🎉</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>منطقة الخطر</h3></div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:16px;line-height:1.7;font-family: 'Almarai', sans-serif;">حذف الحساب نهائي ولا يمكن التراجع عنه. ستُفقد جميع بياناتك.</p>
+        <button class="btn-delete-account" id="deleteAccountBtn"><i class="fa-solid fa-trash-can"></i> حذف الحساب نهائياً</button>
+      </div>
+
+</div>
+
+  </div>
+</div></div>
+
+<!-- LOGOUT MODAL -->
+<div id="logoutModal">
+  <div class="modal-box">
+    <div style="font-size:44px;margin-bottom:4px">👋</div>
+    <h4>تأكيد تسجيل الخروج</h4>
+    <p>أدخل بريدك الإلكتروني المسجل لتأكيد تسجيل الخروج من هذا الجهاز</p>
+    <input type="email" id="logoutEmailInput" placeholder="البريد الإلكتروني">
+    <p id="logoutErrorMsg"></p>
+    <div class="modal-actions">
+      <button class="btn-confirm-logout" id="confirmLogoutBtn">تسجيل الخروج</button>
+      <button class="btn-cancel" id="cancelLogoutBtn">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADDRESS DETAILS MODAL -->
+<div id="addressDetailsModal">
+  <div class="modal-box">
+    <h4 id="addrModalTitle">إضافة عنوان</h4>
+    <p class="addr-sub">أكمل البيانات التالية لتأكيد عنوانك</p>
+
+    <div class="addr-summary-card">
+      <button type="button" class="addr-change-btn" id="addrChangeLocBtn">تغيير</button>
+      <div class="addr-summary-text">
+        <div class="line1" id="addrSummaryLine1">الموقع المحدد</div>
+        <div class="line2" id="addrSummaryLine2">مصر</div>
+      </div>
+      <div class="addr-summary-thumb"><i class="fa-solid fa-map-location-dot"></i></div>
+    </div>
+
+    <div class="addr-section-label">تفاصيل العنوان</div>
+    <div class="addr-type-tabs">
+      <button type="button" class="addr-type-tab active" data-type="home" id="addrTypeHome">المنزل <i class="fa-solid fa-house"></i></button>
+      <button type="button" class="addr-type-tab" data-type="work" id="addrTypeWork">العمل <i class="fa-solid fa-building"></i></button>
+    </div>
+
+    <div class="location_user">
+    <div class="addr-field"><label>المحافظة</label><input type="text" id="addrGovernorate" placeholder="ايه محافظتك"></div>
+    <div class="addr-field"><label>المركز <span class="opt">(اختياري)</span></label><input type="text" id="addrCenter" placeholder="ايه مركزك"></div>
+    <div class="addr-field"><label>المدينة / القرية</label><input type="text" id="addrCity" placeholder="ايه مدينتك او قريتك"></div>
+    <div class="addr-field"><label>الشارع</label><input type="text" id="addrStreet" placeholder="اسم الشارع بالتفصيل"></div>
+    <div class="addr-field"><label>اسم المنزل / العمارة <span class="opt">(اختياري)</span></label><input type="text" id="addrBuilding" placeholder="مثال: عمارة 5"></div>
+
+    <div class="addr-section-label">تفاصيل المستلم</div>
+    <div class="addr-field"><label>الاسم الرباعي</label><input type="text" id="addrName" placeholder="اسمك رباعي"></div>
+    <div class="addr-row2">
+      <div class="addr-field"><label>رقم الهاتف</label><input type="tel" id="addrPhone" placeholder="01xxxxxxxxx"></div>
+      <div class="addr-field"><label>هاتف احتياطي</label><input type="tel" id="addrPhone2" placeholder="01xxxxxxxxx"></div>
+    </div>
+    <div class="addr-field"><label>البريد الإلكتروني</label><input type="email" id="addrEmail" placeholder="example@email.com" readonly></div>
+</div>
+
+
+    <p class="addr-error" id="addrErrorMsg"></p>
+
+    <div class="addr-modal-actions">
+      <button type="button" class="btn-confirm-addr" id="addrConfirmBtn">حفظ العنوان</button>
+      <button type="button" class="btn-cancel-addr" id="addrCancelBtn">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORCED LOGOUT -->
+<div id="forcedLogoutOverlay">
+  <div class="forced-box">
+    <div class="lock-emoji">🔒</div>
+    <h3>تم تسجيل الخروج</h3>
+    <p>تم تسجيل دخول من جهاز آخر، لذلك تم تسجيل خروجك تلقائياً.</p>
+    <button class="btn-relogin" onclick="location.reload()">تسجيل الدخول مجدداً</button>
+  </div>
+</div>
+
+<footer><div class="bottom_footer"><div class="container">
+  <p>&copy; <span>kashmir home</span> All Right Reserved.</p>
+  <div class="payment_img"><img src="../img/payment_method.png" alt=""></div>
+</div></div></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/omar.js"></script>
+<script type="module" src="../js/account.js"></script>
+<script type="module" src="../js/user.js"></script>
+<script type="module" src="../js/search.js"></script>
+</body>
+</html>

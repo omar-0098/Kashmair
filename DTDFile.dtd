@@ -1,0 +1,10 @@
+﻿<!-- Created with Liquid Studio (https://www.liquid-technologies.com) -->
+<!ELEMENT products (product+)>
+<!ELEMENT product (id, name, price, color, image, link, category)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT price (#PCDATA)>
+<!ELEMENT color (#PCDATA)>
+<!ELEMENT image (#PCDATA)>
+<!ELEMENT link (#PCDATA)>
+<!ELEMENT category (#PCDATA)>

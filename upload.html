@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>رفع المنتجات إلى Firebase</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; }
+    #log { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 15px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>رفع المنتجات إلى Firestore</h2>
+  <p>الصفحة دي هترفع كل المنتجات من products-furniturre.json إلى كوليكشن "products". اضغط الزرار مرة واحدة بس.</p>
+  <button id="uploadBtn">ابدأ الرفع</button>
+  <div id="log"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import {
+      getFirestore,
+      writeBatch,
+      doc,
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    // ⚠️ حط بيانات مشروعك هنا (نفس اللي في firebase-config.js)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDebU1vOFDct-G3_GaRWvMjx69K_HlX7RI",
+      authDomain: "products-15f80.firebaseapp.com",
+      databaseURL: "https://products-15f80-default-rtdb.firebaseio.com",
+      projectId: "products-15f80",
+      storageBucket: "products-15f80.firebasestorage.app",
+      messagingSenderId: "689401211129",
+      appId: "1:689401211129:web:eda1a5d06b9c27c9bc9a28",
+      measurementId: "G-NFC1ZGZPKM",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const logEl = document.getElementById("log");
+    function log(msg) {
+      console.log(msg);
+      logEl.textContent += msg + "\n";
+    }
+
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
+      document.getElementById("uploadBtn").disabled = true;
+      log("جاري تحميل ملف المنتجات...");
+
+      try {
+        // مهم: لازم تشغل الصفحة دي عن طريق سيرفر محلي (مش بفتح الملف مباشرة file://)
+        // عشان الـ fetch يشتغل. مثال بسيط: افتح Terminal في مجلد المشروع واكتب:
+        // python3 -m http.server 8000
+        // وبعدين افتح: http://localhost:8000/upload.html
+        const response = await fetch("./products-furniturre.json");
+        const products = await response.json();
+
+        log(`تم تحميل ${products.length} منتج. جاري الرفع...`);
+
+        const batchSize = 400; // حد Firestore الأقصى لكل batch هو 500
+        let batch = writeBatch(db);
+        let opsInBatch = 0;
+        let total = 0;
+
+        for (const product of products) {
+          const cleanProduct = {
+            ...product,
+            price: Number(product.price),
+            old_price:
+              product.old_price !== undefined && product.old_price !== null
+                ? Number(product.old_price)
+                : null,
+          };
+
+          const docRef = doc(db, "products", String(product.id));
+          batch.set(docRef, cleanProduct, { merge: true });
+          opsInBatch++;
+          total++;
+
+          if (opsInBatch === batchSize) {
+            await batch.commit();
+            log(`تم رفع ${total} منتج لحد دلوقتي...`);
+            batch = writeBatch(db);
+            opsInBatch = 0;
+          }
+        }
+
+        if (opsInBatch > 0) {
+          await batch.commit();
+        }
+
+        log(`✅ تم! تم رفع ${total} منتج بنجاح إلى Firestore.`);
+      } catch (err) {
+        log("❌ حصل خطأ: " + err.message);
+        console.error(err);
+      } finally {
+        document.getElementById("uploadBtn").disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

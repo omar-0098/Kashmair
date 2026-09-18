@@ -1,0 +1,235 @@
+/* ===== PRIVACY PAGE - IMPROVED DESIGN ===== */
+
+/* Page background */
+body {
+    background-color: #f4f6f9;
+}
+
+/* Section wrapper */
+.section {
+    margin: 30px auto;
+    padding: 35px 40px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: end;
+    direction: rtl;
+    border-right: 5px solid #25257a;
+    max-width: 900px;
+    transition: box-shadow 0.3s ease;
+}
+
+.section:hover {
+    box-shadow: 0 6px 28px rgba(37, 37, 122, 0.15);
+}
+
+/* Section heading */
+.section h1 {
+    font-family: "Readex Pro", serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 18px;
+    margin-top: 0;
+    text-align: right;
+    direction: rtl;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #eef0f8;
+}
+
+/* Paragraph */
+.section p {
+    font-size: 17px;
+    margin: 0 0 18px;
+    text-align: right;
+    font-family: "Readex Pro", serif;
+    font-weight: 400;
+    color: #444;
+    line-height: 1.9;
+    direction: rtl;
+}
+
+.section p span {
+    font-size: 17px;
+    color: #186eb2;
+    font-family: "Readex Pro", serif;
+    font-weight: 700;
+    padding: 0 4px;
+}
+
+/* List */
+.section ul {
+    padding: 0;
+    margin: 0 0 10px;
+    list-style: none;
+}
+
+.section ul li {
+    font-size: 16px;
+    padding: 13px 18px;
+    font-family: "Rubik", serif;
+    font-weight: 400;
+    color: #333;
+    direction: rtl;
+    text-align: right;
+    line-height: 1.85;
+    border-bottom: 1px solid #f0f0f8;
+    align-items: start;
+    gap: 5px;
+}
+
+.section ul li:last-child {
+    border-bottom: none;
+}
+
+/* Bullet icon before each item */
+.section ul li::before {
+    content: "◈";
+    color: #25257a;
+    font-size: 14px;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.section ul li span {
+    color: #f9607f;
+    font-size: 15px;
+    font-family: "Rubik", serif;
+    font-weight: 700;
+    padding: 0 0px;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+    .section {
+        margin: 20px 15px;
+        padding: 25px 20px;
+        border-radius: 12px;
+        border-right: 4px solid #25257a;
+    }
+
+    .section h1 {
+        font-size: 22px;
+    }
+
+    .section p {
+        font-size: 15px;
+        line-height: 1.85;
+    }
+
+    .section p span {
+        font-size: 15px;
+    }
+
+    .section ul li {
+        font-size: 15px;
+        padding: 11px 12px;
+        line-height: 1.8;
+    }
+
+    .section ul li span {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 500px) {
+    .section {
+        margin: 15px 10px;
+        padding: 20px 15px;
+        border-radius: 10px;
+    }
+
+    .section h1 {
+        font-size: 20px;
+        padding-bottom: 10px;
+    }
+
+    .section p {
+        font-size: 14px;
+        line-height: 1.8;
+        margin-bottom: 14px;
+    }
+
+    .section p span {
+        font-size: 14px;
+    }
+
+    .section ul li {
+        font-size: 14px;
+        padding: 10px 8px;
+        line-height: 1.75;
+        gap: 8px;
+    }
+
+    .section ul li span {
+        font-size: 14px;
+    }
+    .section ul li::before {
+    margin-left: 3px;
+    }  
+
+}
+
+@media (max-width: 400px) {
+    .section {
+        margin: 10px 8px;
+        padding: 16px 12px;
+    }
+
+    .section h1 {
+        font-size: 18px;
+    }
+
+    .section p {
+        font-size: 13px;
+    }
+
+    .section p span {
+        font-size: 13px;
+    }
+
+    .section ul li {
+        font-size: 13px;
+        padding: 9px 6px;
+        line-height: 1.7;
+    }
+
+    .section ul li span {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 350px) {
+    .section {
+        margin: 8px 5px;
+        padding: 14px 10px;
+        border-right: 3px solid #25257a;
+    }
+
+    .section h1 {
+        font-size: 16px;
+    }
+
+    .section p {
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .section p span {
+        font-size: 12px;
+        padding: 0 2px;
+    }
+
+    .section ul li {
+        font-size: 12px;
+        padding: 8px 4px;
+        line-height: 1.65;
+        gap: 6px;
+    }
+
+    .section ul li span {
+        font-size: 12px;
+        padding: 0 2px;
+    }
+}

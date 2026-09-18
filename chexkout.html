@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كشمير هوم | إتمام عملية الشراء </title>
+    <meta name="description" content="أكمل عملية الشراء من كشمير هوم بسهولة وأمان. نقدم خدمة التوصيل لجميع محافظات مصر. أدخل بياناتك الشخصية واختر طريقة الدفع المناسبة. لدينا خيارات دفع مرنة وخدمة عملاء متاحة على 01028604523">
+  <link rel="icon" type="image/png" href="https://kashmair.netlify.app/favicon.png"> 
+    <!-- font -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@160..700&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+         <link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
+
+    <!-- css -->
+         <link rel="stylesheet" href="css/login.css">
+     <link rel="stylesheet" href="css/style.css">
+     <link rel="stylesheet" href="css/checkout.css">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+     <!-- Link Swiper's CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <style>
+        /* ===== ستايل خاص بتصميم صفحة الدفع الجديد (على شكل نون) ===== */
+        .checkout-noon-grid{display:flex;flex-direction:row-reverse;flex-wrap:wrap-reverse;gap:18px;align-items:flex-start;padding:24px 0 60px;background:#f3f4f7}
+        .checkout-main-col{width: 50% ;flex:2 1 560px;display:flex;flex-direction:column;gap:16px}
+        .checkout-summary-col{flex:1 1 300px;display:flex;flex-direction:column;gap:16px;position:sticky;top:80px}
+        .cn-card{      width: 100%;
+    max-width: 100%;   direction: rtl;background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+        .cn-card-title{font-size:14px;font-weight:800;color:#1d346b;margin:0 0 10px}
+
+        /* عنوان التوصيل */
+        .cn-address-card{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+        .cn-address-label{font-size:14px;font-weight:800;color:#1d346b;display:flex;align-items:center;gap:8px}
+        .cn-address-label i{color:#007aff}
+        .cn-address-text{font-size:13px;color:#666;margin-top:6px;line-height:1.8;max-width:520px}
+        .cn-edit-link{    color: #007aff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    font-family: "Rubik", serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;}
+        .cn-edit-link:hover{text-decoration:underline}
+
+        /* تعليمات التوصيل + المستلم */
+        .cn-row-2{display:flex;gap:16px;flex-wrap:wrap}
+        .cn-row-2 .cn-card{flex:1 1 240px;margin:0}
+        .cn-check-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#444;cursor:pointer}
+        .cn-recipient-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .cn-recipient-name{font-weight:800;font-size:14px;color:#222;margin:0}
+        .cn-recipient-phone{font-size:12.5px;color:#888;margin:2px 0 0;direction:ltr;text-align:right}
+
+        /* شحنة/المنتجات */
+        .cn-shipment-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .cn-badge{background:#f2f4f8;color:#444;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px}
+
+        /* طرق الدفع */
+        .cn-pay-option{display:flex;align-items:center;gap:12px;border:1.5px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+        .cn-pay-option:last-child{margin-bottom:0}
+        .cn-pay-option:hover{border-color:#b9d3ff}
+        .cn-pay-option.active{border-color:#007aff;background:#f5f9ff}
+        .cn-pay-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef2fb;color:#1d346b;font-size:16px;flex-shrink:0}
+        .cn-pay-icon.cn-pay-fawry{background:#facc15;color:#7c2d12;font-weight:900;font-size:12px}
+        .cn-pay-text{flex:1;display:flex;flex-direction:column;gap:2px}
+        .cn-pay-text b{font-size:13.5px;color:#222}
+        .cn-pay-text small{font-size:11.5px;color:#888}
+        .cn-pay-radio{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;position:relative}
+        .cn-pay-option.active .cn-pay-radio{border-color:#007aff}
+        .cn-pay-option.active .cn-pay-radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#007aff}
+        .cn-pay-note{font-size:12px;color:#7c5e00;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 10px;margin-top:8px;display:none}
+        .cn-pay-note.show{display:block}
+
+        /* ملخص الدفع */
+        .cn-summary-card .cn-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+        .cn-summary-card .cn-summary-head h2{    font-family: 'Cairo', sans-serif;font-size:16px;margin:0;font-weight:700;color:#111}
+        .cn-summary-count{font-size:12px;background:#f2f4f8;color:#667085;padding:4px 12px;border-radius:20px;font-weight:600}
+        .cn-sum-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;font-size:14px}
+        .cn-sum-label{color:#667085;font-size:13.5px}
+        .cn-sum-value{font-weight:800;color:#222;font-size:14px}
+        .cn-ship-strike{text-decoration:line-through;color:#9aa1ab;font-weight:500;font-size:13px;margin-left:6px}
+        .cn-ship-free{color:#0a8f4a;font-weight:800}
+        .cn-sum-divider{border:none;border-top:1px dashed #e2e5eb;margin:6px 0 10px}
+        .cn-sum-total .cn-sum-label,.cn-sum-total .cn-sum-value{font-weight:800!important;color:#111!important;font-size:17px}
+        .cn-pickup-row{padding:2px 0 9px}
+        .cn-pickup-row label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#667085;cursor:pointer}
+        .cn-pay-btn{display:block;width:100%;text-align:center;padding:14px;border-radius:10px;font-weight:800;font-size:15px;border:none;margin-top:14px;cursor:pointer;background:#dfe3ea;color:#8a8f98;transition:.15s}
+        .cn-pay-btn:disabled{cursor:not-allowed}
+        .cn-pay-btn.ready{background:#007aff;color:#fff;cursor:pointer}
+        .cn-pay-btn.ready:hover{opacity:.92}
+
+        @media (max-width:900px){
+          .checkout-noon-grid{flex-direction:column-reverse;padding:16px 0 40px}
+          .checkout-summary-col{position:static;width:100%}
+        }
+
+        /* منتجات الشحنة - عرض بطاقات أفقي زي نون */
+        .cn-shipment-slider{position:relative;display:flex;align-items:center;gap:6px;direction:rtl}
+        .cn-ship-track{display:flex;gap:14px;overflow-x:auto;scroll-behavior:smooth;direction:rtl;flex:1;padding:4px 2px;scrollbar-width:none}
+        .cn-ship-track::-webkit-scrollbar{display:none}
+        .cn-ship-item{flex:0 0 150px;display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border:1px solid #eee;border-radius:12px;padding:12px 10px}
+        .cn-ship-imgwrap{position:relative;width:100%;display:flex;justify-content:center;margin-bottom:10px}
+        .cn-ship-imgwrap img{width:90px;height:90px;object-fit:contain}
+        .cn-ship-qty{position:absolute;bottom:-6px;left:8px;background:#fff;border:1px solid #ddd;border-radius:6px;font-size:11px;font-weight:800;color:#333;padding:1px 7px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+        .cn-ship-name{font-size:12.5px;color:#333;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+        .cn-ship-price{font-size:14px;font-weight:800;color:#111;margin-top:8px}
+        .cn-slide-btn{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1px solid #e2e5eb;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#444;font-size:13px;transition:.15s}
+        .cn-slide-btn:hover{background:#f2f4f8;border-color:#b9d3ff;color:#007aff}
+        .cn-slide-btn.hidden{display:none}
+        @media (max-width:600px){
+          .cn-ship-item{flex:0 0 122px;padding:10px 8px}
+          .cn-ship-imgwrap img{width:70px;height:70px}
+        }
+    </style>
+</head>
+
+<body>
+    <!-- start-cart -->
+    <div class="cart">
+        <div class="top_cart">
+            <h3>المنتاجات : <span class="Count_item_cart">0</span></h3>
+            <span onclick="open_close_cart()" class="close_cart"><i class="fa-regular fa-circle-xmark"></i></span>
+        </div>
+
+
+
+        <div class="items_in_cart" id="cart_items">
+  
+
+        </div>
+
+
+        <div class="bottom_cart">
+            <div class="total">
+                <p>السعر :</p>
+                <p class="price_cart_total">0</p>
+            </div>
+
+
+            <div class="button_cart">
+                <a href="chexkout.html" class="btn_cart btn">شراء</a>
+              <a href="index.html" class="btn_cart btn"><span onclick="open_close_cart()" class="btn_cart trans_bg btn">تسوق</span></a>  
+            
+            </div>
+        </div>
+
+        
+     </div>
+    <!-- end-cart -->
+
+
+     <!-- start-header  -->
+    <header>
+        <div class="top_top_header">
+            <div class="container">
+            <div class="help">
+                <a href="callme.html"> الدعم </a>
+                <hr>
+                <a href="Privacy.html"> السياسة و الخصوصية </a>
+            </div>
+            <div class="links">
+                         <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-brands fa-facebook"></i></a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+                    <a target="_blank" href="mailto:kashmirhome.00@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            </div>
+        </div>
+
+
+
+        <div class="top_header">
+            <div class="container">
+
+
+
+                <div class="logo">
+                    <div>
+                        <h1>كشمير <span>هوم</span></h1>
+                    </div>
+                </div>   
+                
+                <div>
+                  <ul class="nav_links">
+
+                        <li><a href="index.html">الرئيسية</a></li>
+
+                           <div class="category_nav">
+                        <div onclick="Open_Categ_list()" class="category_btn">
+                            <p>المنتجات</p>
+                            <i class="fa-solid fa-sort-down"></i>
+                            
+                        </div>
+
+
+                        <div class="categoru_nav_list">
+                          <a href="Furniture/feyat/feyat1.html" >الفوط</a>
+                            <a href="Furniture/mlayat/mlayat1.html">الملايات</a>
+                            <a href="Furniture/paranes/paranes.html">البرانس</a>
+                            <a href="Furniture/patatin/patatin1.html">البطاطين</a>
+                            <a href="Furniture/ellehaf/ellehaf1.html">اللحاف</a>
+                            <a href="Furniture/coferta/coferta1.html">كوفرتا</a>
+                            <!-- <a href="">omar omar</a> -->
+
+
+                           
+
+
+                        </div>
+
+                    </div>
+                                            <span onclick="open_Menu()" class="close_menu"><i class="fa-regular fa-circle-xmark"></i></span>
+
+              <li class="active"><a href="chexkout.html">الدفع</a></li>
+                        <li><a href="callme.html">المساعدة </a></li>
+                        <li><a href="Privacy.html">السياسة و الخصوصية</a></li>
+
+                    </ul>
+
+                </div>
+
+
+                <div class="icon_header">
+
+       
+          <form action="/search.html" method="get" class="search_box">
+                    <input type="text" id="search" name="search" placeholder=" ابدأ البحث..." required autocomplete="off">
+                    
+                    <button type="submit" aria-label="بحث">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+
+
+<span onclick="open_Menu()" class="open_menu"><i class="fa-solid fa-bars"></i></span>
+<!-- قسم إنشاء الحساب -->
+ <div class="person1" id="registerSection" onclick="openModal()">
+    <div class="person2">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>انشاء حساب</h1>
+    </div>
+</div> 
+
+
+
+
+
+
+                   <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man1" id="welcomeSection" style="display: none;">
+            <div class="man2">
+                <h1 id="welcomeMessage">مرحباً <span id="userName"></span></h1>
+                <a href="user/accoun.html"><i id="icon_person" class="fa-solid fa-circle-user"></i></a> 
+            </div>
+        </div> 
+
+                <div class="header_icons">
+                    <div class="icon">
+                        <!-- <a href="">
+                            <i class="fa-regular fa-heart"></i>
+                            <span class="count count_favourite">0</span>
+                        </a> -->
+                    </div>
+
+                    <div onclick="goToCart()" class="icon">
+                        <!-- <i class="fa-solid fa-cart-shopping"></i> -->
+                         <i class="fa-solid fa-bag-shopping"></i>
+                        <span class="count count_item_header">0</span>
+                    </div>
+
+
+                </div>
+
+
+    </div>
+
+            </div>
+        </div>
+
+        <div class="medal_header">
+            <div class="container">
+                <div class="person">
+                    
+<!-- قسم إنشاء الحساب -->
+ <div class="person3" id="registerSection1" onclick="openModal()">
+    <div class="person4">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>  انشاء حساب <span> لكشمير هوم </span>  </h1>
+    </div>
+</div> 
+
+
+             <a href="user/accoun.html">       <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man3" id="welcomeSection1" style="display: none;">
+            <div class="man4">
+                <h1 id="welcomeMessage">مرحباً <span id="userName1"></span> <span class="tarhib"> هذا حسابك في كشمير</span></h1>
+              <i id="icon_person" class="fa-solid fa-circle-user"></i>
+            </div>
+        </div> 
+                </div>
+            </div>
+        </div>
+</a> 
+
+
+
+        
+
+    </header>
+    <!-- end-header -->
+
+
+
+    <section class="checkout">
+        <form id="form_contact" method="post" action="https://script.google.com/macros/s/AKfycby2NA_ysjrMtpA5cJFaXDeXG55-FvuO46ajiG7L9lNDgSmxalCLfRJpS5Vh8KHlqH7kgA/exec">
+
+            <input type="hidden" id="items" name="Items">
+            <input type="hidden" id="total_price" name="Total Price">
+            <input type="hidden" id="count_items" name="Count Items">
+
+            <!--  -->
+            <div class="container checkout-noon-grid">
+
+              <!-- ============ العمود الرئيسي: العنوان + المستلم + المنتجات + الدفع + الفواتير ============ -->
+              <div class="checkout-main-col">
+
+                <!-- تسليم إلى -->
+                <div class="cn-card cn-address-card">
+                  <div>
+                    <span class="cn-address-label"><i class="fa-solid fa-location-dot"></i> تسليم إلى <b id="cnAddressType"></b></span>
+                    <p class="cn-address-text" id="cnAddressText">جاري تحميل عنوان التوصيل...</p>
+                  </div>
+                  <a href="user/accoun.html?tab=location&amp;return=chexkout.html" class="cn-edit-link" id="cnAddressEditLink">تعديل العنوان</a>
+                </div>
+
+                <div class="cn-row-2">
+                  <div class="cn-card">
+                    <h4 class="cn-card-title">تعليمات التوصيل</h4>
+                    <label class="cn-check-row">
+                      <span><i class="fa-solid fa-house-circle-check"></i> اتركها عند الباب</span>
+                      <input type="checkbox" id="leaveAtDoorCheckbox" name="LeaveAtDoor">
+                    </label>
+                  </div>
+                  <div class="cn-card">
+                    <h4 class="cn-card-title">مين هيستلم الطلب؟</h4>
+                    <div class="cn-recipient-row">
+                      <div>
+                        <p class="cn-recipient-name" id="cnRecipientName">—</p>
+                        <p class="cn-recipient-phone" id="cnRecipientPhone"></p>
+                      </div>
+                      <a href="user/accoun.html?tab=location&amp;return=chexkout.html" class="cn-edit-link">تغيير المستلم</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- منتجات الشحنة -->
+                <div class="cn-card">
+                  <div class="cn-shipment-head">
+                    <span class="cn-badge"><span class="Count_item_cart">0</span> منتجات</span>
+                    <h4 class="cn-card-title" style="margin:0">شحنة 1</h4>
+                  </div>
+                  <div class="cn-shipment-slider" id="cnShipmentSlider">
+                    <button type="button" class="cn-slide-btn cn-slide-prev" id="cnSlidePrev" aria-label="السابق"><i class="fa-solid fa-chevron-right"></i></button>
+                    <div class="cn-ship-track" id="cn_shipment_items"></div>
+                    <button type="button" class="cn-slide-btn cn-slide-next" id="cnSlideNext" aria-label="التالي"><i class="fa-solid fa-chevron-left"></i></button>
+                  </div>
+                </div>
+
+                <!-- طريقة الدفع -->
+                <div class="cn-card">
+                  <h4 class="cn-card-title">ادفع باستخدام</h4>
+                  <input type="hidden" name="PaymentMethod" id="paymentMethodInput" value="">
+
+                  <label class="cn-pay-option" data-method="cod" data-label="الدفع عند الاستلام">
+                    <span class="cn-pay-icon"><i class="fa-solid fa-money-bill-wave"></i></span>
+                    <span class="cn-pay-text"><b>الدفع عند الاستلام</b><small>كاش أو فيزا عند وصول الطلب لباب البيت</small></span>
+                    <span class="cn-pay-radio"></span>
+                  </label>
+
+                  <label class="cn-pay-option" data-method="fawry" data-label="فوري">
+                    <span class="cn-pay-icon cn-pay-fawry">فوري</span>
+                    <span class="cn-pay-text"><b>فوري</b><small>هيتواصل معاك فريقنا برقم الدفع لتسدده من أقرب منفذ فوري</small></span>
+                    <span class="cn-pay-radio"></span>
+                  </label>
+
+                  <p class="cn-pay-note" id="cnFawryNote">
+                    <i class="fa-solid fa-circle-info"></i>
+                    بعد تأكيد الطلب، هيتواصل معاك فريق كشمير هوم برقم الدفع بتاع فوري عشان تسدده كاش من أقرب منفذ فوري خلال 3 أيام.
+                  </p>
+                </div>
+
+                <!-- تفاصيل الفواتير -->
+                <!-- بيانات الفاتورة كلها بتتملى تلقائياً من عنوان التوصيل المحفوظ، فمفيش داعي نعرضها تاني -->
+                <div id="billingDetails" style="display:none">
+                    <input type="text" id="name" name="Name" required pattern=".{2,60}">
+                    <input type="email" id="email" name="Email" required>
+                    <input type="text" id="phone" name="PhoneMain" pattern=".{11,11}">
+                    <input type="text" id="phone2" name="PhoneReserve" pattern=".{11,11}">
+                    <select id="governorates" name="Governorates" required>
+                        <option value="" disabled selected>اختر المحافظة</option>
+                        <option value="cairo">القاهرة</option>
+                        <option value="alexandria">الإسكندرية</option>
+                        <option value="giza">الجيزة</option>
+                        <option value="aswan">أسوان</option>
+                        <option value="asiyut">أسيوط</option>
+                        <option value="beheira">البحيرة</option>
+                        <option value="beni_suef">بني سويف</option>
+                        <option value="dakahlia">الدقهلية</option>
+                        <option value="damietta">دمياط</option>
+                        <option value="fayoum">الفيوم</option>
+                        <option value="gharbia">الغربية</option>
+                        <option value="ismailia">الإسماعيلية</option>
+                        <option value="kafr_elsheikh">كفر الشيخ</option>
+                        <option value="luxor">الأقصر</option>
+                        <option value="matrouh">مطروح</option>
+                        <option value="minya">المنيا</option>
+                        <option value="monufia">المنوفية</option>
+                        <option value="new_valley">الوادي الجديد</option>
+                        <option value="north_sinai">شمال سيناء</option>
+                        <option value="port_said">بورسعيد</option>
+                        <option value="qalyubia">القليوبية</option>
+                        <option value="qena">قنا</option>
+                        <option value="red_sea">البحر الأحمر</option>
+                        <option value="sharqia">الشرقية</option>
+                        <option value="sohag">سوهاج</option>
+                        <option value="south_sinai">جنوب سيناء</option>
+                        <option value="suez">السويس</option>
+                    </select>
+                    <input type="text" id="checkoutCenter" name="Center" required>
+                    <input type="text" id="checkoutVillage" name="Village" required>
+                    <input type="text" id="checkoutStreet" name="streat" required>
+                    <input type="text" id="checkoutHome" name="Home" required>
+                </div>
+
+                <!-- ملاحظة اختيارية على الطلب (مش جزء من العنوان) -->
+                <div class="cn-card">
+                    <h4 class="cn-card-title">ملاحظة على الطلب (اختياري)</h4>
+                    <textarea name="Notes" rows="3" placeholder="أي تعليمات إضافية للتوصيل..." style="width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px;font-family:inherit;resize:vertical"></textarea>
+                </div>
+
+
+              </div>
+
+              <!-- ============ عمود ملخص الدفع ============ -->
+              <div class="checkout-summary-col">
+                <div class="cn-card cn-summary-card">
+                    <div class="cn-summary-head">
+                        <span class="cn-summary-count"><span class="Count_item_cart">0</span> منتجات</span>
+                        <h2>ملخص الدفع</h2>
+                    </div>
+
+       
+
+                    <div class="cn-sum-row">
+                        <span class="cn-sum-value subtotal_checkout">0 ج.م.</span>
+                        <span class="cn-sum-label">المجموع الفرعي</span>
+                    </div>
+
+                    <div class="cn-sum-row" id="cnDiscountRow" style="display:none">
+                        <span class="cn-sum-value"><span class="discount_percent">%</span></span>
+                        <span class="cn-sum-label">تم خصم</span>
+                    </div>
+
+                    <div class="cn-sum-row" id="cnPackagingRow" style="display:none">
+                        <span class="cn-sum-value" id="packaging_display">مجاني</span>
+                        <span class="cn-sum-label">التغليف</span>
+                    </div>
+
+                    <div class="cn-sum-row">
+                        <span class="cn-sum-value" id="shipping_display">0 ج</span>
+                        <span class="cn-sum-label">رسوم الشحن</span>
+                    </div>
+
+                  
+
+                    <div class="cn-sum-divider"></div>
+
+                    <div class="cn-sum-row cn-sum-total">
+                        <span class="cn-sum-value total_checkout">0 ج.م.</span>
+                        <span class="cn-sum-label">المجموع</span>
+                    </div>
+
+                    <button type="submit" class="cn-pay-btn" id="cnSubmitBtn" disabled>اختر طريقة الدفع</button>
+                </div>
+              </div>
+
+            </div>
+        </form>
+    </section>
+
+
+
+   <!-- start-footer -->
+   <footer>
+    <div class="container">
+        <div class="big_row">
+            <img class="logo_footer" src="img/logo.png" alt="">
+
+            <p>العنوان : <span> القاهره 53 شارع الغوريه أمام محل كامل الشيمي للأحذية أو جيكوريلا </span></p>
+            <div class="icons_footer">
+                <a target="_blank"
+                    href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                        class="fa-brands fa-facebook"></i></a>
+                <a target="_blank"
+                    href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                        class="fa-brands fa-instagram"></i></a>
+                <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <h4>المنتجات</h4>
+
+
+            <div class="links">
+                <a href="Furniture/feyat/feyat1.html"><i class="fa-solid fa-caret-left"></i>الفوط</a>
+                <a href="Furniture/paranes/paranes.html"><i class="fa-solid fa-caret-left"></i>البرانس</a>
+                <a href="Furniture/mlayat/mlayat1.html"><i class="fa-solid fa-caret-left"></i> الملايات</a>
+                <a href="Furniture/ellehaf/ellehaf1.html"><i class="fa-solid fa-caret-left"></i> اللحاف</a>
+                <a href="Furniture/patatin/patatin1.html"><i class="fa-solid fa-caret-left"></i> البطاطين</a>
+                <a href="Furniture/coferta/coferta1.html"><i class="fa-solid fa-caret-left"></i> كوفرتا</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <h4>تسوق معانا</h4>
+
+
+            <div class="links">
+                <a target="_blank" href="index.html"><i class="fa-solid fa-caret-left"></i> الرئيسية</a>
+                <a target="_blank" href="index.html"><i class="fa-solid fa-caret-left"></i>العروض</a>
+                <a target="_blank" href="chexkout.html"><i class="fa-solid fa-caret-left"></i>المشتريات</a>
+                <a target="_blank" href="callme.html"><i class="fa-solid fa-caret-left"></i>المساعدة</a>
+                <!-- <a href=""><i class="fa-solid fa-caret-right"></i> computer</a> -->
+            </div>
+        </div>
+
+
+        <div class="row">
+            <h4>تواصل معانا</h4>
+
+
+            <div class="links">
+                <a target="_blank"
+                    href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                        class="fa-solid fa-caret-left"></i> فيسبوك</a>
+                <a target="_blank"
+                    href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                        class="fa-solid fa-caret-left"></i> انستجرام</a>
+                <a target="_blank" href="https://wa.me/201028604523"><i class="fa-solid fa-caret-left"></i>
+                    الواتس</a>
+                <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-caret-left"></i> الهاتف</a>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="bottom_footer">
+        <div class="container">
+            <p>&copy; <span>kashmir home</span> All Right Reserved.</p>
+
+            <div class="payment_img">
+                <img src="img/payment_method.png" alt="">
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- end-footer -->
+
+
+   <!-- ============================================================
+     زر فتح الـ Modal (الـ div بتاعك)
+     ============================================================ -->
+
+ 
+<!-- ============================================================
+     Modal Overlay
+     ============================================================ -->
+<div class="modal-overlay" id="authModal" onclick="handleOverlayClick(event)">
+    <div class="modal-box" id="modalBox">
+ 
+        <!-- زرار القفل / الإغلاق -->
+        <button class="modal-close" onclick="closeModal()" title="إغلاق">🔒</button>
+ 
+        <!-- Main Card بداخل الـ Modal -->
+        <div class="main-card">
+ 
+            <!-- Tab Switcher -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+                    <span class="tab-icon">🔑</span> تسجيل الدخول
+                </button>
+                <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+                    <span class="tab-icon">✨</span> إنشاء حساب
+                </button>
+            </div>
+ 
+            <!-- ============ LOGIN PANEL ============ -->
+            <div class="panel" id="panel-login">
+ 
+                <div class="step" id="login-step1">
+                    <div class="step-header">
+                        <h2>مرحباً بعودتك 👋</h2>
+                        <p>أدخل بريدك الإلكتروني لنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="login-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="login-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 5)">
+                    </div>
+                    <div id="otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyOTP()">
+                        <span class="btn-text">تحقق والدخول</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="login-step3">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم الدخول بنجاح! 🎉</h2>
+                    <p>أهلاً بك مجدداً</p>
+                    <button class="btn-ghost" style="margin-top:16px" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+            <!-- ============ REGISTER PANEL ============ -->
+            <div class="panel hidden" id="panel-register">
+ 
+                <div class="steps-indicator">
+                    <div class="step-dot active" id="reg-dot1">1</div>
+                    <div class="step-line" id="reg-line1"></div>
+                    <div class="step-dot" id="reg-dot2">2</div>
+                    <div class="step-line" id="reg-line2"></div>
+                    <div class="step-dot" id="reg-dot3">3</div>
+                </div>
+ 
+                <div class="step" id="register-step1">
+                    <div class="step-header">
+                        <h2>إنشاء حساب جديد ✨</h2>
+                        <p>أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="reg-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendRegOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="reg-display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes" id="reg-otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 5)">
+                    </div>
+                    <div id="reg-otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="reg-countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyRegOTP()">
+                        <span class="btn-text">تحقق والمتابعة</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendRegOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="register-step3">
+                    <div class="step-header">
+                        <h2>أكمل بياناتك 👤</h2>
+                        <p>خطوة أخيرة لإتمام التسجيل</p>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأول</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-firstname" placeholder="الاسم الاول">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأخير</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-lastname" placeholder="الاسم الاخير">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>رقم الهاتف</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📱</span>
+                            <input type="tel" id="reg-phone" placeholder="+20 1XX XXX XXXX">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="registerUser()">
+                        <span class="btn-text">إنشاء الحساب</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step4">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم إنشاء حسابك! 🎉</h2>
+                    <p>مرحباً بك في عائلتنا</p>
+                    <div class="user-summary" id="user-summary"></div>
+                    <button class="btn-ghost" onclick="resetRegister()">تسجيل حساب آخر</button>
+                    <button class="btn-ghost" style="margin-top:8px;border-color:#e2e8f0" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+        </div><!-- /main-card -->
+    </div><!-- /modal-box -->
+</div><!-- /modal-overlay -->
+ 
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+ 
+
+
+
+
+
+
+
+<script type="module" src="js/cart-suggestions.js"></script>
+<script type="module" src="js/checkout-address.js"></script>
+
+<script type="module" src="js/script.js"></script>
+<script src="js/main.js"></script>
+<script src="js/submit_checkout.js"></script>
+<script src="js/omar.js"></script>
+<script type="module" src="/js/search.js"></script>
+<script src="/js/search-results.js"></script>
+    <script src="js/login2.js" type="module"></script>   
+
+<script>
+      window.onload = function () {
+    // استرجاع البيانات من localStorage
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    // التحقق إن كانت البيانات موجودة
+    if (userData) {
+      document.getElementById("name").value = userData.name + " " + (userData.family || "");
+      document.getElementById("email").value = userData.email;
+      document.getElementById("phone").value = userData.phone;
+    }
+  };
+
+</script>
+
+<!-- ============ تفعيل زرار الدفع بس لما كل بيانات الطلب تكون جاهزة ============ -->
+<script>
+(function () {
+  function isCheckoutReady() {
+    const paymentInput = document.getElementById("paymentMethodInput");
+    const hasPayment = !!(paymentInput && paymentInput.value.trim());
+
+    const addressText = document.getElementById("cnAddressText");
+    const addressTxt = addressText ? addressText.textContent.trim() : "";
+    const hasAddress = !!addressTxt && !addressTxt.includes("جاري تحميل");
+
+    const recipientName = document.getElementById("cnRecipientName");
+    const recipientTxt = recipientName ? recipientName.textContent.trim() : "";
+    const hasRecipient = !!recipientTxt && recipientTxt !== "—";
+
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem("cart")) || []; } catch (e) { cart = []; }
+    const hasItems = cart.length > 0;
+
+    return hasPayment && hasAddress && hasRecipient && hasItems;
+  }
+
+  function refreshPayButtonState() {
+    const btn = document.getElementById("cnSubmitBtn");
+    if (!btn) return;
+    const ready = isCheckoutReady();
+    btn.disabled = !ready;
+    btn.classList.toggle("ready", ready);
+    btn.textContent = ready ? "تأكيد الطلب والدفع" : "اختر طريقة الدفع";
+  }
+  window.refreshPayButtonState = refreshPayButtonState;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const payOptions = document.querySelectorAll(".cn-pay-option");
+    const paymentInput = document.getElementById("paymentMethodInput");
+    const fawryNote = document.getElementById("cnFawryNote");
+
+    payOptions.forEach(function (opt) {
+      opt.addEventListener("click", function () {
+        payOptions.forEach(function (o) { o.classList.remove("active"); });
+        opt.classList.add("active");
+        if (paymentInput) paymentInput.value = opt.dataset.label || opt.dataset.method || "";
+        if (fawryNote) fawryNote.classList.toggle("show", opt.dataset.method === "fawry");
+        refreshPayButtonState();
+      });
+    });
+
+    // بنراقب عنوان التوصيل واسم المستلم عشان الأزرار تتحدث أول ما js/checkout-address.js يملاهم
+    const watchTargets = [
+      document.getElementById("cnAddressText"),
+      document.getElementById("cnRecipientName")
+    ].filter(Boolean);
+
+    if (watchTargets.length && window.MutationObserver) {
+      const obs = new MutationObserver(refreshPayButtonState);
+      watchTargets.forEach(function (el) {
+        obs.observe(el, { childList: true, characterData: true, subtree: true });
+      });
+    }
+
+    // بنراقب عداد المنتجات عشان لو السلة فضيت أو اتغيرت الأزرار تتحدث
+    const countBadge = document.querySelector(".Count_item_cart");
+    if (countBadge && window.MutationObserver) {
+      new MutationObserver(refreshPayButtonState).observe(countBadge, { childList: true, characterData: true, subtree: true });
+    }
+
+    const form = document.getElementById("form_contact");
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        if (!isCheckoutReady()) {
+          e.preventDefault();
+          refreshPayButtonState();
+          alert("من فضلك أكمل عنوان التوصيل، بيانات المستلم، واختر طريقة الدفع قبل تأكيد الطلب");
+        }
+      });
+    }
+
+    refreshPayButtonState();
+    // إعادة فحص كل ثانية كإجراء احتياطي لأي تحديثات مش بتتصيدها المراقبة أعلاه
+    setInterval(refreshPayButtonState, 1000);
+  });
+})();
+</script>
+</body>
+
+
+</html>

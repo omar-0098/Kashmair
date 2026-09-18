@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name="author" content="عمر محمد">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "كشمير هوم",
+  "url": "https://kashmair.vercel.app/",
+  "author": {
+    "@type": "Person",
+    "name": "عمر محمد"
+  },
+  "creator": {
+    "@type": "Person",
+    "name": "عمر محمد"
+  }
+}
+</script>
+
+  <!-- Preload صور البانر لتحسين LCP -->
+  <link rel="preload" as="image" href="img/banner-swiper/banner_home11.webp">
+  <link rel="preload" as="image" href="img/banner-swiper/banner_home22.webp">
+  <link rel="preload" as="image" href="img/banner-swiper/banner_home33.webp">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="استمتع بعروض متجددة من كشمير هوم – Kashmir Home! ملايات سرير، ملايات عامرية، فوط، برانس، بطاطين أطفال، لحاف فايبر، كوفرتي والمزيد بجودة عالية وتصاميم عصرية.">
+  <title>كشمير هوم – Kashmir Home | ملايات، فوط، برانس، بطاطين</title>
+  <link rel="icon" type="image/png" href="https://kashmair.netlify.app/favicon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="كشمير هوم - Kashmir Home">
+  <meta property="og:description" content="استمتعوا بأجود المنتجات: ملايات، فوط، بطاطين والمزيد. توصيل سريع وخدمة ممتازة!">
+  <meta property="og:image" content="https://kashmair.netlify.app/favicon.png">
+  <meta property="og:url" content="https://kashmair.netlify.app">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="كشمير هوم" />
+  <meta name="application-name" content="كشمير هوم" />
+  <meta name="google-site-verification" content="xk88hD7NToWLVqfMyYxmdM_XRavqmf8J-nfcO9pkWNw" />
+
+  <!-- Google Fonts (محسّنة بالـ preload + onload) -->
+<link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Readex+Pro&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro&display=swap">
+  </noscript>
+
+  <!-- CSS الأساسي (المحلي) -->
+       <link rel="stylesheet" href="css/login.css">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chat.css">
+
+  <!-- ستايل قائمة اقتراحات البحث اللايف -->
+  <style>
+    .search_box { position: relative; }
+    .search_suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      left: 0;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      overflow: hidden;
+      z-index: 999;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .search_suggestions.open { display: block; }
+    .search-suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      text-decoration: none;
+      color: inherit;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .search-suggestion-item:hover { background: #f7f7f7; }
+    .search-suggestion-item img { width: 42px; height: 42px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .suggestion-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+    .suggestion-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .suggestion-meta { font-size: 12px; color: #888; }
+    .suggestion-old-price { text-decoration: line-through; margin-left: 4px; }
+    .search-suggestion-empty { padding: 14px; text-align: center; color: #888; font-size: 13px; }
+    .search-suggestion-seeall {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+      text-decoration: none;
+      color: inherit;
+      background: #fafafa;
+    }
+  </style>
+
+  <!-- Font Awesome (تأجيل التحميل) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"></noscript>
+
+  <!-- Swiper CSS (تأجيل التحميل) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></noscript>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LQLNQH309W"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LQLNQH309W');
+  </script>
+
+  <!-- Structured Data: WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "كشمير هوم",
+    "url": "https://kashmirhome.netlify.app",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://kashmirhome.netlify.app/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "كشمير هوم",
+    "url": "https://kashmirhome.netlify.app",
+    "logo": "https://kashmirhome.netlify.app/logo.png"
+  }
+  </script>
+</head>
+
+
+    <!-- start-cart -->
+    <div class="cart">
+        <div class="top_cart">
+            <h3>المنتاجات : <span class="Count_item_cart">0</span></h3>
+            <span onclick="open_close_cart()" class="close_cart"><i class="fa-regular fa-circle-xmark"></i></span>
+        </div>
+
+
+
+        <div class="items_in_cart" id="cart_items">
+
+
+        </div>
+
+
+        <div class="bottom_cart">
+            <div class="total">
+                <p>السعر :</p>
+                <p class="price_cart_total">0</p>
+            </div>
+
+
+            <div class="button_cart">
+                <a href="chexkout.html" class="btn_cart btn" >شراء</a>
+                <a href="index.html" class="btn_cart btn"><span onclick="open_close_cart()"class="btn_cart trans_bg btn">تسوق</span></a>
+
+            </div>
+        </div>
+
+
+    </div>
+    <!-- end-cart -->
+
+
+     <!-- start-header  -->
+    <header>
+        <div class="top_top_header">
+            <div class="container">
+            <div class="help">
+                <a href="callme.html"> الدعم </a>
+                <hr>
+                <a href="Privacy.html"> السياسة و الخصوصية </a>
+            </div>
+            <div class="links">
+                         <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-brands fa-facebook"></i></a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+                    <a target="_blank" href="mailto:kashmirhome.00@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            </div>
+        </div>
+
+
+
+        <div class="top_header">
+            <div class="container">
+
+
+
+                <div class="logo">
+                    <div>
+                        <h1>كشمير <span>هوم</span></h1>
+                    </div>
+                </div>   
+                
+                <div>
+                  <ul class="nav_links">
+
+                        <li class="active"><a href="index.html">الرئيسية</a></li>
+
+                           <div class="category_nav">
+                        <div onclick="Open_Categ_list()" class="category_btn">
+                            <p>المنتجات</p>
+                            <i class="fa-solid fa-sort-down"></i>
+                            
+                        </div>
+
+
+                        <div class="categoru_nav_list">
+                            <a href="Furniture/feyat/feyat1.html" >الفوط</a>
+                            <a href="Furniture/mlayat/mlayat1.html">الملايات</a>
+                            <a href="Furniture/paranes/paranes.html">البرانس</a>
+                            <a href="Furniture/patatin/patatin1.html">البطاطين</a>
+                            <a href="Furniture/ellehaf/ellehaf1.html">اللحاف</a>
+                            <a href="Furniture/coferta/coferta1.html">كوفرتا</a>
+                            <!-- <a href="">omar omar</a> -->
+
+
+                           
+
+
+                        </div>
+
+                    </div>
+                                            <span onclick="open_Menu()" class="close_menu"><i class="fa-regular fa-circle-xmark"></i></span>
+
+                        <li><a href="#el_orode">العروض</a></li>
+                        <li><a href="#elaksar_mabia">الاكثر مبيعاََ</a></li>
+                        <li class="check"><a href="chexkout.html">الدفع</a></li>
+                        <li><a href="callme.html">المساعدة </a></li>
+                        <li><a href="Privacy.html">السياسة و الخصوصية</a></li>
+
+
+                    </ul>
+                </div>
+
+
+                <div class="icon_header">
+
+                <form action="/search.html" method="get" class="search_box">
+                    <input type="text" id="search" name="search" placeholder=" ابدأ البحث..." required autocomplete="off">
+                    
+                    <button type="submit" aria-label="بحث">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+
+
+<span onclick="open_Menu()" class="open_menu"><i class="fa-solid fa-bars"></i></span>
+
+<!-- قسم إنشاء الحساب -->
+ <div class="person1" id="registerSection" onclick="openModal()">
+    <div class="person2">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>انشاء حساب</h1>
+    </div>
+</div> 
+
+
+
+
+
+
+                   <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man1" id="welcomeSection" style="display: none;">
+            <div class="man2">
+                <h1 id="welcomeMessage">مرحباً <span id="userName"></span></h1>
+                <a href="user/accoun.html"><i id="icon_person" class="fa-solid fa-circle-user"></i></a> 
+            </div>
+        </div> 
+
+                <div class="header_icons">
+                    <div class="icon">
+                        <!-- <a href="">
+                            <i class="fa-regular fa-heart"></i>
+                            <span class="count count_favourite">0</span>
+                        </a> -->
+                    </div>
+
+                    <div onclick="goToCart()" class="icon">
+                        <!-- <i class="fa-solid fa-cart-shopping"></i> -->
+                         <i class="fa-solid fa-bag-shopping"></i>
+                        <span class="count count_item_header">0</span>
+                    </div>
+
+
+                </div>
+
+
+    </div>
+
+            </div>
+        </div>
+
+        <div class="medal_header">
+            <div class="container">
+                <div class="person">
+                    
+<!-- قسم إنشاء الحساب -->
+ <div class="person3" id="registerSection1" onclick="openModal()">
+    <div class="person4">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>  انشاء حساب <span> لكشمير هوم </span>  </h1>
+    </div>
+</div> 
+
+
+             <a href="user/accoun.html">       <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man3" id="welcomeSection1" style="display: none;">
+            <div class="man4">
+                <h1 id="welcomeMessage">مرحباً <span id="userName1"></span> <span class="tarhib"> هذا حسابك في كشمير</span></h1>
+              <i id="icon_person" class="fa-solid fa-circle-user"></i>
+            </div>
+        </div> 
+                </div>
+            </div>
+        </div>
+</a> 
+
+
+
+        
+
+    </header>
+    <!-- end-header -->
+
+
+
+
+    <!-- <button onclick="toggleDarkMode()">تفعيل الوضع المظلم</button> -->
+
+    <!-- start-slider -->
+    <div class="slider">
+        <div class="container">
+            <!-- swiper -->
+            <div class="slide_swp mySwiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <a href="Furniture/patatin/patatin1.html"><img src="img/banner-swiper/banner_home11.webp" alt="صورة البطاطين"></a>
+                    </div>
+                    <div class="swiper-slide">
+                        <a href="Furniture/feyat/feyat1.html"><img src="img/banner-swiper/banner_home22.webp" alt="صورة فوط"></a>
+                    </div>
+                    <div class="swiper-slide">
+                        <a href="Furniture/mlayat/mlayat1.html"><img src="img/banner-swiper/banner_home33.webp" alt="صورة ملايات"></a>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <!-- <div class="banner_2">
+                <a href=""><img src="image_fx_ (1).jpg" alt=""></a>
+            </div> -->
+
+        </div>
+    </div>
+    <!-- end-slider -->
+
+
+    <!-- start-banners1 -->
+    <div class="banners_4">
+        <div class="container">
+            <!--  -->
+            <div class="box">
+                <!-- <a href="" class="link_btn"></a> -->
+
+                <img src="img/banner-swiper/image_fx__6_-removebg-preview.png" alt="">
+                <div class="text">
+                    <h5> عروض علي </h5>
+                    <h5> اساسيات الحمام </h5>
+                    <div class="sale">
+                        <p>تصل <br> الي</p>
+                        <span>40%</span>
+                    </div>
+                    <a href="Furniture/feyat/feyat1.html"><h6> شوف اكتر </h6></a>  
+                </div>
+            </div>
+
+            <!--  -->
+            <div class="box" id="remaov">
+
+                <div class="text">
+                    <h5> اشتري  من كشمير هوم </h5>
+                    <h5> وخلي بالك مرتاح </h5>
+                    <div class="sale">
+                        <p>خصومات <br> تصل الي</p>
+                        <span>60%</span>
+                    </div>
+               <h6> شوف اكتر </h6> 
+                </div>
+            </div>
+                <a href="" class="link_btn" id="el_orode"></a>
+
+            <!--  -->
+            <!-- هنا في لينك لل هيدر -->
+            <div class="box">
+
+                <!-- <img src="img/banner3_3.png" alt=""> -->
+                <div class="text">
+                    <h5> اشتري باكثر من </h5>
+                    <h5> 5000 وليك هدايا و خصومات </h5>
+                    <div class="sale">
+                        <p>تصل <br> الي </p>
+                        <span>50%</span>
+                    </div>
+                    <h6> شوف اكتر </h6>
+                </div>
+            </div>
+
+            <!--  -->
+
+
+
+
+        </div>
+    </div>
+    <!-- end-banners -->
+
+
+
+    <!-- start-products-1 -->
+    <div class="slider_products slide omar11">
+
+        <div class="container">
+
+            <div class="slide_product mySwiper">
+
+                <div class="top_slide">
+                    <h2 id="swiper_items_sale1"> <i class="fa-solid fa-thumbs-up"></i> العروضات</h2>
+                </div>
+
+
+                <div class="products swiper-wrapper" id="swiper_items_sale">
+
+
+                </div>
+
+
+                <div class="swiper-button-next btn_swip"></div>
+                <div class="swiper-button-prev btn_swip"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+    <!-- end-products -->
+
+
+    <div class="text_work">
+        <div class="container">
+            <marquee direction="left">
+                <pre>                 🌟 أسرع واطلب الآن! كشمير هوم يمنحك تجربة راقية بلا حدود                    منزلك يستحق الأفضل – اختر كشمير هوم لجودة تدوم!💖                    جودة استثنائية مع كشمير هوم – لأن الفخامة تبدأ من هنا!</pre>
+            </marquee>
+        </div>
+    </div>
+
+
+
+
+    <!-- start-banners-2 -->
+    <div class="banners">
+        <div class="container">
+            <div class="banners_boxs banner_2_img">
+                <a href="Furniture/patatin/patatin1.html" class="box"><img src="img/bannar11.png" alt=""></a>
+                <a href="Furniture/patatin/patatin2.html" class="box"><img src="img/banner12.jpg" alt=""></a>
+
+            </div>
+        </div>
+    </div>
+    <!-- end-banners-2 -->
+
+
+    <div class="swipernostop container">
+
+        <div>
+            <h1>اشتري من<span> براندات رسمية</span></h1>
+        </div>
+        <div class="swiper-wrapper ">
+            <div class="swiper-slide"><img src="img/swiper-no-stop/elsrougy - Copy.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/kinzo - Copy.jpg" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/mora.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/royal.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/zahar.jpeg" alt=""></div>
+            <div class="swiper-slide" id="elaksar_mabia"><img src="img/swiper-no-stop/elsrougy - Copy.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/kinzo - Copy.jpg" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/mora.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/royal.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/zahar.jpeg" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/elsrougy - Copy.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/kinzo - Copy.jpg" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/mora.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/royal.png" alt=""></div>
+            <div class="swiper-slide"><img src="img/swiper-no-stop/zahar.jpeg" alt=""></div>
+        </div>
+    </div>
+    </div>
+
+
+    <!-- start-products-2 -->
+    <div class="slider_products slide">
+
+        <div class="container">
+
+            <div class="slide_product mySwiper">
+
+                <div class="top_slide">
+                    <h2> <i class="fa-solid fa-cart-shopping"></i> الاكثر مبيعاََ</h2>
+                </div>
+
+
+                <div class="products swiper-wrapper" id="swiper_Bestseller">
+
+
+                </div>
+
+
+                <div class="swiper-button-next btn_swip"></div>
+                <div class="swiper-button-prev btn_swip"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+    <!-- end-products-2 -->
+
+
+    <!-- start-banners-3-->
+    <div class="banners">
+        <div class="container">
+            <div class="banners_boxs banner_3_img">
+                <a href="Furniture/ellehaf/ellehaf1.html" class="box"><img src="img/banner13.jpg" alt=""></a>
+                <a href="Furniture/coferta/coferta1.html" class="box"><img src="img/banner14.jpg" alt=""></a>
+            </div>
+        </div>
+    </div>
+    <!-- end-banners-3 -->
+
+
+
+
+    <!-- start-products-3 -->
+    <div class="slider_products slide">
+
+        <div class="container">
+
+            <div class="slide_product mySwiper">
+
+                <div class="top_slide">
+                    <h2> <i class="fa-solid fa-thumbs-up"></i> بعض من منتجاتنا</h2>
+                </div>
+
+
+                <div class="products swiper-wrapper" id="swiper_Ourproduct">
+
+
+                </div>
+
+
+                <div class="swiper-button-next btn_swip"></div>
+                <div class="swiper-button-prev btn_swip"></div>
+
+            </div>
+
+
+        </div>
+    </div>
+    <!-- end-products-3 -->
+
+
+    <!-- start-scroll -->
+    <div class="scroll-all" onclick="scrollToTop()">
+        <div class="container">
+            <div class="scroll">
+                <h1>الذهاب للأعلي</h1>
+            </div>
+        </div>
+    </div>
+    <!-- end-scroll -->
+
+
+    <!-- start-footer -->
+    <footer>
+        <div class="container">
+            <div class="big_row">
+                <img class="logo_footer" src="img/logo.png" alt="">
+
+                <p>العنوان : <span> القاهره 53 شارع الغوريه أمام محل كامل الشيمي للأحذية أو جيكوريلا </span></p>
+                <div class="icons_footer">
+                    <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-brands fa-facebook"></i></a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <h4>المنتجات</h4>
+
+
+                <div class="links">
+                    <a href="Furniture/feyat/feyat1.html"><i class="fa-solid fa-caret-left"></i>الفوط</a>
+                    <a href="Furniture/paranes/paranes.html"><i class="fa-solid fa-caret-left"></i>البرانس</a>
+                    <a href="Furniture/mlayat/mlayat1.html"><i class="fa-solid fa-caret-left"></i> الملايات</a>
+                    <a href="Furniture/ellehaf/ellehaf1.html"><i class="fa-solid fa-caret-left"></i> اللحاف</a>
+                    <a href="Furniture/patatin/patatin1.html"><i class="fa-solid fa-caret-left"></i> البطاطين</a>
+                    <a href="Furniture/coferta/coferta1.html"><i class="fa-solid fa-caret-left"></i> كوفرتا</a>
+                </div>
+            </div>
+
+            <div class="row">
+                <h4>تسوق معانا</h4>
+
+
+                <div class="links">
+                    <a target="_blank" href="index.html"><i class="fa-solid fa-caret-left"></i> الرئيسية</a>
+                    <a target="_blank" href="#el_orode"><i class="fa-solid fa-caret-left"></i>العروض</a>
+                    <a target="_blank" href="#elaksar_mabia"><i class="fa-solid fa-caret-left"></i>الاكثر مبيعاََ</a>
+                    <a target="_blank" href="chexkout.html"><i class="fa-solid fa-caret-left"></i>المشتريات</a>
+                    <a target="_blank" href="callme.html"><i class="fa-solid fa-caret-left"></i>المساعدة</a>
+                    <!-- <a href=""><i class="fa-solid fa-caret-right"></i> computer</a> -->
+                </div>
+            </div>
+
+
+            <div class="row">
+                <h4>تواصل معانا</h4>
+
+
+                <div class="links">
+                    <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-solid fa-caret-left"></i> فيسبوك</a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-solid fa-caret-left"></i> انستجرام</a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-solid fa-caret-left"></i>
+                        الواتس</a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-caret-left"></i> الهاتف</a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom_footer">
+            <div class="container">
+                <p>&copy; <span>kashmir home</span> All Right Reserved.</p>
+
+                <div class="payment_img">
+                    <img src="img/payment_method.png" alt="">
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- end-footer -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ============================================================
+     زر فتح الـ Modal (الـ div بتاعك)
+     ============================================================ -->
+
+ 
+<!-- ============================================================
+     Modal Overlay
+     ============================================================ -->
+<div class="modal-overlay" id="authModal" onclick="handleOverlayClick(event)">
+    <div class="modal-box" id="modalBox">
+ 
+        <!-- زرار القفل / الإغلاق -->
+        <button class="modal-close" onclick="closeModal()" title="إغلاق">🔒</button>
+ 
+        <!-- Main Card بداخل الـ Modal -->
+        <div class="main-card">
+ 
+            <!-- Tab Switcher -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+                    <span class="tab-icon">🔑</span> تسجيل الدخول
+                </button>
+                <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+                    <span class="tab-icon">✨</span> إنشاء حساب
+                </button>
+            </div>
+ 
+            <!-- ============ LOGIN PANEL ============ -->
+            <div class="panel" id="panel-login">
+ 
+                <div class="step" id="login-step1">
+                    <div class="step-header">
+                        <h2>مرحباً بعودتك 👋</h2>
+                        <p>أدخل بريدك الإلكتروني لنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="login-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="login-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 5)">
+                    </div>
+                    <div id="otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyOTP()">
+                        <span class="btn-text">تحقق والدخول</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="login-step3">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم الدخول بنجاح! 🎉</h2>
+                    <p>أهلاً بك مجدداً</p>
+                    <button class="btn-ghost" style="margin-top:16px" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+            <!-- ============ REGISTER PANEL ============ -->
+            <div class="panel hidden" id="panel-register">
+ 
+                <div class="steps-indicator">
+                    <div class="step-dot active" id="reg-dot1">1</div>
+                    <div class="step-line" id="reg-line1"></div>
+                    <div class="step-dot" id="reg-dot2">2</div>
+                    <div class="step-line" id="reg-line2"></div>
+                    <div class="step-dot" id="reg-dot3">3</div>
+                </div>
+ 
+                <div class="step" id="register-step1">
+                    <div class="step-header">
+                        <h2>إنشاء حساب جديد ✨</h2>
+                        <p>أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="reg-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendRegOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="reg-display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes" id="reg-otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 5)">
+                    </div>
+                    <div id="reg-otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="reg-countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyRegOTP()">
+                        <span class="btn-text">تحقق والمتابعة</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendRegOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="register-step3">
+                    <div class="step-header">
+                        <h2>أكمل بياناتك 👤</h2>
+                        <p>خطوة أخيرة لإتمام التسجيل</p>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأول</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-firstname" placeholder="الاسم الاول">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأخير</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-lastname" placeholder="الاسم الاخير">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>رقم الهاتف</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📱</span>
+                            <input type="tel" id="reg-phone" placeholder="+20 1XX XXX XXXX">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="registerUser()">
+                        <span class="btn-text">إنشاء الحساب</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step4">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم إنشاء حسابك! 🎉</h2>
+                    <p>مرحباً بك في عائلتنا</p>
+                    <div class="user-summary" id="user-summary"></div>
+                    <button class="btn-ghost" onclick="resetRegister()">تسجيل حساب آخر</button>
+                    <button class="btn-ghost" style="margin-top:8px;border-color:#e2e8f0" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+        </div><!-- /main-card -->
+    </div><!-- /modal-box -->
+</div><!-- /modal-overlay -->
+ 
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<audio id="sound" src="new-notification-07-210334.mp3"></audio>
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="module" src="js/script.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- مكتبة jwt-decode - النسخة الصحيحة ✅ -->
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+    <!-- Swiper JS -->
+    <script  src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- fill -->
+
+    <script src="js/user.js" type="module"></script>
+    <script src="js/login2.js" type="module"></script>   
+<script src="js/items_home_shop.js" type="module"></script>
+<script src="js/search.js" type="module"></script>
+<script src="js/main.js"></script>
+<script src="js/swiper.js"></script>
+<script src="js/omar.js"></script>
+
+<script src="js/chat.js"></script>
+<script src="js/filters.js"></script>
+<script src="js/Search.js"></script>
+<script src="js/search-results.js"></script>
+
+<!--  -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>

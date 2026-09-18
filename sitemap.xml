@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://kashmair.netlify.app/index.html</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://kashmair.netlify.app/chexkout</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://kashmair.netlify.app/callme</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://kashmair.netlify.app/privacy</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- الأقسام -->
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/feyat/feyat1</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/feyat/feyat2</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/mlayat/mlayat1</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+ <url>
+    <loc>https://kashmair.netlify.app/furniture/mlayat/mlayat2</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/paranes/paranes</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/patatin/patatin1</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+   <url>
+    <loc>https://kashmair.netlify.app/furniture/patatin/patatin2</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/ellehaf/ellehaf1</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/ellehaf/ellehaf2</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/coferta/coferta1</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.netlify.app/furniture/coferta/coferta2-</loc>
+    <lastmod>2025-05-01</lastmod>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
