@@ -1,86 +1,86 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://kashmair.netlify.app/index.html</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/index.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://kashmair.netlify.app/chexkout</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/chexkout.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://kashmair.netlify.app/callme</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/callme.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://kashmair.netlify.app/privacy</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/privacy.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.5</priority>
   </url>
 
   <!-- الأقسام -->
   <url>
-    <loc>https://kashmair.netlify.app/furniture/feyat/feyat1</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/feyat/feyat1.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/feyat/feyat2</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/feyat/feyat2.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/mlayat/mlayat1</loc>
-    <lastmod>2025-05-01</lastmod>
-    <priority>0.7</priority>
-  </url>
- <url>
-    <loc>https://kashmair.netlify.app/furniture/mlayat/mlayat2</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/mlayat/mlayat1.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/paranes/paranes</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/mlayat/mlayat2.html</loc>
+    <lastmod>2026-09-18</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kashmair.vercel.app/Furniture/paranes/paranes.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://kashmair.netlify.app/furniture/patatin/patatin1</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/patatin/patatin1.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
-   <url>
-    <loc>https://kashmair.netlify.app/furniture/patatin/patatin2</loc>
-    <lastmod>2025-05-01</lastmod>
+  <url>
+    <loc>https://kashmair.vercel.app/Furniture/patatin/patatin2.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://kashmair.netlify.app/furniture/ellehaf/ellehaf1</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/ellehaf/ellehaf1.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/ellehaf/ellehaf2</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/ellehaf/ellehaf2.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/coferta/coferta1</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/coferta/coferta1.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://kashmair.netlify.app/furniture/coferta/coferta2-</loc>
-    <lastmod>2025-05-01</lastmod>
+    <loc>https://kashmair.vercel.app/Furniture/coferta/coferta2-.html</loc>
+    <lastmod>2026-09-18</lastmod>
     <priority>0.7</priority>
   </url>
 
