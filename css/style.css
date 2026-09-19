@@ -3197,7 +3197,7 @@ header .top_header .header_icons {
         margin: 0px 3px;
     }
     .product .img_product a{
-        width: 83%;
+        width: 100%;
         display: flex;
          align-items: center;
          height: fit-content;
@@ -3216,8 +3216,10 @@ header .top_header .header_icons {
     }
     .product .img_product{
         position: relative;
-        height: 199px;
-        padding: 0px 3px;
+        height: 195px;
+        padding: 0px 0px;
+        overflow: hidden;
+    border-radius: 6px;
     }
     .product .img_product img{
         height: 100%;
@@ -3847,7 +3849,7 @@ padding: 0px;
      }
     .product .img_product {
         height: 200px;
-        padding: 0px 7px;
+        padding: 0px 0px;
     }
     .size p span {
         font-size: 11px;
