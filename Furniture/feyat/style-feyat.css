@@ -773,7 +773,7 @@ padding-top: 86px;
     .product .img_product {
         position: relative;
         height: 200px;
-        padding: 0px 5px;
+        padding: 0px 0px;
     }
     .size p span {
         font-size: 11px;
