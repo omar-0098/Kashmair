@@ -758,7 +758,161 @@ function setupCartEvents() {
 
 
 
+(function () {
+  var LONG_PRESS_MS = 500;
+  var pressTimer = null;
+  var overlay = null;
 
+  // ============ 1) عرض/تحديث الصورة في الهيدر ============
+  function getHeaderIcons() {
+    return document.querySelectorAll('#icon_person');
+  }
+
+  function showHeaderAvatar(url) {
+    getHeaderIcons().forEach(function (el) {
+      if (!url) {
+        if (el.tagName === 'IMG') {
+          var icon = document.createElement('i');
+          icon.id = 'icon_person';
+          icon.className = 'fa-solid fa-circle-user';
+          el.replaceWith(icon);
+        }
+        return;
+      }
+      if (el.tagName === 'IMG') { el.src = url; return; }
+      var img = document.createElement('img');
+      img.src = url;
+      img.alt = 'صورة الحساب';
+      img.id = 'icon_person';
+      img.style.width = '32px';
+      img.style.height = '32px';
+      img.style.borderRadius = '10%';
+      img.style.objectFit = 'cover';
+      img.style.verticalAlign = 'middle';
+      img.style.outline = '2px solid #f9607f';
+      img.style.outlineOffset = '1.5px';
+
+      el.replaceWith(img);
+    });
+  }
+
+  function refreshFromStorage() {
+    var url = localStorage.getItem('kashmirProfileImg');
+    console.log('[avatar] kashmirProfileImg =', url ? (url.slice(0, 40) + '...') : null);
+    showHeaderAvatar(url);
+  }
+
+  // ============ 2) مودال تكبير الصورة (Long Press) ============
+  function getUserDisplayName() {
+    try {
+      var u = JSON.parse(localStorage.getItem('kashmirUser') || '{}');
+      var name = ((u.firstName || '') + ' ' + (u.lastName || '')).trim();
+      if (name) return name;
+    } catch (e) {}
+    var span = document.getElementById('userName') || document.getElementById('userName1');
+    return (span && span.textContent.trim()) || 'المستخدم';
+  }
+
+  function openZoom(src) {
+    closeZoom();
+    overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;box-sizing:border-box';
+
+    var card = document.createElement('div');
+    card.style.cssText = 'width:100%;max-width:375px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,0.35);font-family:inherit';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #eee';
+
+    var title = document.createElement('div');
+    title.textContent = getUserDisplayName();
+    title.style.cssText = 'font-weight:700;font-size:16px;color:#222;font-family: "Almarai", sans-serif;';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'width:26px;height:26px;border-radius:50%;border:1px solid #ccc;background:#fff;color:#888;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center';
+    closeBtn.addEventListener('click', closeZoom);
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'height: 147px;margin:18px;background:#c9ced6;border-radius:14px;min-height:340px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden';
+
+    var circleWrap = document.createElement('div');
+    circleWrap.style.cssText = 'overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.15)';
+
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+
+    circleWrap.appendChild(img);
+    body.appendChild(circleWrap);
+    card.appendChild(header);
+    card.appendChild(body);
+    overlay.appendChild(card);
+
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeZoom(); });
+    document.addEventListener('keydown', escClose);
+    document.body.appendChild(overlay);
+  }
+
+  function escClose(e) { if (e.key === 'Escape') closeZoom(); }
+  function closeZoom() {
+    if (overlay) { overlay.remove(); overlay = null; }
+    document.removeEventListener('keydown', escClose);
+  }
+
+  function bindLongPress(el) {
+    if (el.dataset.longPressBound) return;
+    el.dataset.longPressBound = '1';
+    var start = function () {
+      pressTimer = setTimeout(function () {
+        console.log('[longpress] fired on', el.tagName, el.src);
+        if (el.tagName === 'IMG' && el.src) openZoom(el.src);
+        else console.log('[longpress] مفيش صورة IMG حالياً على العنصر ده');
+      }, LONG_PRESS_MS);
+    };
+    var cancel = function () { clearTimeout(pressTimer); };
+    el.addEventListener('mousedown', start);
+    el.addEventListener('mouseup', cancel);
+    el.addEventListener('mouseleave', cancel);
+    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchend', cancel);
+    el.addEventListener('touchmove', cancel);
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  }
+
+  function rebindAll() {
+    getHeaderIcons().forEach(bindLongPress);
+  }
+
+  // ============ 3) تشغيل + متابعة أي تغيير في العنصر تلقائيًا ============
+  function init() {
+    refreshFromStorage();
+    rebindAll();
+
+    // يراقب أي تغيير في الهيدر (زي استبدال <i> بـ <img>) ويعيد الربط فورًا
+    var observer = new MutationObserver(function () { rebindAll(); });
+    document.querySelectorAll('header, .man1, .man3').forEach(function (root) {
+      observer.observe(root, { childList: true, subtree: true });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'kashmirProfileImg') refreshFromStorage();
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) refreshFromStorage();
+  });
+})();
 
 
 
