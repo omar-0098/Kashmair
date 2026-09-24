@@ -1323,6 +1323,10 @@ transition: 0.3s;
 /* ///////////////////// */
 
 /* :start header */
+#welcomeMessage a{
+    display: flex;
+}
+
 
 header{
     background: #fff;
