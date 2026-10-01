@@ -125,6 +125,84 @@
 .my-comments-empty p{font-size:14px;margin-bottom:6px}
 .my-comments-empty a{color:#1a56db;font-weight:700;text-decoration:none}
 .my-comments-loading{text-align:center;padding:30px;color:var(--text-light,#888);font-family:'Almarai',sans-serif;font-size:13px}
+
+/* ===== الطلبات ===== */
+.orders-list{display:flex;flex-direction:column;gap:24px}
+.order-card{background:#e4f4e4;border:1px solid #c9e8c9;border-radius:22px;overflow:hidden;font-family:'Almarai',sans-serif}
+.order-banner{padding:26px 28px 22px}
+.order-banner h3{font-size:22px;font-weight:800;margin:0 0 6px;color:#111}
+.order-banner h3 .g{color:#12a512}
+.order-banner p{margin:0;font-size:14px;color:#555;line-height:1.7}
+.order-track{background:#fff;border-radius:22px;padding:28px 28px 22px;overflow-x:auto}
+.ot-steps{display:flex;min-width:640px}
+.ot-step{flex:1;display:flex;flex-direction:column;min-width:0}
+.ot-step.last{flex:.6}
+.ot-row{display:flex;align-items:center}
+.ot-icon{width:50px;height:50px;border-radius:12px;background:#f1f2f5;color:#8a8f98;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ot-step.done .ot-icon{background:#e4f4e4;color:#111}
+.ot-line{flex:1;height:8px;background:#eceef2;margin:0 4px}
+.ot-line.done{background:#36a90e}
+.ot-line.half{background:linear-gradient(to left,#36a90e,#eceef2)}
+.ot-label{margin-top:12px;font-size:14px;color:#555;line-height:1.6;padding-inline-end:6px}
+.ot-step.current .ot-label{font-weight:800;color:#333}
+.ot-date{display:block;font-size:12px;color:#8a8f98;margin-top:2px}
+.order-details{background:#fff;border-top:1px dashed #e2e5eb;padding:22px 28px 26px}
+.order-code-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f7f8fa;border:1px dashed #cfd4dc;border-radius:14px;padding:14px 18px;margin-bottom:14px}
+.order-code-lbl{font-size:12px;color:#8a8f98;font-weight:700;margin-bottom:2px}
+.order-code-val{font-size:22px;font-weight:800;letter-spacing:2px;color:#111;font-family:'Rubik',monospace;direction:ltr}
+.order-copy-btn{background:#fff;border:1.5px solid #1a56db;color:#1a56db;border-radius:9px;padding:9px 16px;font-family:'Almarai',sans-serif;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px}
+.order-copy-btn:hover{background:#eaf1ff}
+.order-deadline{display:flex;align-items:flex-start;gap:12px;background:#fff8e1;border:1px solid #ffe082;border-radius:14px;padding:14px 18px;margin-bottom:18px;color:#7c5e00}
+.order-deadline i{font-size:20px;margin-top:2px}
+.order-deadline b{display:block;font-size:14px;margin-bottom:3px}
+.order-deadline span{font-size:13px;line-height:1.7}
+.order-items{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.order-item{display:flex;align-items:center;gap:12px;font-size:13px;color:#333}
+.order-item img{width:52px;height:52px;object-fit:contain;border:1px solid #eee;border-radius:10px;background:#fff;flex-shrink:0}
+.order-item .noimg{width:52px;height:52px;border-radius:10px;background:#f1f2f5;color:#aab;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.order-item .nm{flex:1;min-width:0;line-height:1.6}
+.order-item .qty{color:#8a8f98;font-size:12px;white-space:nowrap}
+.order-item .pr{font-weight:800;white-space:nowrap}
+.order-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;border-top:1px solid #f0f0f0;padding-top:16px}
+.order-meta .lbl{font-size:11.5px;color:#8a8f98;font-weight:700;margin-bottom:3px}
+.order-meta .val{font-size:13px;color:#222;font-weight:700;line-height:1.7}
+.order-meta .val.total{font-size:16px}
+.orders-empty{text-align:center;padding:50px 20px;font-family:'Almarai',sans-serif;color:var(--text-light,#888)}
+.orders-empty i{font-size:46px;color:#ddd;margin-bottom:14px;display:block}
+.orders-empty a{color:#1a56db;font-weight:700;text-decoration:none}
+@media(max-width:600px){.order-banner,.order-track,.order-details{padding-inline:16px}}
+
+/* حركة الخطوات + أزرار الفاتورة */
+.ot-icon{transition:background .5s,color .5s}
+.ot-line{transition:background .6s}
+.ot-step.active .ot-icon{background:#f1f2f5;color:#36a90e;animation:otPulse 1.2s ease-in-out infinite}
+.ot-line.work{background:repeating-linear-gradient(90deg,#eceef2 0 14px,#d9efd0 14px 28px);background-size:56px 100%;animation:otMove 1s linear infinite}
+@keyframes otPulse{0%,100%{box-shadow:0 0 0 0 rgba(54,169,14,.35)}50%{box-shadow:0 0 0 9px rgba(54,169,14,0)}}
+@keyframes otMove{to{background-position:56px 0}}
+.order-btns{display:flex;gap:10px;flex-wrap:wrap}
+.order-copy-btn.invoice{background:#1a56db;color:#fff}
+.order-copy-btn.invoice:hover{background:#1547b8}
+.order-copy-btn:disabled{opacity:.7;cursor:wait}
+.order-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.order-banner .ob-btn{flex-shrink:0}
+
+/* معاينة الفاتورة */
+#invoiceModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10000;opacity:0;pointer-events:none;transition:opacity .2s;padding:14px}
+#invoiceModal.open{opacity:1;pointer-events:auto}
+#invoiceModal .inv-box{background:#fff;border-radius:18px;width:100%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden;font-family:'Almarai',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.inv-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #eee}
+.inv-head h4{margin:0;font-size:16px;font-weight:800;color:#111;display:flex;align-items:center;gap:8px}
+.inv-x{background:#f1f2f5;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;color:#555}
+.inv-body{flex:1;overflow:auto;background:#eceef2;padding:12px;display:flex;justify-content:center;align-items:flex-start}
+.inv-scale{position:relative;flex-shrink:0;box-shadow:0 4px 18px rgba(0,0,0,.15);background:#fff}
+.inv-paper{width:794px;transform-origin:top left;position:absolute;top:0;left:0}
+.inv-foot{border-top:1px solid #eee;padding:14px 20px;background:#fff;text-align:center}
+.inv-foot p{margin:0 0 12px;font-size:12.5px;color:#666}
+.inv-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.inv-confirm{background:#1a56db;color:#fff;border:none;border-radius:10px;padding:13px 30px;font-family:'Almarai',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;min-width:200px;justify-content:center}
+.inv-confirm:hover{background:#1547b8}
+.inv-confirm:disabled{opacity:.7;cursor:wait}
+.inv-cancel{background:#f1f1f1;color:#333;border:none;border-radius:10px;padding:13px 22px;font-family:'Almarai',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -286,6 +364,7 @@
 
     <div class="nav-card">
       <button class="nav-btn active" onclick="switchTab('account',this)">حسابي <i class="fa-solid fa-user"></i></button>
+      <button class="nav-btn" onclick="switchTab('orders',this)">الطلبات <i class="fa-solid fa-box-open"></i></button>
       <button class="nav-btn" onclick="switchTab('location',this)">العناوين <i class="fa-solid fa-location-dot"></i></button>
       <button class="nav-btn" onclick="switchTab('discount',this)">أكواد الخصم <i class="fa-solid fa-barcode"></i></button>
       <button class="nav-btn" onclick="switchTab('comments',this)">تعليقاتي <i class="fa-solid fa-comments"></i></button>
@@ -326,6 +405,14 @@
         </div>
       </div>
       <div><button class="btn-primary" id="updateNamesBtn" disabled>تحديث الحساب</button></div>
+    </div>
+
+    <!-- الطلبات -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="panel-title"><h2>الطلبات</h2><p>تابع حالة طلباتك واعرف أقصى موعد لاستلامها</p></div>
+      <div class="orders-list" id="ordersList">
+        <p class="my-comments-loading">جاري تحميل طلباتك...</p>
+      </div>
     </div>
 
     <!-- العناوين -->
@@ -529,10 +616,12 @@
   <div class="payment_img"><img src="../img/payment_method.png" alt=""></div>
 </div></div></footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../js/main.js"></script>
 <script src="../js/omar.js"></script>
 <script type="module" src="../js/account.js"></script>
+<script type="module" src="../js/admin-gate.js"></script>
 <script type="module" src="../js/user.js"></script>
 <script type="module" src="../js/search.js"></script>
 </body>

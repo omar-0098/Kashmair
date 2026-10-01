@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/furniture/:category/:page",
+      "destination": "/furniture/:category/:page.html"
+    }
+  ]
+}

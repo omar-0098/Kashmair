@@ -7,6 +7,7 @@ import {
     query, orderByChild, equalTo
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
+import { showBanNotice, startAccountWatch } from "./ban-notice.js";   // رسالة الحساب الملغي (بتتحقق لوحدها أول ما الصفحة تفتح)
 
 const firebaseConfig = {
     apiKey:            "AIzaSyCCk0w_KHVCswjp16TSkNToRSSOjlPC5kE",
@@ -227,6 +228,15 @@ window.sendOTP = async function() {
             emailInput?.focus(); return;
         }
 
+        // حساب ملغي من لوحة التحكم — ما نبعتلوش رمز، ونعرض له السبب
+        const acc = await getUserByEmail(email);
+        if (acc && acc.disabled) {
+            showBanNotice(acc.disabledReason, email);
+            showToast("⛔ هذا الحساب ملغي", "error");
+            resetBtn(btn, "إرسال رمز التحقق");
+            return;
+        }
+
         loginOTP    = generateOTP();
         loginExpiry = Date.now() + 2 * 60 * 1000;
         loginEmail  = email;
@@ -264,8 +274,10 @@ window.verifyOTP = async function() {
 
     const userData = await getUserByEmail(loginEmail);
     if (!userData) { showToast("❌ لم يُعثر على بيانات الحساب", "error"); return; }
+    if (userData.disabled) { showBanNotice(userData.disabledReason, loginEmail); showToast("⛔ هذا الحساب ملغي", "error"); return; }
 
     await createSession(loginEmail, userData);
+    startAccountWatch();   // 🟢 متصل الآن + متابعة الحساب لحظياً
 
     document.getElementById("login-step2")?.classList.add("hidden");
     document.getElementById("login-step3")?.classList.remove("hidden");
@@ -393,6 +405,7 @@ window.registerUser = async function() {
         });
 
         await createSession(regEmail, userData);
+        startAccountWatch();
 
         showToast("🎉 تم التسجيل بنجاح!", "success");
         setTimeout(() => {

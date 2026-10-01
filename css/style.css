@@ -1001,7 +1001,9 @@ color: #e6edf3 !important;
 }
 
 
-
+#welcomeMessage a{
+    display: flex;
+}
 
 
 
@@ -1584,7 +1586,7 @@ width: fit-content;
         display: flex;
     background: #e5e7f0;
     border-radius: 10px;
-    padding: 9px 12px;
+    padding: 5px 12px;
 }
 .person1{
     cursor: pointer;
@@ -1677,9 +1679,88 @@ width: fit-content;
 .swiper-slide a img{
     width: 100%;
     height: 100%;
+    border-radius: 6px;
 }
 
 
+    .search_box { position: relative; }
+    .search_suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      left: 0;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      overflow: hidden;
+      z-index: 999;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .search_suggestions.open { display: block; }
+    .search-suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      text-decoration: none;
+      color: inherit;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .search-suggestion-item:hover { background: #f7f7f7; }
+    .search-suggestion-item img { width: 42px; height: 42px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .suggestion-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+    .suggestion-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .suggestion-meta { font-size: 12px; color: #888; }
+    .suggestion-old-price { text-decoration: line-through; margin-left: 4px; }
+    .search-suggestion-empty { padding: 14px; text-align: center; color: #888; font-size: 13px; }
+    .search-suggestion-seeall {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+      text-decoration: none;
+      color: inherit;
+      background: #fafafa;
+    }
+
+    /* ===== كروت الكوبون (ملاية + فوطة) ===== */
+    .coupons { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0;flex-direction: row-reverse;}
+    .coupon {
+      --cut: 145px; /* عرض قسم الصورة */
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      height: fit-content;
+      background: #1a9a5b;
+      border-radius: 18px;
+      color: #fff;
+      text-decoration: none;
+      direction: rtl;
+      -webkit-mask: radial-gradient(circle 22px at 0 50%, #0000 98%, #000);
+      
+      mask: radial-gradient(circle 22px at 0 50%, #0000 98%, #000);
+      
+    }
+    .coupon::after { /* الخط المتقطع */
+      content: "";
+      position: absolute;
+      top: 16px; bottom: 16px;
+      right: var(--cut);
+      border-left: 2px dashed rgba(255,255,255,.55);
+    }
+    .coupon .c-img { width: var(--cut); flex: none; display: flex; align-items: center; justify-content: center; font-size: 56px; }
+    .coupon .c-img img { width: 100%; object-fit: contain; }
+    .coupon .c-img img.cover { object-fit: cover; border-radius: 12px; }
+    .coupon .c-info { flex: 1; padding: 14px 20px 14px 30px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .coupon h3 {color: white; margin: 0; font-size: 24px; font-weight: 700; }
+    .coupon .c-sub { margin: 0px 0 40px; font-size: 14px; color: rgba(255,255,255,.7); }
+    .coupon .c-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .coupon .c-price {color: white; font-size: 24px; font-weight: 700; }
+    .coupon .c-price small {color: white; font-size: 13px; font-weight: 600; margin-right: 3px;    font-family: "Almarai", sans-serif; }
+    .coupon .c-pill { background: #fff; color: #111; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+    .coupon:focus-visible { outline: 3px solid #111; outline-offset: 2px; }
 
 
 
@@ -1907,9 +1988,7 @@ width: fit-content;
     height: auto;
     
   }
-  .man4 #welcomeMessage #userName1{
-    
-  }
+
   .man4{
         display: flex;
     gap: 6px;
@@ -2512,15 +2591,145 @@ footer .bottom_footer .payment_img{
 }
 /* end-cart */
 /* ///////////////////////////// */
+/* ══════════════════════════════════════════════════════
+   قسم "اشتري من براندات رسمية" — v2
+   استبدل النسخة القديمة بالكود ده (آخر حاجة في css/style.css)
+══════════════════════════════════════════════════════ */
 
+.swipernostop {
+  --brands-bg: #ffffff;
+  --brands-line: #e6e8ef;
+  --brands-rule: #c9cfdc;
+  position: relative;
+  height: auto;
+  padding: 44px 0 34px;
+  margin-bottom: 60px;
+  background: var(--brands-bg);
+  border: 1px solid var(--brands-line);
+  border-radius: 16px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* تدرّج على الأطراف */
+.swipernostop::before,
+.swipernostop::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(40px, 12vw, 180px);
+  z-index: 2;
+  pointer-events: none;
+}
+.swipernostop::before { left: 0;  background: linear-gradient(to right, var(--brands-bg) 15%, transparent); }
+.swipernostop::after  { right: 0; background: linear-gradient(to left,  var(--brands-bg) 15%, transparent); }
+
+/* ── العنوان (rtl عشان الترتيب يبقى صح) ───────────────── */
+.swipernostop div h1 {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 0 0 30px;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.swipernostop div h1 span {
+  font-size: inherit;
+  font-weight: 700;
+  color: #c1121f;
+}
+.swipernostop div h1::before,
+.swipernostop div h1::after {
+  content: "";
+  flex: 0 1 clamp(30px, 8vw, 120px);
+  height: 1px;
+}
+.swipernostop div h1::before { background: linear-gradient(to right, var(--brands-rule), transparent); }
+.swipernostop div h1::after  { background: linear-gradient(to left,  var(--brands-rule), transparent); }
+
+/* ── الحركة ──────────────────────────────────────────── */
+.swipernostop .swiper-wrapper {
+  align-items: center;
+  padding: 10px 0 14px;
+  transition-timing-function: linear !important;
+}
+
+/* ── اللوجوهات ───────────────────────────────────────── */
+.swipernostop .swiper-wrapper .swiper-slide {
+  width: clamp(210px, 10vw, 148px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 6px 18px -10px rgba(20, 28, 58, .25);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.swipernostop .swiper-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  pointer-events: none;          /* يمنع التحديد الأزرق والسحب */
+  -webkit-user-drag: none;
+  user-select: none;
+  transition: filter .4s ease;
+  filter: saturate(1.8);
+}
+/* إطار رفيع موحّد */
+.swipernostop .swiper-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(20, 28, 58, .10);
+  pointer-events: none;
+}
+
+/* رمادي موحّد، واللوجو اللي في النص (class is-center من brands-center.js) بيتلوّن */
+.swipernostop .swiper-slide img {
+  filter: grayscale(1) contrast(1.12) brightness(1.02);
+}
+.swipernostop .swiper-slide.is-center img,
+.swipernostop .swiper-slide:hover img {
+  filter: none;
+}
+.swipernostop .swiper-slide.is-center {
+  transform: scale(1.1);
+  box-shadow: 0 16px 30px -12px rgba(20, 28, 58, .38);
+}
+@media (hover: hover) {
+  .swipernostop .swiper-slide:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* ── الوضع المظلم ────────────────────────────────────── */
+[data-theme="dark"] .swipernostop {
+  --brands-bg: #161b22;
+  --brands-line: #30363d;
+  --brands-rule: #3a424d;
+  background: var(--brands-bg) !important;
+}
+[data-theme="dark"] .swipernostop div h1 span { color: #ff6b7d; }
+[data-theme="dark"] .swipernostop .swiper-wrapper .swiper-slide {
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, .7);
+}
 
 .discount_percent{
     color: green !important;
 }
 
-
-
-
+.man1 .man2 a{
+    display: flex !important;
+ }
 .omar11{
     margin-bottom: 50px;
 }
@@ -3016,6 +3225,46 @@ header .top_header .header_icons {
 
 
 @media (max-width:500px) {
+    .coupons{
+        overflow: scroll;
+    padding: 10px 0;
+    }
+    .coupon {
+    --cut: 162px;
+    height: 219px;
+
+    }
+    .coupon h3 {
+    font-size: 20px;
+    line-height: 32px;
+}
+.coupon .c-img img {
+    width: 147%;
+filter: saturate(1.2);
+}
+.coupon .c-img{
+    overflow: hidden;
+}
+.coupon .c-sub {
+    font-size: 13px;
+    color: rgb(255 255 255 / 85%);
+    line-height: 20px;
+}
+    .kbn-body {
+    padding: 0px 26px 20px !important;
+}
+.kbn-t {
+    margin: 0 0 0px !important;
+    font-size: 15px !important;
+}
+.kbn-m {
+    margin: 0 0 15px !important;
+    font-size: 13.5px !important;
+}
+.kbn-btn {
+    padding: 11px 26px !important;
+    font-size: 13px !important;
+}
         .product {
         width: 49% !important;
         height: 435px !important;
@@ -3031,7 +3280,7 @@ header .top_header .header_icons {
     font-size: 12.5px;
     }
     .banners_4 {
-    margin: 20px 0px;
+    margin: 0px 0px;
 }
         .nav_links {
         width: 60%;
@@ -3197,7 +3446,7 @@ header .top_header .header_icons {
         margin: 0px 3px;
     }
     .product .img_product a{
-        width: 83%;
+        width: 100%;
         display: flex;
          align-items: center;
          height: fit-content;
@@ -3216,8 +3465,10 @@ header .top_header .header_icons {
     }
     .product .img_product{
         position: relative;
-        height: 199px;
-        padding: 0px 3px;
+        height: 195px;
+        padding: 0px 0px;
+        overflow: hidden;
+    border-radius: 6px;
     }
     .product .img_product img{
         height: 100%;
@@ -3661,7 +3912,7 @@ padding:  1em 0.5em 0em !important;
             /* margin: 0px -7px !important ; */
         }
     .nav_links {
-        width: 100%;
+        width: 60%;
         left: -100%;
         display: flex;
         align-items: center;
@@ -3803,11 +4054,11 @@ padding: 0px;
         font-size: 20px;
     }
     .swipernostop .swiper-wrapper .swiper-slide {
-        width: 210px;
-        height: 210px;
+        width: 170px;
+        height: 170px;
     }
     .swipernostop {
-        height: 405px;
+        height: 330px;
     }
 
 
@@ -3847,7 +4098,7 @@ padding: 0px;
      }
     .product .img_product {
         height: 200px;
-        padding: 0px 7px;
+        padding: 0px 0px;
     }
     .size p span {
         font-size: 11px;

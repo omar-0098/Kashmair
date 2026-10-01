@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إتمام الدفع — كشمير هوم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f6fa;font-family:'Cairo',sans-serif;color:#111827}
+.card{width:min(92vw,440px);background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.12);padding:24px;text-align:center}
+h1{font-size:22px;margin:0 0 6px}
+.mut{color:#667085;font-size:13px;margin:4px 0}
+.amount{font-size:30px;font-weight:800;margin:10px 0}
+.box{border:1.5px solid #7c5cbf;border-radius:12px;padding:14px;margin:14px 0 8px}
+.lbl{font-size:13px;font-weight:700}
+.code{font-size:30px;font-weight:800;letter-spacing:2px;color:#6b4bb0;direction:ltr;margin:8px 0}
+.copy{border:0;background:#6b4bb0;color:#fff;border-radius:8px;padding:8px 18px;font:700 14px 'Cairo',sans-serif;cursor:pointer}
+.tip{background:#e7f7ef;border:1px solid #b7e4cf;border-radius:10px;padding:10px;font-size:13px;line-height:1.7;margin-top:12px;text-align:right}
+.status{font-size:13px;color:#475467;margin:14px 0}
+.btn{display:block;width:100%;border:0;background:#6b4bb0;color:#fff;border-radius:10px;padding:12px;font:700 15px 'Cairo',sans-serif;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.lnk{display:block;margin-top:12px;color:#6b4bb0;font-size:14px;font-weight:700;text-decoration:none}
+[hidden]{display:none!important}
+
+/* شاشة نجاح الدفع */
+.done{padding:18px 0 8px}
+.done-ico{width:78px;height:78px;margin:0 auto 14px;border-radius:50%;background:#e7f7ef;color:#16a34a;font-size:42px;line-height:78px;font-weight:800;animation:pop .45s ease-out}
+.done h2{font-size:22px;margin:0 0 6px;color:#15803d}
+.done p{margin:0;color:#475467;font-size:14px}
+.spin{width:46px;height:46px;margin:22px auto 8px;border:5px solid #e5e7eb;border-top-color:#6b4bb0;border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="done" id="done" hidden>
+    <div class="done-ico">✓</div>
+    <h2>تم نجاح عملية الدفع</h2>
+    <p>شكراً لك! جاري تحويلك لصفحة حسابك لمتابعة طلبك...</p>
+    <div class="spin"></div>
+  </div>
+  <div id="main">
+    <h1 id="title">جاري تجهيز الدفع...</h1>
+    <p class="mut" id="meta"></p>
+    <div class="amount" id="amount"></div>
+    <div class="box" id="box" hidden>
+      <div class="lbl" id="lbl">الرقم المرجعي</div>
+      <div class="code" id="code"></div>
+      <button class="copy" id="copy" type="button">نسخ الكود</button>
+      <div class="mut" id="exp"></div>
+      <div class="tip" id="tip"></div>
+    </div>
+    <p class="status" id="status"></p>
+    <button class="btn" id="ok" type="button" hidden>حسناً، تحقق من الدفع</button>
+    <a class="lnk" id="go" href="user/accoun.html?tab=orders" hidden>الذهاب لحسابي</a>
+  </div>
+</main>
+<script>
+// كود خدمة فوري اللي كاتبه EasyKash في صفحته — اتأكد إنه نفسه لحسابك قبل النشر
+const FAWRY_PAY_CODE = "788";
+const ACCOUNT_URL = "user/accoun.html?tab=orders";
+const REDIRECT_MS = 6000; // مدة رسالة النجاح قبل التحويل (5000 إلى 7000)
+const FAILED = ["FAILED","EXPIRED","CANCELED","CANCELLED"];
+const $ = (i) => document.getElementById(i);
+const q = (k) => { const m = location.href.match(new RegExp("[?&]" + k + "=([^&#]*)")); try { return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : ""; } catch (e) { return ""; } };
+const safe = (v) => /^[A-Za-z0-9-]{1,40}$/.test(v) ? v : "";
+
+const id = q("customerReference");
+const urlStatus = q("status").toUpperCase();
+const urlCode = safe(q("voucher")) || safe(q("providerRefNum"));
+let timer, tries = 0, checking = false, checked = false, isPaid = false;
+
+function stop() { clearInterval(timer); }
+function failed(msg) { stop(); $("go").hidden = false; $("title").textContent = "❌ لم تكتمل عملية الدفع"; $("status").textContent = msg; }
+
+function paid() {
+  if (isPaid) return;      // يمنع التنفيذ المكرر لو أكتر من طلب رجّعوا paid
+  isPaid = true;
+  stop();
+  $("main").hidden = true;
+  $("done").hidden = false;
+  setTimeout(() => { location.href = ACCOUNT_URL; }, REDIRECT_MS);
+}
+
+function render(d) {
+  if (isPaid) return;
+  if (d.code) $("meta").textContent = "رقم الطلب: " + d.code;
+  if (d.amount) $("amount").textContent = Number(d.amount).toLocaleString("ar-EG") + " ج.م";
+  const code = d.voucher || urlCode;
+  if (!code) {
+    $("title").textContent = "جاري تأكيد الدفع...";
+    $("status").textContent = "لحظات ونأكد طلبك.";
+    return;
+  }
+  $("ok").hidden = false;
+  const raw = String(d.methodRaw || "").toLowerCase();
+  if (!checked) $("title").textContent = "ادفع الآن";
+  $("lbl").textContent = d.method ? "الرقم المرجعي (" + d.method + ")" : "الرقم المرجعي";
+  $("code").textContent = code;
+  $("tip").textContent = raw.includes("aman")
+    ? "روح أقرب منفذ أمان وادفع بالرقم المرجعي اللي فوق."
+    : "روح أقرب منفذ فوري أو وكيل وادفع بكود فوري " + FAWRY_PAY_CODE + " مع الرقم المرجعي اللي فوق. ممكن تضاف رسوم خدمة الدفع.";
+  const k = "kh_exp_" + id;
+  let exp = Number(localStorage.getItem(k));
+  if (!exp) { exp = Date.now() + 3 * 864e5; try { localStorage.setItem(k, exp); } catch (e) {} }
+  $("exp").textContent = "صالح تقريباً حتى: " + new Date(exp).toLocaleString("ar-EG");
+  $("box").hidden = false;
+  if (!checked) $("status").textContent = d.status === "PAID"
+    ? "تم استلام الدفع، جاري تأكيد طلبك..."
+    : "أول ما تدفع هتتحول لحسابك تلقائياً لو الصفحة مفتوحة، وإلا هتلاقي طلبك في حسابك.";
+}
+
+async function poll() {
+  if (++tries > 360) { stop(); return; }   // حوالي نص ساعة
+  try {
+    const r = await fetch("/api/payment-status?orderId=" + id, { cache: "no-store" });
+    const d = await r.json();
+    if (d.paid) return paid();
+    if (r.ok) render(d);
+  } catch (e) {}
+}
+
+// زرار "حسناً": يستنى شوية ويتأكد من الدفع، لو دفع → حسابه، لو لأ → "لم يتم الدفع"
+$("ok").addEventListener("click", async () => {
+  if (checking) return;
+  checking = true; checked = false;
+  $("ok").disabled = true;
+  $("status").textContent = "جاري التأكد من الدفع...";
+  for (let i = 0; i < 4; i++) {
+    try {
+      const r = await fetch("/api/payment-status?orderId=" + id, { cache: "no-store" });
+      const d = await r.json();
+      if (d.paid) return paid();
+    } catch (e) {}
+    if (isPaid) return;
+    await new Promise((res) => setTimeout(res, 3000));
+  }
+  if (isPaid) return;
+  checking = false; checked = true;
+  $("ok").disabled = false;
+  $("ok").textContent = "تحقق مرة تانية";
+  $("title").textContent = "⚠️ لم يتم الدفع بعد";
+  $("status").textContent = "لو دفعت استنى شوية، فوري ممكن يتأخر في التأكيد لحد ساعة. طلبك هيظهر في حسابك أول ما الدفع يتأكد.";
+  $("go").hidden = false;
+});
+
+$("copy").addEventListener("click", () => {
+  try { navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "تم النسخ ✓"; }); } catch (e) {}
+});
+
+if (!/^o[a-z0-9]{6,30}$/.test(id)) failed("الرابط غير صحيح.");
+else if (FAILED.includes(urlStatus)) failed("تقدر ترجع للسلة وتحاول تاني أو تختار طريقة دفع تانية.");
+else {
+  // الطلب اتحفظ، فنفضّي السلة والكوبون
+  try { localStorage.setItem("cart", "[]"); localStorage.removeItem("kashmirCoupon"); } catch (e) {}
+  poll();
+  timer = setInterval(poll, 5000);
+}
+</script>
+</body>
+</html>
