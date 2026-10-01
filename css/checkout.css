@@ -537,7 +537,7 @@ max-width: 100%;
         .cn-pay-option:last-child{margin-bottom:0}
         .cn-pay-option:hover{border-color:#b9d3ff}
         .cn-pay-option.active{border-color:#007aff;background:#f5f9ff}
-        .cn-pay-icon{width:45px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eef2fb;color:#1d346b;font-size:16px;flex-shrink:0}
+        .cn-pay-icon{width:45px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:white;color:#1d346b;font-size:16px;flex-shrink:0}
         .cn-pay-icon.cn-pay-fawry{background:#facc15;color:#7c2d12;font-weight:900;font-size:12px}
         .cn-pay-text{flex:1;display:flex;flex-direction:column;gap:0px}
         .cn-pay-text b{font-family: 'Cairo', sans-serif;font-size:13.5px;color:#222}
@@ -714,6 +714,17 @@ label .cn-pay-icon img{
 
     
 @media (max-width:500px) {
+    
+    label .cn-pay-icon img {
+    width: 95%;
+}
+    .cn-pay-option {
+    gap: 6px;
+    padding: 8px 8px;
+}
+    .cn-pay-text b {
+    font-size: 12px;
+}
     .checkout-main-col {
     gap: 8px !important;
 }
