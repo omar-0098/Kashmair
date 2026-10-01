@@ -3231,7 +3231,7 @@ header .top_header .header_icons {
     }
     .coupon {
     --cut: 162px;
-    height: 219px;
+    height: 190px;
 
     }
     .coupon h3 {
@@ -3239,8 +3239,11 @@ header .top_header .header_icons {
     line-height: 32px;
 }
 .coupon .c-img img {
-    width: 147%;
+    width: 130%;
 filter: saturate(1.2);
+}
+.coupon .c-sub {
+    margin: 0px 0 28px;
 }
 .coupon .c-img{
     overflow: hidden;
@@ -3712,7 +3715,9 @@ header .top_header .logo h1 {
 
 
 @media (max-width:400px) {
-    
+    .price {
+    margin-top: 2px;
+    }
     .rating-stats-row {
     margin-bottom: 7px;
 }
@@ -4094,7 +4099,7 @@ padding: 0px;
 
     .product {
             padding: 10px;
-        height: 435px  !important;
+        height: 424px  !important;
      }
     .product .img_product {
         height: 200px;
