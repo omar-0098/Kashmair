@@ -539,7 +539,7 @@ function renderCard(product) {
 
                    ${renderColorSwatches(variants, product.id)}
 
-                   <div style="display:flex;align-items:center;justify-content:space-between;flex-direction: row-reverse;margin: 8px 0px 7px 0px;">
+                   <div style="display:flex;align-items:center;justify-content:space-between;flex-direction: row-reverse;margin: 6px 0px 3px 0px;">
                      <div class="stars rating-stats-toggle" data-item-id="${product.col}-${product.docId}" data-details-link="${detailsLink}" title="إحصائيات التقييم" style="cursor:pointer;">
                          <i class="fa-solid fa-star"></i>
                          <i class="fa-solid fa-star"></i>
