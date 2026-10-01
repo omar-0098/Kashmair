@@ -747,6 +747,10 @@ padding-top: 86px;
 
 
 @media (max-width:400px) {
+    .product {
+        width: 49% !important;
+        height: 425px !important;
+    }
         .main-link div {
         display: flex;
         flex-wrap: wrap;
