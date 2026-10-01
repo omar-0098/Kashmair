@@ -29,6 +29,7 @@
 
 /* ─── Reset & Base ─────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+* { font-family: 'Almarai', sans-serif; }
 
 body {
   background: var(--bg);
@@ -1025,7 +1026,48 @@ body {
 }
 
 @media (max-width: 500px) {
-  body { padding-top: 155px; background: var(--bg); }
+  .ot-step {
+    min-width: fit-content !important;
+  }
+    .ot-icon {
+    width: 44px;
+    height: 44px;
+    }
+    .ot-label {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #000000;
+    line-height: 1.4;
+    }
+    .ot-row {
+    width: 141px !important;
+}
+.ot-steps {
+    min-width: 595px !important;
+}
+.ot-line.half {
+    border-radius: 4px;
+}
+.ot-line {
+    height: 6px !important;
+}
+.order-code-val {
+    font-size: 16px !important;
+}
+.order-deadline b {
+    font-size: 13px;
+}
+.order-deadline span {
+    font-size: 12px;
+}
+.order-copy-btn {
+    font-size: 12px;
+}
+
+}
+
+
+  body { padding-top: 70px; background: var(--bg); }
   .all_formation { padding: 20px 0 40px; }
   .formation { flex-direction: column; }
   .formation .section:not(:first-child) { width: 100%; }
@@ -1049,9 +1091,31 @@ body {
   .buttons button, #updateNamesBtn {padding: 9px 38px !important;font-size: 14px !important;}
   .input-group input {padding: 9px 14px 9px 40px !important;}
   .profile-card {padding: 20px 20px 20px !important;}
-}
+
 
 @media (max-width: 400px) {
+  .order-track,.order-banner{
+            padding-inline: 15px;
+
+  }
+  .order-banner p {
+    font-size: 12px;
+  }
+  .order-item .nm {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.5;
+    font-size: 12px;
+}
+  .order-meta {
+    padding: 13px;
+}
+.order-meta .val {
+    font-size: 11px;
+}
+       .order-details {
+        padding-inline: 5px;
+    }
   body { padding-top: 70px; }
   .all_formation .user .text h2 { font-size: 18px; }
   .info_user1 > h2 { font-size: 15px; }
@@ -1110,7 +1174,7 @@ body{background:var(--bg);font-family:'Almarai',sans-serif;color:var(--text);tra
 .nav-btn i{font-size:14px;color:var(--text-light);transition:color var(--t)}
 .nav-btn:hover{background:var(--blue-light);color:var(--blue);transform:translateX(-3px)}
 .nav-btn:hover i{color:var(--blue)}
-.nav-btn.active{background:linear-gradient(135deg,var(--blue),#1a5fad);color:#fff;box-shadow:0 4px 14px rgba(29,111,196,.3)}
+.nav-btn.active{background:linear-gradient(135deg,var(--blue),#1a5fad);color:#fff;box-shadow:0 4px 14px rgb(29 111 196 / 9%);}
 .nav-btn.active i{color:rgba(255,255,255,.8)}
 .nav-btn.active:hover{transform:none}
 .nav-btn.danger{color:var(--red)}
@@ -1135,7 +1199,7 @@ body{background:var(--bg);font-family:'Almarai',sans-serif;color:var(--text);tra
 .input-group label{font-family: 'Almarai', sans-serif;display:flex;font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:6px;width: fit-content;}
 .input-group input{width:100%;padding:12px 14px 12px 40px;border-radius:var(--radius-sm);border:1.5px solid var(--border);outline:none;font-family:'Almarai',sans-serif;font-size:14px;font-weight:600;text-align:right;background:var(--input-bg);color:var(--text);transition:border-color var(--t),box-shadow var(--t),background var(--t)}
 .input-group input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169,110,.15)}
-.input-group input[readonly]{background:var(--border);color:var(--text-light);cursor:not-allowed}
+.input-group input[readonly]{background:var(--border);color:#686868;cursor:not-allowed}
 [data-theme="dark"] .input-group input[readonly]{background:#21262d}
 .i-icon{position:absolute;left:13px;bottom:13px;color:var(--text-light);font-size:13px;pointer-events:none}
 .hint{font-size:10px;color:rgb(5, 156, 5);padding-top:5px;font-family: 'Readex Pro',sans-serif;}
@@ -1224,3 +1288,87 @@ body{background:var(--bg);font-family:'Almarai',sans-serif;color:var(--text);tra
 .btn-relogin{background:linear-gradient(135deg,#1d6fc4,#1a5fad);color:#fff;border:none;border-radius:10px;padding:13px 36px;font-size:15px;cursor:pointer;font-family:'Almarai',sans-serif;font-weight:700}
 #toast-acc{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--navy);color:#fff;padding:13px 26px;border-radius:30px;font-family:'Almarai',sans-serif;font-size:14px;font-weight:600;z-index:99999;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 28px rgba(0,0,0,.25);white-space:nowrap;border:1.5px solid transparent}
 @media(max-width:900px){.all_formation .container{flex-direction:column}.formation{width:100%;position:static;flex-direction:row;flex-wrap:wrap}.profile-card,.stats-card{width:100%}.nav-card{flex:1;min-width:200px}.main-panel{width:100%}}
+
+
+/* ================================================================
+   FIX: حسابي / العناوين / أكواد الخصم (موبايل + دارك مود)
+   ================================================================ */
+
+/* 1) منع أي عنصر يطلع بره الشاشة */
+.all_formation, .all_formation .container, .main-panel, .tab-panel, .info-card { min-width: 0; max-width: 100%; }
+.all_formation { overflow-x: hidden; }
+
+/* 2) hover الـ translateX كان بيفضل "ملزوق" بعد اللمس ويزحزح الزرار → للماوس بس */
+@media (hover: none) {
+  .nav-btn:hover { transform: none; }
+}
+
+/* 3) كروت العناوين: minmax(260px) كان بيعدّي عرض الموبايل */
+.addr-list-grid { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
+.addr-card, .addr-add-card, .addr-summary-card { min-width: 0; }
+.addr-card-text { overflow-wrap: anywhere; }
+
+/* 4) دارك مود: الكروت دي كانت بيضا ثابتة */
+[data-theme="dark"] .addr-card,
+[data-theme="dark"] .addr-add-card,
+[data-theme="dark"] .my-stat-card { background: var(--card); border-color: var(--border); }
+[data-theme="dark"] .addr-card-type,
+[data-theme="dark"] .addr-card-contact,
+[data-theme="dark"] .loc-current-text .val { color: var(--text); }
+[data-theme="dark"] .addr-card-bottom { border-top-color: var(--border); }
+[data-theme="dark"] .loc-current-bar { background: var(--input-bg); border-top-color: var(--border); }
+[data-theme="dark"] .addr-add-card:hover { background: var(--blue-light); }
+
+@media (max-width: 500px) {
+  /* 5) قايمة التنقل: grid بدل flex-wrap → كل الأزرار نفس العرض ومفيش حاجة بتزحزح */
+  .nav-card {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+    direction: rtl;
+    padding: 10px;
+    min-width: 0;
+  }
+  .nav-card .nav-btn { width: 100% !important; min-width: 0; padding: 10px 10px; justify-content: space-between; }
+  /* الفاصل والـ div الفاضي كانوا بياخدوا مكان جوه الشبكة ويبوّظوا الصفوف */
+  .nav-card .nav-divider,
+  .nav-card > div:empty { display: none !important; }
+  /* لو عدد الأزرار فردي، آخر زرار ياخد الصف كله */
+  .nav-card .nav-btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .formation .nav-card { min-width: 0; width: 100%; }
+
+  /* 6) الكروت أضيق شوية عشان الفورم ما يضيقش */
+  .info-card { padding: 16px 14px 20px; }
+  .card-header { padding-bottom: 12px; margin-bottom: 14px; }
+  .panel-title p { line-height: 1.7; }
+
+  /* 7) الخريطة: شريط البحث فوقها ينزل تحت بعض بدل ما يتداخل */
+  .loc-search-row { top: 10px; right: 10px; left: 10px; flex-direction: column; gap: 8px; }
+  .loc-use-current { justify-content: center; width: 100%; padding: 9px 12px; }
+  .loc-address-search { min-width: 0; width: 100%; }
+  .loc-pin-label { font-size: 11px; white-space: normal; text-align: center; width: max-content; max-width: 80%; }
+  .loc-current-bar { flex-direction: column; align-items: stretch; }
+  .loc-confirm-btn { width: 100%; min-width: 0; }
+  .loc-saved-row { flex-direction: column; }
+  .addr-row2 { flex-direction: column; gap: 0; }
+  .addr-modal-actions { flex-direction: column-reverse; }
+  .btn-cancel-addr, .btn-confirm-addr { width: 100%; }
+  #addressDetailsModal .modal-box { padding: 20px 16px; }
+
+  /* 8) أكواد الخصم */
+  .coupon-card { flex-direction: column; }
+  .coupon-badge { min-width: 0; padding: 12px; }
+  .coupon-badge p br { display: none; }
+  .coupon-meta { flex-direction: row; }
+  .coupon-store { width: 48px; }
+  .coupon-code-row h4 { font-size: 16px; letter-spacing: 2px; overflow-wrap: anywhere; }
+}
+
+
+/* FIX: الأيقونات — خليت Font Awesome ياخد الخط بتاعه حتى لو في قاعدة عامة على * */
+.fa::before, .fas::before, .far::before, .fab::before,
+.fa-solid::before, .fa-regular::before, .fa-brands::before,
+[class^="fa-"]::before, [class*=" fa-"]::before { font-family: inherit; }
+.fa-solid, .fas, .fa { font-family: "Font Awesome 6 Free"; font-weight: 900; }
+.fa-regular, .far { font-family: "Font Awesome 6 Free"; font-weight: 400; }
+.fa-brands, .fab { font-family: "Font Awesome 6 Brands"; font-weight: 400; }
