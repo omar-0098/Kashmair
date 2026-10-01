@@ -338,7 +338,7 @@ function buildProductCard(product, isBestseller = false) {
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    margin: 8px 0px 7px 0px;
+    margin: 6px 0px 4px 0px;
     flex-direction: row-reverse;
 ">
         <div class="stars rating-stats-toggle" data-item-id="${product.col}-${product.docId}" data-details-link="${detailsLink}" title="إحصائيات التقييم" style="cursor:pointer;">
