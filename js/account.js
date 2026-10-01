@@ -909,7 +909,7 @@ function orderCardHtml(o){
   const itemsHtml = items.map(it=>`
     <div class="order-item">
       ${it.img?`<img src="${escHtml(it.img)}" alt="">`:`<div class="noimg"><i class="fa-solid fa-bag-shopping"></i></div>`}
-      <div class="nm">${escHtml(it.name)}${_itemColor(it)?`<div style="display:flex;align-items:center;margin-top:4px;font-size:.85em;font-weight:700;opacity:.85">${_colorDot(_itemColor(it),it.colorHex)}اللون: ${escHtml(_itemColor(it))}</div>`:""}</div>
+      <div class="nm">${escHtml(it.name)}${_itemColor(it)?`<div style="display:flex;align-items:center;margin-top:2px;font-size:.85em;font-weight:700;opacity:.85; flex-direction: row-reverse;font-family: 'Almarai', sans-serif;">${_colorDot(_itemColor(it),it.colorHex)}اللون: ${escHtml(_itemColor(it))}</div>`:""}</div>
       <div class="qty">× ${parseInt(it.qty)||1}</div>
       ${it.price?`<div class="pr">${Number(it.price).toLocaleString("ar-EG")} ج.م.</div>`:""}
     </div>`).join("");
@@ -928,7 +928,7 @@ function orderCardHtml(o){
       ${deliveryParts(o)?deliveryHtml(o):`      <div class="order-deadline">
         <i class="fa-solid fa-hourglass-half"></i>
         <div style="text-align: end;"><b>أقصى مدة لاستلام الطلب: ${escHtml(_fmtFull(o.deadline))}</b>
-        <span>لازم تستلم طلبك في خلال ٧ أيام من تاريخ الطلب (${escHtml(_fmtFull(o.createdAt))}) وإلا هيتم إلغاؤه. اذكر كود الطلب للمندوب عند الاستلام.</span></div>
+        <span>لازم تستلم طلبك في خلال ٧ أيام من تاريخ الطلب (${escHtml(_fmtFull(o.createdAt))}) وإلا هيتم إلغاؤه. .</span></div>
       </div>`}
       ${itemsHtml?`<div class="order-items">${itemsHtml}</div>`:""}
       <div class="order-meta">
@@ -1064,7 +1064,7 @@ function invoiceHtml(o){
     return `<tr>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;color:#888">${(i+1).toLocaleString("ar-EG")}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #eee">${escHtml(it.name)}</td>
-      <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center">${_itemColor(it)?`<span style="display:inline-flex;align-items:center;justify-content:center;font-weight:700">${_colorDot(_itemColor(it),it.colorHex)}${escHtml(_itemColor(it))}</span>`:"—"}</td>
+      <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center">${_itemColor(it)?`<span style="display:inline-flex;align-items:center;justify-content:center;font-weight:700;color: #1a56db;">${_colorDot(_itemColor(it),it.colorHex)}${escHtml(_itemColor(it))}</span>`:"—"}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center">${q.toLocaleString("ar-EG")}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center">${pr?_money(pr):"—"}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;font-weight:800">${pr?_money(pr*q):"—"}</td>
@@ -1080,7 +1080,7 @@ function invoiceHtml(o){
         <div style="font-size:12px;color:#777;margin-top:6px;line-height:1.8">القاهرة - 53 شارع الغورية<br>هاتف / واتساب: 01028604523<br>kashmirhome.00@gmail.com</div>
       </div>
       <div style="text-align:left">
-        <div style="font-size:26px;font-weight:800;color:#111">فاتورة</div>
+        <div style="font-size:26px;font-weight:800;color:#111;font-family: 'Almarai', sans-serif;">فاتورة</div>
         <div style="font-size:13px;color:#555;margin-top:8px;line-height:1.9">رقم الفاتورة: <b style="font-family:monospace;letter-spacing:1px">${escHtml(o.code)}</b><br>تاريخ الطلب: ${escHtml(_fmtDT(o.createdAt))}</div>
       </div>
     </div>
@@ -1120,7 +1120,7 @@ function invoiceHtml(o){
 
     <div style="margin-top:30px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.9;color:#7c5e00">
       <b>أقصى مدة لاستلام الطلب: ${escHtml(_fmtFull(o.deadline))}</b><br>
-      يُرجى استلام الطلب خلال ٧ أيام من تاريخ الطلب، وذكر كود الطلب <b style="font-family:monospace">${escHtml(o.code)}</b> للمندوب عند الاستلام.
+      يُرجى استلام الطلب خلال ٧ أيام من تاريخ الطلب،  <b style="font-family:monospace">${escHtml(o.code)}</b> .
     </div>
 
     <div style="text-align:center;margin-top:34px;padding-top:16px;border-top:1px dashed #ddd;font-size:12px;color:#999">شكراً لتسوقك من كشمير هوم 💚 — kashmair.netlify.app</div>
