@@ -3,7 +3,7 @@
 //  أقسام: لوحة التحكم | الطلبات | التعليقات | الحسابات (تعديل بيانات العملاء) | الإحصائيات
 // ============================================================
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,get,update,remove,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{getDatabase,ref,get,set,update,remove,onValue,runTransaction}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import{ADMIN_EMAIL,isAdminAccount,hasAdminAuth,clearAdminAuth}from"./admin-config.js";
 import{initStats}from"./admin-stats.js";
 import{initCoupons}from"./admin-coupons.js";
@@ -27,6 +27,73 @@ const money=s=>{ // يحوّل "١٢٥٠ ج.م." أو "1,250 EGP" لرقم
   const t=String(s||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[٬,]/g,"").replace("٫",".");
   const m=t.match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):0;
 };
+const gross=o=>money(o.total)+(Number(o.walletUsed)||0);   // إجمالي الطلب الحقيقي = المدفوع + اللي اتدفع من رصيد العميل
+const r2=n=>Math.round((Number(n)||0)*100)/100;
+const fMoney=n=>Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ج.م.";
+// 📝 تعديل / حذف حركة رصيد (إضافة أو خصم يدوي) — بيتسجّل تاريخ التعديل وإيه اللي اتغيّر وبيظهر للعميل
+async function walletEntryApply(ek,id,mode,newAmt,newNote){
+  const e=(((D.wallet||{})[ek]||{}).log||{})[id];if(!e)return"missing";
+  const old=Number(e.amount)||0,sign=e.type==="deduct"?-1:1,now=Date.now(),upd={};let delta=0,text="";
+  if(mode==="delete"){delta=-sign*old;text=`تم حذف هذه الحركة (${fMoney(old)})`;upd.deleted=true;upd.deletedAt=now;}
+  else{
+    newAmt=r2(newAmt);const parts=[];
+    if(newAmt!==old){parts.push(`المبلغ من ${fMoney(old)} إلى ${fMoney(newAmt)}`);delta=sign*(newAmt-old);}
+    if((newNote||"")!==(e.note||""))parts.push(`الملاحظة من "${e.note||"—"}" إلى "${newNote||"—"}"`);
+    if(!parts.length)return"none";
+    text="تم التعديل: "+parts.join(" • ");upd.amount=newAmt;upd.note=newNote||"";if(e.origAmount==null)upd.origAmount=old;
+  }
+  if(delta!==0)await runTransaction(ref(db,`wallet/${ek}/balance`),cur=>Math.max(0,r2((Number(cur)||0)+delta)));
+  await update(ref(db,`wallet/${ek}/log/${id}`),{...upd,[`edits/e${now.toString(36)}`]:{at:now,text}});
+  return"ok";
+}
+const walletEditsHtml=x=>Object.values(x.edits||{}).sort((a,b)=>(a.at||0)-(b.at||0)).map(e=>`<div style="font-size:11.5px;color:#b26a00;margin-top:2px">✏️ ${fDT(e.at)} — ${esc(e.text)}</div>`).join("");
+function openWalletEntry(ek,id,after){
+  const e=(((D.wallet||{})[ek]||{}).log||{})[id];if(!e)return;
+  openModal("تعديل حركة رصيد",`
+    <div class="kv"><div><div class="k">النوع</div><div class="vv">${e.type==="deduct"?"➖ خصم يدوي":"➕ إضافة رصيد"}</div></div><div><div class="k">تاريخها</div><div class="vv">${fDT(e.at)}</div></div></div>
+    <div style="display:grid;gap:12px;margin-top:12px">
+      <div><div class="k">المبلغ (ج.م.)</div><input class="inp" id="weAmt" type="number" min="0" step="0.01" style="width:100%" value="${Number(e.amount)||0}"></div>
+      <div><div class="k">الملاحظة</div><input class="inp" id="weNote" maxlength="120" style="width:100%" value="${esc(e.note||"")}"></div>
+      <div class="mut" style="font-size:12.5px;line-height:1.8">لما تحفظ، رصيد العميل بيتعدّل أوتوماتيك، وبيظهر له سطر: «تم التعديل يوم كذا والتعديل كان إيه». ولو حذفتها الرصيد بيرجع كأنها ماحصلتش (وبتفضل ظاهرة للعميل كحركة محذوفة).</div>
+      ${walletEditsHtml(e)}
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn solid" id="weSave"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديل</button><button type="button" class="btn red" id="weDel"><i class="fa-solid fa-trash-can"></i> حذف الحركة</button></div>
+    </div>`);
+  const done=async(mode)=>{
+    const amt=Number($("weAmt").value);
+    if(mode==="edit"&&!(amt>=0)){toast("❌ اكتب مبلغ صحيح");return;}
+    if(mode==="delete"&&!confirm("حذف الحركة دي؟ رصيد العميل هيتعدّل."))return;
+    $("weSave").disabled=$("weDel").disabled=true;
+    try{
+      const r=await walletEntryApply(ek,id,mode,amt,$("weNote").value.trim());
+      if(r==="none"){toast("مفيش حاجة اتغيّرت");$("weSave").disabled=$("weDel").disabled=false;return;}
+      D.wallet=await loadWallets();
+      $("modal").classList.remove("open");toast(mode==="delete"?"🗑️ تم حذف الحركة وتعديل الرصيد":"✅ تم التعديل وتسجيله للعميل");
+      render();if(after)after();
+    }catch(err){console.error(err);toast("❌ فشلت العملية — راجع Rules في Firebase");$("weSave").disabled=$("weDel").disabled=false;}
+  };
+  $("weSave").onclick=()=>done("edit");$("weDel").onclick=()=>done("delete");
+}
+// 💰 رصيد العميل: type = credit (إضافة) | deduct (خصم يدوي)
+async function walletAdjust(email,amount,type,note){
+  const ek=eKey(email);amount=r2(amount);
+  const res=await runTransaction(ref(db,`wallet/${ek}/balance`),cur=>{
+    const b=Number(cur)||0;
+    if(type==="deduct"&&b+0.0001<amount)return;
+    return r2(type==="deduct"?b-amount:b+amount);
+  });
+  if(!res.committed)return false;
+  const id="a"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  await set(ref(db,`wallet/${ek}/log/${id}`),{type,amount,at:Date.now(),note:note||"",by:ADMIN_EMAIL});
+  return true;
+}
+// استرجاع اللي اتدفع من الرصيد لما الطلب يتحذف (مرة واحدة بس لكل طلب)
+async function walletRefundOrder(o){
+  const use=Number(o.walletUsed)||0;
+  if(use<=0||!o.email)return;
+  const ek=eKey(o.email);
+  await runTransaction(ref(db,`wallet/${ek}/balance`),cur=>r2((Number(cur)||0)+use));
+  await set(ref(db,`wallet/${ek}/log/r_${o.id}`),{type:"refund",amount:use,at:Date.now(),orderId:o.id,orderCode:o.code,note:"استرجاع بعد حذف الطلب"});
+}
 const SENSITIVE=/pass|pwd|token|secret/i;    // مش بنعرض أي حقل سرّي
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
 const initials=n=>(String(n||"?").trim()[0]||"?").toUpperCase();
@@ -207,18 +274,35 @@ function orderItemsCell(o){
   return `<div style="display:flex;flex-direction:column;gap:8px;min-width:190px">${its.map(it=>`<div style="display:flex;align-items:center;gap:9px">${itemThumbHtml(it,44)}<div style="min-width:0"><div style="font-weight:700;font-size:12.5px;line-height:1.45">${esc(it.name||"—")}</div><span class="mut" style="font-size:11px">× ${fNum(parseInt(it.qty)||1)}${Number(it.price)?` · ${fNum(Number(it.price))} ج.م.`:""}</span>${itemColor(it)?`<br>${itemColorChip(it)}`:""}</div></div>`).join("")}</div>`;
 }
 
+// قراءة بيانات لكل العملاء (wallet / gameClaims): الأول من الجذر، ولو الـ Rules مانعة قراءة الجذر بنقرا حساب حساب (عشان الأرصدة ما تظهرش فاضية بالغلط)
+async function readByUsers(path){
+  const root=await read(path);
+  if(root!==undefined)return root||{};
+  console.warn(`${path}: قراءة الجذر مرفوضة — بقرا لكل عميل لوحده`);
+  const out={};
+  await Promise.all((D.users||[]).filter(u=>u.email).map(async u=>{
+    const ek=eKey(u.email),v=await read(`${path}/${ek}`);
+    if(v)out[ek]=v;
+  }));
+  return out;
+}
+const loadWallets=()=>readByUsers("wallet");
+const loadGameClaims=()=>readByUsers("gameClaims");
+
 async function read(path){try{const s=await get(ref(db,path));return s.exists()?s.val():null;}catch(e){console.error(path,e);return undefined;}}
 
 async function loadAll(){
   $("view").innerHTML=`<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i>جاري تحميل البيانات...</div>`;
   const [u,o,uo,c,a,an,cp]=await Promise.all(["users","orders","userOrders","comments","userAddresses","analytics","coupons"].map(read));
   if([u,o,uo,c,a,an].some(x=>x===undefined)) toast("⚠️ بعض البيانات ما اتحمّلتش — راجع Rules في Firebase");
+  D.gameCfg=(await read("gameConfig"))||{};
   D.coupons=Object.entries(cp||{}).map(([key,v])=>({key,...v}));
   D.analytics=an||{};
   Object.keys(PH).forEach(k=>delete PH[k]);
   D.orderRoot=new Set(Object.keys(o||{}));
 
   D.users=Object.entries(u||{}).map(([key,v])=>({key,...v}));
+  [D.wallet,D.gameClaims]=await Promise.all([loadWallets(),loadGameClaims()]);   // بعد تحميل الحسابات (ممكن نحتاجها للقراءة حساب حساب)
 
   const map={};
   Object.values(o||{}).forEach(x=>{if(x&&x.id)map[x.id]=x;});
@@ -251,7 +335,7 @@ function couponUsageOf(email){
   const g={};
   ordersOf(email).forEach(o=>{
     if(!o.couponCode)return;
-    const discount=Math.max(0,money(o.subtotal)-(money(o.total)-money(o.shipping)-money(o.packaging)));
+    const discount=Math.max(0,money(o.subtotal)-(gross(o)-money(o.shipping)-money(o.packaging)));
     const k=o.couponCode;
     const a=g[k]||(g[k]={code:k,count:0,discount:0});
     a.count++;a.discount+=discount;
@@ -403,7 +487,8 @@ function invoiceHtml(o){
       ${o.subtotal?totRow("المجموع الفرعي",o.subtotal):""}
       ${o.shipping?totRow("رسوم الشحن",o.shipping):""}
       ${o.packaging?totRow("رسوم التغليف",o.packaging):""}
-      ${totRow("الإجمالي المطلوب",o.total||"—",true)}
+      ${Number(o.walletUsed)>0?totRow("إجمالي الطلب",fMoney(gross(o)))+totRow("مدفوع من رصيد العميل","−"+fMoney(o.walletUsed)):""}
+      ${totRow(Number(o.walletUsed)>0?"المطلوب دفعه":"الإجمالي المطلوب",o.total||"—",true)}
     </div>
     <div style="margin-top:30px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.9;color:#7c5e00">
       <b>أقصى مدة لاستلام الطلب: ${esc(fFull(o.deadline))}</b><br>
@@ -551,8 +636,17 @@ async function cancelOrder(o){
   if(D.orderRoot.has(o.id))put(`orders/${o.id}`);
   (D.uoPaths[o.id]||[]).forEach(([ek,oid])=>put(`userOrders/${ek}/${oid}`));
   if(!Object.keys(upd).length){toast("⚠️ مقدرتش ألاقي الطلب في قاعدة البيانات — حدّث البيانات وجرّب تاني");return false;}
+  const refund=(Number(o.walletUsed)||0)>0&&!o.walletRefunded;
+  if(refund){
+    if(D.orderRoot.has(o.id))upd[`orders/${o.id}/walletRefunded`]=true;
+    (D.uoPaths[o.id]||[]).forEach(([ek,oid])=>{upd[`userOrders/${ek}/${oid}/walletRefunded`]=true;});
+  }
   try{
     await update(ref(db),upd);
+    if(refund){
+      try{await walletRefundOrder(o);o.walletRefunded=true;toast(`💰 اترجّع ${fMoney(o.walletUsed)} لرصيد العميل`);}
+      catch(e){console.error(e);toast("⚠️ الطلب اتحذف بس فشل استرجاع الرصيد — ضيفه يدوي من بيانات العميل");}
+    }
     o.cancelled=true;o.cancelledAt=ts;
     D.orders=D.orders.filter(x=>x.id!==o.id);
     D.cancelled=[o,...D.cancelled.filter(x=>x.id!==o.id)];
@@ -592,6 +686,7 @@ function cancelledDetail(o){
       <div><div class="k">العنوان</div><div class="vv">${esc(o.address)||"—"}</div></div>
       <div><div class="k">طريقة الدفع</div><div class="vv">${esc(o.payment)||"—"}</div></div>
       <div><div class="k">الإجمالي</div><div class="vv">${esc(o.total)||"—"}</div></div>
+      ${Number(o.walletUsed)>0?`<div><div class="k">مدفوع من الرصيد</div><div class="vv">${fMoney(o.walletUsed)}${o.walletRefunded?" (اترجّع)":""}</div></div>`:""}
     </div>
     <div class="sub-t"><i class="fa-solid fa-bag-shopping"></i> المنتجات</div>${items}
     <div style="margin-top:16px"><button type="button" class="btn" id="cUserBtn"><i class="fa-solid fa-user"></i> بيانات العميل كاملة</button></div>`);
@@ -604,14 +699,14 @@ function cancelledDetail(o){
 // ---------- الأقسام ----------
 function render(){
   document.querySelectorAll(".nv[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-  const fn={dashboard:vDash,orders:vOrders,cancelled:vCancelled,comments:vComments,accounts:vAccounts,analytics:vStats,revenue:vRevenue,coupons:vCoupons}[view];
+  const fn={dashboard:vDash,orders:vOrders,cancelled:vCancelled,comments:vComments,accounts:vAccounts,analytics:vStats,revenue:vRevenue,coupons:vCoupons,wallets:vWallets}[view];
   $("view").innerHTML=fn();
   bind();
   refreshPresence();
 }
 
 function vDash(){
-  const sales=D.orders.reduce((s,o)=>s+money(o.total),0);
+  const sales=D.orders.reduce((s,o)=>s+gross(o),0);
   const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push(d.getTime());}
   const counts=days.map(t=>D.orders.filter(o=>o.createdAt>=t&&o.createdAt<t+864e5).length);
   const mx=Math.max(1,...counts);
@@ -646,10 +741,10 @@ function vOrders(){
   const [d1,d2]=orderDateRange();
   const dateOn=!!(window._od1||window._od2);
   const rows=D.orders.filter(o=>(f==="all"||String(stepsDone(o))===f)&&(o.createdAt||0)>=d1&&(o.createdAt||0)<=d2&&match([o.code,o.email,o.recipient,o.phone,o.address,o.couponCode,...(Array.isArray(o.items)?o.items.map(i=>i&&i.name):[])].join(" ")));
-  const sum=rows.reduce((t,o)=>t+money(o.total),0);
+  const sum=rows.reduce((t,o)=>t+gross(o),0);
   // أكواد الخصم المستخدمة في الطلبات المعروضة (بتتأثر بفلتر التاريخ والحالة والبحث) + عدد الطلبات على كل كود
   const cpUse={};
-  rows.forEach(o=>{if(!o.couponCode)return;const k=String(o.couponCode).trim().toUpperCase();const a=cpUse[k]||(cpUse[k]={count:0,total:0});a.count++;a.total+=money(o.total);});
+  rows.forEach(o=>{if(!o.couponCode)return;const k=String(o.couponCode).trim().toUpperCase();const a=cpUse[k]||(cpUse[k]={count:0,total:0});a.count++;a.total+=gross(o);});
   const cpList=Object.entries(cpUse).sort((a,b)=>b[1].count-a[1].count);
   const cpOrders=cpList.reduce((t,[,a])=>t+a.count,0);
   const cpBox=cpList.length?`<div class="card" style="margin-bottom:16px"><div class="card-h"><span><i class="fa-solid fa-tag" style="color:var(--pri)"></i> أكواد الخصم المستخدمة</span><small class="mut" style="font-weight:600">${fNum(cpOrders)} طلب من ${fNum(rows.length)} استخدموا كود خصم</small></div>
@@ -757,6 +852,85 @@ function vAccounts(){
     ${rows.length?`<div class="tw"><table><thead><tr><th>العميل</th><th>الهاتف</th><th>النوع</th><th>الطلبات</th><th>التعليقات</th><th>العناوين</th><th></th></tr></thead><tbody>${tr}</tbody></table></div>`:emptyBox("fa-users","مفيش حسابات")}</div>`;
 }
 
+// ---------- 💰 قسم الأرصدة (4 تبويبات بسيطة) ----------
+function vWallets(){
+  const W=D.wallet||{};
+  const tab=window._wt||"add";
+  const byEk={};D.users.forEach(u=>{if(u.email)byEk[eKey(u.email)]=u;});
+  const nameOf=ek=>{const u=byEk[ek];return u?uName(u):ek.replace(/__/g,"@").replace(/_/g,".");};
+  const ents=Object.entries(W).map(([ek,w])=>({ek,u:byEk[ek],bal:Math.max(0,Number(w&&w.balance)||0),log:Object.entries((w&&w.log)||{}).map(([id,v])=>({id,ek,...v}))}));
+  const all=ents.flatMap(x=>x.log);
+  const sum=t=>all.filter(x=>x.type===t&&!x.deleted).reduce((n,x)=>n+(Number(x.amount)||0),0);
+  const stat=(l,v,c)=>`<div class="mini" style="flex:1;min-width:150px"><div class="mut" style="font-size:12px">${l}</div><div style="font-size:19px;font-weight:800;color:${c||"inherit"}">${v}</div></div>`;
+  const stats=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">${stat("إجمالي الأرصدة عند العملاء",fMoney(ents.reduce((t,x)=>t+x.bal,0)),"#00a15c")}${stat("إجمالي اللي ضفته",fMoney(sum("credit")))}${stat("إجمالي اللي صرفوه",fMoney(sum("debit")),"#c81e37")}${stat("عملاء ليهم رصيد",fNum(ents.filter(x=>x.bal>0).length))}</div>`;
+  const pend=Object.entries(D.gameClaims||{}).flatMap(([ek,g])=>Object.entries(g||{}).filter(([,c])=>c&&c.status==="pending").map(([lv,c])=>({ek,lv,...c}))).sort((a,b)=>(b.at||0)-(a.at||0));
+  const tabs=[["add","➕ إضافة رصيد"],["customers","👥 أرصدة العملاء"],["log","🧾 سجل الحركات"],["game","🎮 اللعبة والجوائز"]];
+  const bar=`<div class="seg" style="flex-wrap:wrap;margin-bottom:16px">${tabs.map(([k,l])=>`<button type="button" data-wt="${k}" class="${tab===k?"on":""}">${l}${k==="game"&&pend.length?` <span class="badge" style="background:#fde8ec;color:var(--err)">${fNum(pend.length)}</span>`:""}</button>`).join("")}</div>`;
+
+  let body="";
+  if(tab==="add"){
+    const opts=D.users.filter(u=>u.email).map(u=>`<option value="${esc(u.email)}">${esc(uName(u))}</option>`).join("");
+    body=`<div class="card"><div class="card-h"><span>إضافة رصيد لعميل — ٣ خطوات</span></div>
+      <div style="padding:16px 18px;display:grid;gap:14px;max-width:560px">
+        <div><div class="k">١) العميل (اكتب البريد أو اختاره)</div>
+          <input class="inp" id="wqEmail" list="wqUsers" placeholder="example@gmail.com" dir="ltr" style="width:100%">
+          <datalist id="wqUsers">${opts}</datalist>
+          <div id="wqInfo" class="mut" style="font-size:12.5px;margin-top:5px;min-height:18px"></div></div>
+        <div><div class="k">٢) المبلغ (ج.م.)</div>
+          <input class="inp" id="wqAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="مثال: 100" style="width:100%">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${[50,100,200,500,1000].map(n=>`<button type="button" class="btn" data-wq="${n}">${n}</button>`).join("")}</div></div>
+        <div><div class="k">٣) ملاحظة (اختياري — العميل هيشوفها)</div>
+          <input class="inp" id="wqNote" maxlength="120" placeholder="مثال: هدية / تعويض" style="width:100%"></div>
+        <button type="button" class="btn solid" id="wqAdd" style="padding:12px;font-size:15px"><i class="fa-solid fa-plus"></i> إضافة للرصيد</button>
+      </div></div>`;
+  }
+  else if(tab==="customers"){
+    const rows=ents.filter(x=>match([nameOf(x.ek),x.u&&x.u.email].join(" "))).sort((a,b)=>b.bal-a.bal);
+    const tr=rows.map(x=>{
+      const cin=x.log.filter(l=>l.type==="credit"&&!l.deleted).reduce((n,l)=>n+(Number(l.amount)||0),0),out=x.log.filter(l=>l.type==="debit"&&!l.deleted).reduce((n,l)=>n+(Number(l.amount)||0),0);
+      return `<tr${x.u?` class="click" data-user="${esc(x.u.key)}"`:""}><td><b>${esc(nameOf(x.ek))}</b><small class="mut" style="display:block">${esc(x.u?x.u.email:"")}</small></td><td><b style="color:#00a15c">${fMoney(x.bal)}</b></td><td>${fMoney(cin)}</td><td>${fMoney(out)}</td><td><button class="btn">فتح / خصم</button></td></tr>`;
+    }).join("");
+    body=`<div class="card"><div class="card-h"><span>أرصدة العملاء (${fNum(rows.length)})</span></div>
+      ${rows.length?`<div class="tw"><table><thead><tr><th>العميل</th><th>الرصيد الحالي</th><th>إجمالي المضاف</th><th>إجمالي المصروف</th><th></th></tr></thead><tbody>${tr}</tbody></table></div>`:emptyBox("fa-wallet","لسه ما ضفتش رصيد لأي عميل")}
+      <div class="hint">اضغط على أي عميل تفتح بياناته وتخصم منه يدوي أو تشوف كل حركاته. للبحث اكتب في خانة البحث فوق.</div></div>`;
+  }
+  else if(tab==="log"){
+    const lg=all.filter(x=>match([nameOf(x.ek),x.note,x.desc,x.orderCode].join(" "))).sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,150);
+    const T={credit:["➕ إضافة رصيد","#00a15c","+"],refund:["↩️ استرجاع","#00a15c","+"],debit:["🛒 صرف في طلب","#c81e37","−"],deduct:["➖ خصم يدوي","#c81e37","−"]};
+    const ltr=lg.map(x=>{const m=T[x.type]||["•","#555",""];const editable=(x.type==="credit"||x.type==="deduct")&&!x.deleted;return `<tr${x.deleted?' style="opacity:.55"':""}><td>${fDT(x.at)}</td><td>${esc(nameOf(x.ek))}</td><td>${m[0]}${x.deleted?" 🗑️ محذوفة":""}</td><td><b style="color:${m[1]};${x.deleted?"text-decoration:line-through":""}">${m[2]}${fMoney(x.amount)}</b></td><td style="max-width:380px;line-height:1.7">${x.type==="debit"?`<span class="code">${esc(x.orderCode||"")}</span> ${esc(x.desc||"")}`:esc(x.note||"")+(x.orderCode?` <span class="code">${esc(x.orderCode)}</span>`:"")}${walletEditsHtml(x)}</td><td>${editable?`<button class="btn" data-wle="${esc(x.ek)}|${esc(x.id)}"><i class="fa-solid fa-pen"></i> تعديل / حذف</button>`:""}</td></tr>`;}).join("");
+    body=`<div class="card"><div class="card-h"><span>سجل كل الحركات — إضافة وصرف (آخر ${fNum(lg.length)})</span></div>
+      ${lg.length?`<div class="tw"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>النوع</th><th>المبلغ</th><th>التفاصيل (صرفه في إيه)</th><th></th></tr></thead><tbody>${ltr}</tbody></table></div>`:emptyBox("fa-clock-rotate-left","مفيش حركات لسه")}</div>`;
+  }
+  else{
+    const gc=D.gameCfg||{},gl=gc.levels||{},gt=gc.times||{};
+    const pendTr=pend.map(c=>`<tr><td>${fDT(c.at)}</td><td>${esc(nameOf(c.ek))}</td><td>المستوى ${esc(c.lv)}</td><td><b>${fMoney(c.amount)}</b></td><td style="white-space:nowrap"><button class="btn solid" data-gcok="${esc(c.ek)}|${esc(c.lv)}">موافقة وإضافة</button> <button class="btn red" data-gcno="${esc(c.ek)}|${esc(c.lv)}">رفض</button></td></tr>`).join("");
+    const gamePaid=Object.values(D.gameClaims||{}).flatMap(g=>Object.values(g||{})).filter(c=>c&&c.status==="paid").reduce((t,c)=>t+(Number(c.amount)||0),0);
+    const lvRows=Array.from({length:10},(_,i)=>i+1).map(lv=>`<tr>
+      <td><b>المستوى ${lv}</b>${lv===10?" 🔥 (المستحيل)":""}</td>
+      <td>${lv<10?`<input class="inp" data-gt="${lv}" type="number" min="0" step="0.5" inputmode="decimal" placeholder="تلقائي" style="width:110px" value="${Number(gt[lv])>0?+(Number(gt[lv])/60).toFixed(2):""}"> <span class="mut">دقيقة</span>`:`<span class="mut">مفتوح للآخر</span>`}</td>
+      <td>${lv>1?`<input class="inp" data-gl="${lv}" type="number" min="0" step="0.01" inputmode="decimal" placeholder="بدون" style="width:110px" value="${Number(gl[lv])>0?Number(gl[lv]):""}"> <span class="mut">ج.م.</span>`:`<span class="mut">—</span>`}</td></tr>`).join("");
+    body=`${pend.length?`<div class="card" style="border:2px solid #f3b8c4"><div class="card-h"><span>⏳ جوائز بانتظار موافقتك (${fNum(pend.length)})</span></div><div class="tw"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>المستوى</th><th>المبلغ</th><th></th></tr></thead><tbody>${pendTr}</tbody></table></div></div>`:""}
+      <div class="card"><div class="card-h"><span>🎮 إعدادات لعبة Gravity Surge</span><a class="btn" href="../game.html" target="_blank" rel="noopener" data-stop>فتح اللعبة</a></div>
+      <div style="padding:14px 18px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;margin-bottom:10px;padding:10px 12px;background:#eef6ff;border-radius:10px"><input type="checkbox" id="gcVisible"${gc.visible?" checked":""}> 👁️ إظهار اللعبة للعملاء <span class="mut" style="font-weight:400">(لو مقفول: زرار اللعبة بيختفي من حساب العميل واللعبة نفسها مابتفتحش)</span></label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer"><input type="checkbox" id="gcEnabled"${gc.enabled?" checked":""}> تفعيل الجوائز <span class="mut" style="font-weight:400">(لو مقفول اللعبة بتشتغل من غير فلوس)</span></label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-top:8px;cursor:pointer"><input type="checkbox" id="gcApproval"${gc.approval?" checked":""}> الجوائز لازم أوافق عليها الأول <span class="mut" style="font-weight:400">(مش بتتضاف أوتوماتيك)</span></label>
+      </div>
+      <div class="sub-t" style="padding:0 18px">المستويات: مدة كل مستوى + جايزته</div>
+      <div class="tw"><table><thead><tr><th>المستوى</th><th>مدة المستوى بالدقايق — بعدها يدخل اللي بعده</th><th>الجائزة عند الوصول ليه</th></tr></thead><tbody>${lvRows}</tbody></table></div>
+      <div class="hint">• مدة المستوى: لو كتبت 1 يبقى بعد دقيقة لعب بيدخل المستوى اللي بعده أوتوماتيك (وتقدر تكتب 0.5 = نص دقيقة). سيبها فاضية = المستوى بيخلص بالنقط (١٠٠ نقطة).<br>• الجايزة: بتتاخد مرة واحدة بس لكل حساب. سيبها فاضية = من غير جايزة.</div>
+      <div class="sub-t" style="padding:0 18px">🔒 قفل اللعبة بعد الخسارة</div>
+      <div style="padding:0 18px 14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div><div class="k">يخسر كام مرة ورا بعض؟ (0 = من غير قفل)</div><input class="inp" id="gcMaxLoss" type="number" min="0" step="1" style="width:150px" value="${Number(gc.maxLosses)||0}"></div>
+        <div><div class="k">تتقفل كام دقيقة؟</div><input class="inp" id="gcLockMin" type="number" min="0" step="1" style="width:150px" value="${Number(gc.lockMinutes)||0}"></div>
+      </div>
+      <div style="padding:0 18px 18px"><button type="button" class="btn solid" id="gcSave" style="padding:11px 22px"><i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات</button>
+        <span class="mut" style="font-size:12.5px;margin-inline-start:10px">اللي اتصرف كجوائز لحد دلوقتي: <b>${fMoney(gamePaid)}</b></span></div>
+    </div>`;
+  }
+  return `${stats}${bar}${body}`;
+}
+
 function cancelledAccountsView(){
   const rows=D.users.filter(isDisabled).filter(u=>match([uName(u),u.email,phoneOf(u),u.disabledReason].join(" "))).sort((a,b)=>(b.disabledAt||0)-(a.disabledAt||0));
   const tr=rows.map(u=>`<tr class="click" data-user="${esc(u.key)}" style="background:#fff5f6">
@@ -781,7 +955,7 @@ function rankView(kind){
   };
   let title,ic,hint,emptyMsg,heads,cells,sortF,valOf,barBg="";
   if(kind==="buyers"){
-    D.orders.forEach(o=>add(o.email,o.recipient,a=>{a.n++;a.sum+=money(o.total);a.last=Math.max(a.last,o.createdAt||0);}));
+    D.orders.forEach(o=>add(o.email,o.recipient,a=>{a.n++;a.sum+=gross(o);a.last=Math.max(a.last,o.createdAt||0);}));
     title="العملاء الأكثر شراءً";ic="fa-cart-shopping";emptyMsg="مفيش مشتريات لسه";
     hint="بيتحسب من الطلبات الشغالة بس (الملغي مش داخل) — مترتّبين بإجمالي المشتريات.";
     heads=["عدد الطلبات","إجمالي المشتريات","آخر طلب"];
@@ -789,7 +963,7 @@ function rankView(kind){
     sortF=(a,b)=>b.sum-a.sum||b.n-a.n;valOf=a=>a.sum;
   }else if(kind==="cancels"){
     const ok={};D.orders.forEach(o=>{const k=lc(o.email);if(k)ok[k]=(ok[k]||0)+1;});
-    D.cancelled.forEach(o=>add(o.email,o.recipient,a=>{a.n++;a.sum+=money(o.total);a.last=Math.max(a.last,o.cancelledAt||0);}));
+    D.cancelled.forEach(o=>add(o.email,o.recipient,a=>{a.n++;a.sum+=gross(o);a.last=Math.max(a.last,o.cancelledAt||0);}));
     title="العملاء الأكثر إلغاءً لطلباتهم";ic="fa-ban";emptyMsg="مفيش طلبات ملغية";
     hint="نسبة الإلغاء = الطلبات الملغية ÷ (الملغية + الشغالة) للعميل ده.";
     heads=["الطلبات الملغية","قيمتها","نسبة الإلغاء","آخر إلغاء"];
@@ -860,7 +1034,8 @@ function orderDetail(o,startEdit=false){
       <div><div class="k">الهاتف</div><input class="inp" id="edPhone" dir="ltr" style="width:100%" value="${esc(o.phone||"")}"></div>
       <div><div class="k">طريقة الدفع</div><input class="inp" id="edPayment" style="width:100%" value="${esc(o.payment||"")}"></div>
       <div><div class="k">نوع العنوان</div><input class="inp" id="edAddressType" style="width:100%" value="${esc(o.addressType||"")}"></div>
-      <div><div class="k">الإجمالي</div><input class="inp" id="edTotal" style="width:100%" value="${esc(o.total||"")}"></div>
+      <div><div class="k">${Number(o.walletUsed)>0?"المطلوب دفعه (بعد الرصيد)":"الإجمالي"}</div><input class="inp" id="edTotal" style="width:100%" value="${esc(o.total||"")}"></div>
+      ${Number(o.walletUsed)>0?`<div><div class="k">مدفوع من رصيد العميل</div><div class="vv" style="color:#00a15c">${fMoney(o.walletUsed)}${o.walletRefunded?" (اترجّع)":""}</div></div>`:""}
       <div><div class="k">المجموع الفرعي</div><input class="inp" id="edSubtotal" style="width:100%" value="${esc(o.subtotal||"")}"></div>
       <div><div class="k">الشحن</div><input class="inp" id="edShipping" style="width:100%" value="${esc(o.shipping||"")}"></div>
       <div><div class="k">التغليف</div><input class="inp" id="edPackaging" style="width:100%" value="${esc(o.packaging||"")}"></div>
@@ -1114,7 +1289,7 @@ async function changeEmail(u,ne,fields){
 async function userDetail(u){
   const ek=eKey(u.email||""),email=u.email||"";
   openModal(uName(u),`<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i>جاري التحميل...</div>`);
-  const[photo,sess]=await Promise.all([ek?read(`userPhotos/${ek}`):null,read(`sessions/${ek}`)]);
+  const[photo,sess,wal]=await Promise.all([ek?read(`userPhotos/${ek}`):null,read(`sessions/${ek}`),ek?read(`wallet/${ek}`):null]);
   if(typeof photo==="string"&&photo)PH[ek]=photo;
   const own=new Set(["key","firstName","lastName","email","gender","phone","disabled","disabledReason","disabledAt"]);
   const others=Object.entries(u).filter(([k,v])=>!own.has(k)&&!SENSITIVE.test(k)&&typeof v!=="object");
@@ -1136,7 +1311,32 @@ async function userDetail(u){
     <div class="sub-t"><i class="fa-solid fa-user-slash"></i> إلغاء الحساب</div>
     <textarea class="inp" id="acReason" maxlength="300" rows="3" style="width:100%;resize:vertical;line-height:1.7" placeholder="اكتب سبب إلغاء الحساب — هيظهر للعميل في رسالة حمراء لما يفتح الموقع"></textarea>
     <button type="button" class="btn red" id="acCancelBtn" style="margin-top:8px"><i class="fa-solid fa-user-slash"></i> إلغاء الحساب</button>`;
-  const spent=ordersOf(email).reduce((s,o)=>s+money(o.total),0);
+  const spent=ordersOf(email).reduce((s,o)=>s+gross(o),0);
+  const wBal=Math.max(0,Number(wal&&wal.balance)||0);
+  const wLog=Object.entries((wal&&wal.log)||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(b.at||0)-(a.at||0));
+  const wTotalIn=wLog.filter(x=>x.type==="credit"&&!x.deleted).reduce((t,x)=>t+(Number(x.amount)||0),0);
+  const wTotalOut=wLog.filter(x=>x.type==="debit"&&!x.deleted).reduce((t,x)=>t+(Number(x.amount)||0),0);
+  const wRows=wLog.map(x=>{
+    const amt=Number(x.amount)||0;
+    const m={credit:["➕ إضافة رصيد","#00a15c","+"],refund:["↩️ استرجاع","#00a15c","+"],debit:["🛒 صرف في طلب","#c81e37","−"],deduct:["➖ خصم يدوي","#c81e37","−"]}[x.type]||["•","#555",""];
+    const what=x.type==="debit"?`<span class="code">${esc(x.orderCode||"")}</span> ${esc(x.desc||"")}`:esc(x.note||(x.orderCode?x.orderCode:""));
+    const editable=(x.type==="credit"||x.type==="deduct")&&!x.deleted;
+    return `<div class="mini" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center${x.deleted?";opacity:.55":""}"><span><b>${m[0]}</b>${x.deleted?" 🗑️ محذوفة":""} ${what}<br><span class="mut" style="font-size:11.5px">${fDT(x.at)}</span>${walletEditsHtml(x)}</span><span style="display:flex;gap:8px;align-items:center"><b style="color:${m[1]};font-size:15px;${x.deleted?"text-decoration:line-through":""}">${m[2]}${fMoney(amt)}</b>${editable?`<button type="button" class="btn" data-wle="${esc(ek)}|${esc(x.id)}"><i class="fa-solid fa-pen"></i></button>`:""}</span></div>`;
+  }).join("")||`<div class="mut">مفيش حركات على الرصيد لسه</div>`;
+  const walletBlock=`
+    <div class="sub-t"><i class="fa-solid fa-wallet"></i> رصيد العميل</div>
+    <div class="kv">
+      <div><div class="k">الرصيد الحالي</div><div class="vv" style="font-size:20px;font-weight:800;color:#00a15c">${fMoney(wBal)}</div></div>
+      <div><div class="k">إجمالي اللي ضفته</div><div class="vv">${fMoney(wTotalIn)}</div></div>
+      <div><div class="k">إجمالي اللي صرفه</div><div class="vv">${fMoney(wTotalOut)}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <input class="inp" id="wlAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="المبلغ (ج.م.)" style="width:140px">
+      <input class="inp" id="wlNote" maxlength="120" placeholder="ملاحظة (اختياري) — مثال: تعويض / هدية" style="flex:1;min-width:180px">
+      <button type="button" class="btn solid" id="wlAdd"><i class="fa-solid fa-plus"></i> إضافة للرصيد</button>
+      <button type="button" class="btn red" id="wlSub"><i class="fa-solid fa-minus"></i> خصم يدوي</button>
+    </div>
+    <div style="max-height:260px;overflow:auto">${wRows}</div>`;
   const inp=(id,l,v,ltr)=>`<div><div class="k">${l}</div><input class="inp" id="${id}" ${ltr?'dir="ltr" ':""}style="width:100%" value="${esc(v||"")}"></div>`;
   $("mbody").innerHTML=`
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
@@ -1156,12 +1356,30 @@ async function userDetail(u){
       <div><div class="k">عدد الأجهزة المسجّلة</div><div class="vv">${fNum(devs)}</div></div>
       <div><div class="k">إجمالي مشترياته</div><div class="vv">${fNum(spent)} ج.م.</div></div>
     </div>
+    ${walletBlock}
     <div class="sub-t"><i class="fa-solid fa-location-dot"></i> العناوين (${fNum(addrList.length)})</div>${addrs}
     <div class="sub-t"><i class="fa-solid fa-box-open"></i> الطلبات (${fNum(ordersOf(email).length)})</div>${ords}
     <div class="sub-t"><i class="fa-solid fa-tag"></i> أكواد الخصم المستخدمة (${fNum(cpUsage.length)})</div>${cps}
     <div class="sub-t"><i class="fa-solid fa-comments"></i> التعليقات (${fNum(commentsOf(email).length)})</div>${cms}`;
 
   refreshPresence();
+  $("mbody").querySelectorAll("[data-wle]").forEach(b=>b.onclick=()=>{const[k,i]=b.dataset.wle.split("|");openWalletEntry(k,i,()=>userDetail(u));});
+  const wlGo=async type=>{
+    const amt=r2($("wlAmt").value),note=$("wlNote").value.trim();
+    if(!(amt>0)){toast("❌ اكتب مبلغ صحيح");return;}
+    if(!email){toast("❌ العميل ده ملوش بريد");return;}
+    if(!confirm(`${type==="credit"?"إضافة":"خصم"} ${fMoney(amt)} ${type==="credit"?"إلى":"من"} رصيد ${uName(u)}؟`))return;
+    $("wlAdd").disabled=$("wlSub").disabled=true;
+    try{
+      const ok=await walletAdjust(email,amt,type,note);
+      if(!ok){toast("❌ رصيد العميل أقل من المبلغ ده");$("wlAdd").disabled=$("wlSub").disabled=false;return;}
+      toast(type==="credit"?"✅ تمت إضافة الرصيد":"✅ تم الخصم من الرصيد");
+      D.wallet=await loadWallets();
+      userDetail(u);if(view==="wallets")render();
+    }catch(e){console.error(e);toast("❌ فشلت العملية — راجع Rules في Firebase");$("wlAdd").disabled=$("wlSub").disabled=false;}
+  };
+  $("wlAdd").onclick=()=>wlGo("credit");
+  $("wlSub").onclick=()=>wlGo("deduct");
   $("euSave").onclick=async()=>{
     const fn=$("euFirst").value.trim(),ln=$("euLast").value.trim(),ph=$("euPhone").value.trim(),g=$("euGender").value,ne=lc($("euEmail").value);
     if(!fn||!ln){toast("❌ اكتب الاسم الأول والأخير");return;}
@@ -1334,6 +1552,53 @@ function bind(){
   $("view").querySelectorAll("[data-del]").forEach(el=>el.onclick=e=>{e.stopPropagation();askDeleteOrder(D.orders.find(x=>x.id===el.dataset.del));});
   document.querySelectorAll("[data-corder]").forEach(el=>el.onclick=()=>{const o=D.cancelled.find(x=>x.id===el.dataset.corder);if(o)cancelledDetail(o);});
   document.querySelectorAll("[data-stop]").forEach(el=>el.onclick=e=>e.stopPropagation());
+  document.querySelectorAll("[data-wt]").forEach(b=>b.onclick=()=>{window._wt=b.dataset.wt;render();});
+  document.querySelectorAll("#view [data-wle]").forEach(b=>b.onclick=()=>{const[k,i]=b.dataset.wle.split("|");openWalletEntry(k,i);});
+  document.querySelectorAll("[data-wq]").forEach(b=>b.onclick=()=>{$("wqAmt").value=b.dataset.wq;});
+  const wqEm=$("wqEmail");
+  if(wqEm)wqEm.oninput=()=>{
+    const u=D.users.find(x=>lc(x.email)===lc(wqEm.value));
+    $("wqInfo").innerHTML=u?`✔️ <b>${esc(uName(u))}</b> — رصيده الحالي: <b style="color:#00a15c">${fMoney(Math.max(0,Number(((D.wallet||{})[eKey(u.email)]||{}).balance)||0))}</b>`:(wqEm.value?"مفيش عميل بالبريد ده":"");
+  };
+  const wqAdd=$("wqAdd");
+  if(wqAdd)wqAdd.onclick=async()=>{
+    const em=lc($("wqEmail").value),amt=r2($("wqAmt").value),note=$("wqNote").value.trim();
+    const u=D.users.find(x=>lc(x.email)===em);
+    if(!u){toast("❌ مفيش عميل بالبريد ده — اختاره من القائمة");return;}
+    if(!(amt>0)){toast("❌ اكتب مبلغ صحيح");return;}
+    if(!confirm(`إضافة ${fMoney(amt)} لرصيد ${uName(u)}؟`))return;
+    wqAdd.disabled=true;
+    try{
+      await walletAdjust(u.email,amt,"credit",note);
+      D.wallet=await loadWallets();
+      toast("✅ تمت إضافة الرصيد");render();
+    }catch(e){console.error(e);toast("❌ فشلت الإضافة — راجع Rules في Firebase");wqAdd.disabled=false;}
+  };
+  const gcSave=$("gcSave");
+  if(gcSave)gcSave.onclick=async()=>{
+    const levels={};
+    document.querySelectorAll("[data-gl]").forEach(i=>{const a=r2(i.value);if(a>0)levels[i.dataset.gl]=a;});
+    const times={};
+    document.querySelectorAll("[data-gt]").forEach(i=>{const t=Math.round((Number(i.value)||0)*60);if(t>0)times[i.dataset.gt]=t;});
+    const conf={times,visible:$("gcVisible").checked,enabled:$("gcEnabled").checked,approval:$("gcApproval").checked,maxLosses:Math.max(0,parseInt($("gcMaxLoss").value)||0),lockMinutes:Math.max(0,Number($("gcLockMin").value)||0),levels};
+    gcSave.disabled=true;
+    try{await set(ref(db,"gameConfig"),conf);D.gameCfg=conf;toast(conf.enabled?"✅ تم الحفظ — الجوائز شغالة":"✅ تم الحفظ — الجوائز متوقفة");}
+    catch(e){console.error(e);toast("❌ فشل الحفظ — راجع Rules في Firebase");}
+    gcSave.disabled=false;
+  };
+  const gcAct=async(raw,ok)=>{
+    const [ek,lv]=raw.split("|"),c=((D.gameClaims||{})[ek]||{})[lv],u=D.users.find(x=>x.email&&eKey(x.email)===ek);
+    if(!c||!u){toast("⚠️ مقدرتش ألاقي الطلب أو العميل");return;}
+    if(!confirm(ok?`إضافة ${fMoney(c.amount)} لرصيد ${uName(u)}؟`:"رفض الجائزة دي؟"))return;
+    try{
+      if(ok)await walletAdjust(u.email,Number(c.amount)||0,"credit",`جائزة لعبة Gravity Surge — المستوى ${lv}`);
+      await update(ref(db,`gameClaims/${ek}/${lv}`),{status:ok?"paid":"rejected",decidedAt:Date.now()});
+      D.gameClaims=await loadGameClaims();D.wallet=await loadWallets();
+      toast(ok?"✅ اتضافت للرصيد":"تم الرفض");render();
+    }catch(e){console.error(e);toast("❌ فشلت العملية");}
+  };
+  document.querySelectorAll("[data-gcok]").forEach(b=>b.onclick=()=>gcAct(b.dataset.gcok,true));
+  document.querySelectorAll("[data-gcno]").forEach(b=>b.onclick=()=>gcAct(b.dataset.gcno,false));
   ST_.bind();   // أحداث الإحصائيات والإيرادات (admin-stats.js)
   CP_.bind();   // أحداث أكواد الخصم (admin-coupons.js)
   hydratePhotos();

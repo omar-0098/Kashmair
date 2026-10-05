@@ -50,8 +50,8 @@ function vCoupons(){
   const tr=rows.map(c=>{
     const st=statusOf(c);
     return `<tr>
-      <td><span class="code">${esc(c.code)}</span><br><small class="mut">${modeLabel(c)}</small>${c.note?`<br><small class="mut">${esc(c.note)}</small>`:""}</td>
-      <td>${valueLabel(c)}${c.minOrder?`<br><small class="mut">لطلبات فوق ${fNum(c.minOrder)} ج.م.</small>`:""}</td>
+      <td><span class="code">${esc(c.code)}</span><br><small class="mut">${modeLabel(c)}</small>${c.offerKey?`<br><span class="badge b1" title="اتعمل من قسم العروض">🏷️ عرض: ${esc(c.offerName||c.offerKey)} · لو اشترى ${fNum(c.minOfferQty||1)}+</span>`:""}${c.note?`<br><small class="mut">${esc(c.note)}</small>`:""}</td>
+      <td>${valueLabel(c)}${c.offerKey?`<br><small class="mut">على منتجات العرض بس</small>`:""}${c.minOrder?`<br><small class="mut">لطلبات فوق ${fNum(c.minOrder)} ج.م.</small>`:""}</td>
       <td>${targetLabel(c)}</td>
       <td>${fNum(c.usedCount||0)}${c.maxUses?` / ${fNum(c.maxUses)}`:` <span class="mut">(بلا حد)</span>`}${c.maxUsesPerCustomer?`<br><small class="mut">${fNum(c.maxUsesPerCustomer)} لكل عميل</small>`:""}</td>
       <td>${validityLabel(c)}</td>
@@ -92,7 +92,7 @@ function openCouponForm(c){
       <button type="button" class="btn solid" id="cpSave" style="flex:1">${c?"حفظ التعديلات":"إنشاء الكود"}</button>
       <button type="button" class="btn" id="cpCancel">إلغاء</button>
     </div>`;
-  openModal(c?`تعديل الكود ${c.code}`:"كود خصم جديد",html);
+  openModal(c?`تعديل الكود ${c.code}`:"كود خصم جديد",(c&&c.offerKey?`<div class="hint" style="margin-bottom:12px;padding:10px 12px;border-radius:12px;background:#eef4ff">🏷️ الكود ده جاي من قسم <b>العروض</b> (${esc(c.offerName||c.offerKey)}) ويتطبق لو العميل اشترى ${fNum(c.minOfferQty||1)} أو أكتر من العرض. الشرايح بتتعدّل من الإحصائيات ← العروض، والتعديل هنا ممكن يتمسح لما تحفظ العرض.</div>`:"")+html);
 
   $("cpTarget").onchange=()=>{
     const tv=$("cpTargetValue"),v=$("cpTarget").value;
@@ -131,7 +131,7 @@ function openCouponForm(c){
     if(type==="percent"&&value>100){err.textContent="نسبة الخصم متقدرش تزيد عن ١٠٠٪";return;}
     if(targetType!=="all"&&!targetValueRaw){err.textContent=`اكتب ${targetType==="email"?"الإيميل":"الاسم"} المخصص له الكود`;return;}
     if(startAt&&expiresAt&&startAt>expiresAt){err.textContent="تاريخ البداية لازم يكون قبل تاريخ الانتهاء";return;}
-    if(autoApply&&!minOrder){err.textContent="الخصم التلقائي لازم يكون له «أقل قيمة للطلب» — دي القيمة اللي لما السلة توصلها الخصم يتطبق لوحده";return;}
+    if(autoApply&&!minOrder&&!(c&&c.offerKey)){err.textContent="الخصم التلقائي لازم يكون له «أقل قيمة للطلب» — دي القيمة اللي لما السلة توصلها الخصم يتطبق لوحده";return;}
 
     const data={
       code,type,value,
@@ -142,6 +142,7 @@ function openCouponForm(c){
       usedCount:c?.usedCount||0,
       usedBy:c?.usedBy||null,
       active,autoApply,unlisted,note,
+      ...(c&&c.offerKey?{offerKey:c.offerKey,minOfferQty:c.minOfferQty||null,offerName:c.offerName||"",source:"offer"}:{}),
       createdAt:c?.createdAt||Date.now(),
       updatedAt:Date.now()
     };

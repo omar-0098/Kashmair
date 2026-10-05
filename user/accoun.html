@@ -214,6 +214,26 @@
 .inv-confirm:hover{background:#1547b8}
 .inv-confirm:disabled{opacity:.7;cursor:wait}
 .inv-cancel{background:#f1f1f1;color:#333;border:none;border-radius:10px;padding:13px 22px;font-family:'Almarai',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+/* ===== رصيدك ===== */
+.wl-hero{background:linear-gradient(135deg,#1a7f4b,#2e9e68);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:16px;font-family:'Almarai',sans-serif}
+.wl-hero-lbl{font-size:13px;opacity:.9;font-weight:700}
+.wl-hero-val{font-size:34px;font-weight:800;margin-top:4px}
+.wl-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 4px;border-bottom:1px solid rgba(0,0,0,.07);font-family:'Almarai',sans-serif}
+.wl-item:last-child{border-bottom:0}
+.wl-item .wl-t{font-weight:800;font-size:14px}
+.wl-item .wl-d{font-size:12.5px;color:#777;margin-top:3px;line-height:1.7}
+.wl-item .wl-a{font-weight:800;font-size:16px;white-space:nowrap}
+.wl-item .wl-a.in{color:#1a7f4b}.wl-item .wl-a.out{color:#c81e37}
+.wl-empty{text-align:center;color:#888;padding:26px 0;font-family:'Almarai',sans-serif}
+[data-theme="dark"] .wl-item{border-color:rgba(255,255,255,.1)}
+[data-theme="dark"] .wl-item .wl-d{color:#aaa}
+.wl-game{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,#1a0a3d,#3a0f66);color:#fff;border-radius:16px;padding:16px 20px;margin-bottom:16px;font-family:'Almarai',sans-serif;box-shadow:0 0 0 1px rgba(255,43,214,.4),0 8px 24px rgba(122,61,255,.25)}
+.wl-game-t{font-weight:800;font-size:16px}
+.wl-game-d{font-size:12.5px;opacity:.85;margin-top:4px;line-height:1.7;max-width:420px}
+.wl-game-btn{border:0;cursor:pointer;background:linear-gradient(135deg,#ff2bd6,#7a3dff);color:#fff;font-family:inherit;font-weight:800;font-size:14px;padding:11px 22px;border-radius:12px;box-shadow:0 0 18px rgba(255,43,214,.5)}
+#gameFrameBox{position:fixed;inset:0;z-index:99999;background:#05010f;display:none}
+#gameFrameBox.open{display:block}
+#gameFrameBox iframe{width:100%;height:100%;border:0;display:block}
 </style>
 </head>
 <body>
@@ -378,6 +398,7 @@
       <button class="nav-btn" onclick="switchTab('orders',this)">الطلبات <i class="fa-solid fa-box-open"></i></button>
       <button class="nav-btn" onclick="switchTab('location',this)">العناوين <i class="fa-solid fa-location-dot"></i></button>
       <button class="nav-btn" onclick="switchTab('discount',this)">أكواد الخصم <i class="fa-solid fa-barcode"></i></button>
+      <button class="nav-btn" onclick="switchTab('wallet',this)">رصيدك <i class="fa-solid fa-wallet"></i></button>
       <button class="nav-btn" onclick="switchTab('comments',this)">تعليقاتي <i class="fa-solid fa-comments"></i></button>
       <button class="nav-btn" onclick="switchTab('settings',this)">الإعدادات <i class="fa-solid fa-gear"></i></button>
       <div class="nav-divider"></div>
@@ -482,6 +503,22 @@
             </div>
           </div>
         </div> -->
+      </div>
+    </div>
+
+    <!-- رصيدك -->
+    <div class="tab-panel" id="tab-wallet">
+      <div class="panel-title"><h2>رصيدك</h2><p>الرصيد المتاح تشتري بيه من الموقع، وكل حركة عليه</p></div>
+      <div class="wl-hero"><div class="wl-hero-lbl">رصيدك الحالي</div><div class="wl-hero-val" id="walletBal">—</div></div>
+      <div class="wl-game" style="display:none">
+        <img src="../img/Gemini_Generated_Image_56euaj56euaj56eu.jpg" alt="">
+        <div><div class="wl-game-t">🎮 العب واكسب رصيد</div><div class="wl-game-d">وصّل لمراحل معيّنة في لعبة Gravity Surge واكسب فلوس تتضاف لرصيدك على طول</div></div>
+        <button type="button" class="wl-game-btn" onclick="openGame()">افتح اللعبة</button>
+      </div>
+      <div class="my-comments-stats" id="walletStats"></div>
+      <div class="info-card">
+        <div class="card-header"><div class="card-header-bar"></div><h3>سجل الرصيد</h3></div>
+        <div id="walletList"><p class="my-comments-loading">جاري التحميل...</p></div>
       </div>
     </div>
 

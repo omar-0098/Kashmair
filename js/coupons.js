@@ -58,6 +58,20 @@ function currentUser(){
   return{email,name};
 }
 
+// ---------- خصم الكمية على العروض ----------
+// كود مربوط بعرض (offerKey) بيتطبق بس لو العميل جاب minOfferQty من نفس العرض، والخصم بيتحسب على سطور العرض بس
+function readCart(){try{return JSON.parse(localStorage.getItem("cart"))||[];}catch(e){return [];}}
+function offerAgg(key){
+  const re=new RegExp("^offer-"+String(key).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"-\\d+$");
+  let qty=0,subtotal=0;
+  readCart().forEach(i=>{
+    if(!re.test(String(i.id)))return;
+    const q=Number(i.quantity)||1;
+    qty+=q;subtotal+=(Number(i.originalPrice)||Number(i.price)||0)*q;
+  });
+  return{qty,subtotal};
+}
+
 // ---------- التحقق من الكود ----------
 function validate(coupon,subtotal){
   const now=Date.now();
@@ -66,6 +80,11 @@ function validate(coupon,subtotal){
   if(coupon.startAt&&now<coupon.startAt) return{ok:false,msg:"الكود ده لسه مبدأش"};
   if(coupon.expiresAt&&now>coupon.expiresAt) return{ok:false,msg:"انتهت صلاحية الكود ده"};
   if(coupon.maxUses&&(coupon.usedCount||0)>=coupon.maxUses) return{ok:false,msg:"الكود ده خلص من الاستخدام"};
+  if(coupon.offerKey){
+    const ag=offerAgg(coupon.offerKey);
+    if(!ag.qty) return{ok:false,msg:"الكود ده خاص بعرض مش موجود في سلتك"};
+    if(coupon.minOfferQty&&ag.qty<coupon.minOfferQty) return{ok:false,msg:`لازم تشتري ${fNum(coupon.minOfferQty)} من العرض عشان تستخدم الكود ده`};
+  }
   if(coupon.minOrder&&subtotal<coupon.minOrder) return{ok:false,msg:`أقل قيمة للطلب عشان تستخدم الكود ${fNum(coupon.minOrder)} ج.م.`};
   if(coupon.maxUsesPerCustomer){
     const{email}=currentUser();
@@ -87,9 +106,10 @@ function validate(coupon,subtotal){
 }
 
 function computeDiscount(coupon,subtotal){
-  let d=coupon.type==="percent"?subtotal*(Number(coupon.value)||0)/100:(Number(coupon.value)||0);
+  const base=coupon.offerKey?offerAgg(coupon.offerKey).subtotal:subtotal;   // كود العرض بيخصم من سطور العرض بس
+  let d=coupon.type==="percent"?base*(Number(coupon.value)||0)/100:(Number(coupon.value)||0);
   if(coupon.type==="percent"&&coupon.maxDiscount) d=Math.min(d,Number(coupon.maxDiscount));
-  return Math.max(0,Math.min(Math.round(d),subtotal));
+  return Math.max(0,Math.min(Math.round(d),base,subtotal));
 }
 
 let couponsCache=null;
@@ -204,7 +224,9 @@ function paint(){
       note.style.cssText="margin-top:8px;font-size:12.5px;color:#2e7d32;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
       inputBox.appendChild(note);
     }
-    if(isAuto){
+    if(isAuto&&applied.offerKey){
+      note.innerHTML=`<span>🎉 اتطبق خصم العرض تلقائي لأنك اشتريت ${fNum(offerAgg(applied.offerKey).qty)} من «${applied.offerName||"العرض"}»</span>`;
+    }else if(isAuto){
       note.innerHTML=`<span>🎉 اتطبق عليك خصم تلقائي لأن طلبك أكتر من ${fNum(applied.minOrder||0)} ج.م.</span>`;
     }else{
       note.innerHTML=`<span>✅ الكود <b dir="ltr">${applied.code}</b> مطبّق</span><a href="#" id="couponRemoveLink" style="color:#c81e37;text-decoration:underline">إلغاء</a>`;

@@ -6,9 +6,20 @@ function _appliedCouponDiscount(subtotal) {
   let c = null;
   try { c = JSON.parse(localStorage.getItem("kashmirCoupon")); } catch (e) {}
   if (!c) return 0;
-  let d = c.type === "percent" ? subtotal * (Number(c.value) || 0) / 100 : (Number(c.value) || 0);
+  let base = subtotal;
+  if (c.offerKey) {   // كود مربوط بعرض: الخصم على سطور العرض بس، وبشرط الكمية
+    const re = new RegExp("^offer-" + String(c.offerKey).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "-\\d+$");
+    let q = 0, sub = 0;
+    (JSON.parse(localStorage.getItem("cart")) || []).forEach(i => {
+      if (!re.test(String(i.id))) return;
+      const n = Number(i.quantity) || 1; q += n; sub += (Number(i.originalPrice) || Number(i.price) || 0) * n;
+    });
+    if (!q || (c.minOfferQty && q < c.minOfferQty)) return 0;
+    base = sub;
+  }
+  let d = c.type === "percent" ? base * (Number(c.value) || 0) / 100 : (Number(c.value) || 0);
   if (c.type === "percent" && c.maxDiscount) d = Math.min(d, Number(c.maxDiscount));
-  return Math.max(0, Math.min(Math.round(d), subtotal));
+  return Math.max(0, Math.min(Math.round(d), base, subtotal));
 }
 
 // ✅ القوائم وفتح وإغلاق القوائم
@@ -753,9 +764,9 @@ function setupCartEvents() {
       img.src = url;
       img.alt = 'صورة الحساب';
       img.id = 'icon_person';
-      img.style.width = '32px';
-      img.style.height = '32px';
-      img.style.borderRadius = '25%';
+      img.style.width = '30px';
+      img.style.height = '30px';
+      img.style.borderRadius = '50%';
       img.style.objectFit = 'cover';
       img.style.verticalAlign = 'middle';
       img.style.outline = 'rgb(63 81 181) solid 1px';

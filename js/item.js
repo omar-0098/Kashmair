@@ -31,8 +31,158 @@ const db  = getDatabase(app);
       0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity:1; }
       100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity:0; }
     }
-    .like-btn.voted i   { color: #e53935 !important; }
-    .dislike-btn.voted i { color: #888 !important; }
+
+    /* ===== شكل الكومنت الجديد ===== */
+    .kc-comment { display:flex; align-items:flex-start; gap:12px; padding:0; margin:0 0 24px; font-family:'Readex Pro',sans-serif; }
+    .kc-avatar { flex:0 0 auto; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+                 color:#fff; font-weight:600; font-size:15px; background-size:cover; background-position:center; }
+    .kc-body { flex:1 1 auto; min-width:0; }
+    .kc-head { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+    .kc-name { font-size:14px; font-weight:600; color:#1f1f1f; }
+    .kc-time { font-size:12px; color:#8a8a8a; font-family: 'Cairo', sans-serif;}
+    .kc-stars { display:flex; gap:2px; margin-top:4px; font-size:12px; direction:ltr; justify-content:flex-end; }
+    .kc-stars .on  { color:#f5a524; }
+    .kc-stars .off { color:#d6d6d6; }
+    [dir="rtl"] .kc-stars, .kc-comment .kc-stars { justify-content:flex-end; }
+    .kc-text {font-family: 'Cairo', sans-serif; margin:6px 0 0; font-size:14px; line-height:1.6; color:#2b2b2b; word-break:break-word; overflow-wrap:anywhere; }
+    .kc-actions { display:flex; align-items:center; gap:16px; margin-top:8px; }
+    .kc-vote { position:relative; overflow:visible; display:inline-flex; align-items:center; gap:5px; padding:2px 0; border:0; background:none;
+               color:#555; font:inherit; font-size:13px; cursor:pointer; transition:color .2s; }
+    .kc-vote i { font-size:14px; }
+    .kc-vote:hover { color:#e8590c; }
+    .kc-vote.voted, .kc-vote.voted i { color:#e8590c; font-weight:600; }
+    .kc-menu-wrap { position:relative; }
+    .kc-menu-btn { border:0; background:none; color:#555; cursor:pointer; padding:2px 6px; border-radius:6px; font-size:14px; }
+    .kc-menu-btn:hover { background:#f0f0f0; }
+    .kc-menu { display:none; position:absolute; top:100%; inset-inline-start:0; z-index:20; min-width:110px; padding:4px; background:#fff;
+               border:1px solid #eee; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.12); }
+    .kc-menu.open { display:block; }
+    .kc-menu button {     display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    border: 0;
+    background: none;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    color: #2b2b2b;
+    text-align: start;
+    font-family: 'Cairo', sans-seri; }
+    .kc-menu button:hover { background:#f5f5f5; }
+    .kc-menu .kc-delete { color:#e53935; }
+
+    /* ===== صندوق كتابة التعليق ===== */
+    .kc-composer { background:#f2f2f2; border-radius:16px; padding:16px 18px 12px; font-family:'Readex Pro',sans-serif; }
+    .kc-composer #commentInput { display:block; width:100%; min-height:48px; padding:0; margin:0; border:0; outline:0; box-shadow:none;
+                                 background:transparent; resize:none; font:inherit; font-size:14px; line-height:1.6; color:#222; }
+    .kc-composer #commentInput::placeholder { color:#7a7a7a; }
+    .kc-stars-pick { display:flex; align-items:center; gap:2px; margin:2px 0 4px; padding:0; }
+    .kc-stars-pick .rating-display { order:2; margin:0 10px; font-size:12px; color:#7a7a7a; }
+    .kc-stars-pick .star { order:1; font-size:22px; line-height:1; cursor:pointer; color:#cfcfcf; transition:transform .12s; }
+    .kc-stars-pick .star:hover { transform:scale(1.15); }
+    .kc-toolbar { display:flex; align-items:center; gap:4px; margin-top:3px; }
+    .kc-tool { width:32px; height:32px; border:0; background:none; border-radius:8px; color:#555; font-size:14px; cursor:pointer; }
+    .kc-tool:hover { background:#e4e4e4; }
+    .kc-tool-sep { width:1px; height:18px; background:#d2d2d2; margin:0 6px; }
+    .kc-composer #button.kc-submit { margin-inline-start:auto; width:auto; height:auto; padding:10px 26px; border:0; border-radius:999px;
+                                     background:#e8590c; color:#fff; font:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:background .2s; }
+    .kc-composer #button.kc-submit:hover { background:#cf4e08; }
+    .kc-composer #button.kc-submit:disabled { opacity:.6; cursor:default; }
+    .kc-emoji-wrap { position:relative; }
+    .kc-emoji-pop { 
+                        display: none;
+    position: absolute;
+    bottom: 110%;
+    inset-inline-start: 0;
+    z-index: 30;
+    min-width: 241px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .14);
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px; }
+    .kc-emoji-pop.open { display:grid; }
+    .kc-emoji-pop button { border:0; background:none; font-size:20px; padding:4px; border-radius:8px; cursor:pointer; }
+    .kc-emoji-pop button:hover { background:#f3f3f3; }
+
+    /* ===== عنوان القائمة + الترتيب ===== */
+    .kc-list-head { display:flex; align-items:center; justify-content:space-between; margin:22px 0 20px; padding-top:18px; border-top:1px solid #e8e8e8;
+                    font-family:'Readex Pro',sans-serif; }
+    .kc-title { display:flex; align-items:center; gap:8px; margin:0; font-size:17px; font-weight:700; color:#1f1f1f; }
+    .kc-badge { display:inline-block; min-width:24px; padding:1px 8px; border-radius:999px; background:#e8590c; color:#fff; font-size:12px; font-weight:600; text-align:center; }
+    .kc-sort { position:relative; }
+    .kc-sort-btn { display:inline-flex; align-items:center; gap:5px; border:0; background:none; font:inherit; font-size:14px; color:#2b2b2b; cursor:pointer; }
+    .kc-sort-btn .kc-chev { font-size:11px; color:#777; }
+    .kc-sort-menu { display:none; position:absolute; top:120%; inset-inline-end:0; z-index:20; min-width:140px; padding:4px; background:#fff;
+                    border:1px solid #eee; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.12); }
+    .kc-sort-menu.open {     display: flex;
+    flex-direction: column;
+    gap: 7px;; }
+    .kc-sort-menu button {    display: block;
+    font-family: 'Cairo', sans-serif !important;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    background: none;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    text-align: start;
+    cursor: pointer;
+    background: #f9607f14; }
+    .kc-sort-menu button:hover { background:#f5f5f5; }
+
+    /* ===== ملخص التقييمات (Ratings & Reviews) ===== */
+    #productStats #starsStats { display:block; }
+    .kc-rate { font-family:'Readex Pro',sans-serif; color:#1f1f1f; }
+    .kc-rate-top {     display: flex;
+    justify-content: center;
+    margin-bottom: 22px;
+    align-items: flex-start;
+    gap: 15px; }
+    .kc-rate-title { margin:0; font-size:22px; font-weight:700; color:#1f1f1f; font-family: 'Cairo', sans-serif;}
+    .kc-rate-arrow { height: 35px;
+    border: 0;
+    background: #2196f317;
+    color: #f5a524;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 50%;
+    width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center; }
+    .kc-rate-body { display:flex; align-items:stretch; gap:0; }
+    .kc-rate-summary { flex:0 0 38%; max-width:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 12px; }
+    .kc-rate-score { font-size:56px; font-weight:700; line-height:1; margin:0 0 14px; color:#1f1f1f; }
+    .kc-rate-stars { display:flex; direction:ltr; gap:3px; margin-bottom:12px; }
+   .kc-rate-top .kc-rate-arrow i { transform: rotate(270deg);}
+    .kc-rstar { font-size:26px; line-height:1;
+                background:linear-gradient(90deg,#f5a524 var(--fill),#dcdcdc var(--fill));
+                -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
+    .kc-rate-count { font-size:14px; color:#6b6b6b;     font-family: 'Cairo', sans-serif;}
+    .kc-rate-divider { flex:0 0 1px; background:#e3e3e3; margin:4px 0; }
+    .kc-rate-bars { flex: 1 1 auto;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 15px;
+    min-width: 0;
+    background: white;
+    border-radius: 15px;
+    padding: 29px 19px;
+    margin-right: 30px; }
+    .kc-rate-row { display:flex; align-items:center; gap:8px; }
+    .kc-rate-num { flex:0 0 14px; font-size:15px; font-weight:500; color:#1f1f1f; text-align:center; }
+    .kc-rate-track { flex:1 1 auto; height:7.5px; border-radius:999px; background:#e4e4e4; overflow:hidden; }
+    .kc-rate-fill { height:100%; border-radius:999px; background:#f5a524; transition:width .4s ease; }
+  
   `;
   document.head.appendChild(style);
 })();
@@ -465,91 +615,133 @@ function formatDate(ts) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+const _rtf = (typeof Intl !== "undefined" && Intl.RelativeTimeFormat)
+  ? new Intl.RelativeTimeFormat("ar-EG-u-nu-latn", { numeric: "auto" }) : null;
+
+function timeAgo(ts) {
+  if (!ts) return "";
+  const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (sec < 60) return "الآن";
+  const steps = [
+    [60, "minute"], [3600, "hour"], [86400, "day"],
+    [604800, "week"], [2592000, "month"], [31536000, "year"]
+  ];
+  let idx = 0;
+  for (let i = 0; i < steps.length; i++) if (sec >= steps[i][0]) idx = i;
+  const val = Math.floor(sec / steps[idx][0]);
+  return _rtf ? _rtf.format(-val, steps[idx][1]) : formatDate(ts);
+}
+
+// بعد الـ escape: **غامق**  *مائل*  __تحته خط__
+function formatRich(s) {
+  return s
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__(.+?)__/g, "<u>$1</u>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>");
+}
+
+function starsMarkup(rating) {
+  const r = Math.max(0, Math.min(5, Math.round(rating || 0)));
+  let html = "";
+  for (let i = 1; i <= 5; i++) {
+    html += i <= r
+      ? '<i class="fa-solid fa-star on"></i>'
+      : '<i class="fa-solid fa-star off"></i>';
+  }
+  return html;
+}
+
 function createCommentElement({ id, userName, text, createdAt, userPhoto, userEmail, rating, likes = 0, dislikes = 0 }) {
   const commentDiv = document.createElement("div");
-  commentDiv.className = "comment";
+  commentDiv.className = "kc-comment";
   commentDiv.dataset.commentId = id;
 
+  // ----- الصورة -----
   const avatar = document.createElement("div");
-  avatar.className = "avatar";
+  avatar.className = "kc-avatar";
 
   const setAvatarImage = (photoUrl) => {
     if (photoUrl) {
-      avatar.style.backgroundImage    = `url(${photoUrl})`;
-      avatar.style.backgroundSize     = "cover";
-      avatar.style.backgroundPosition = "center";
-      avatar.style.backgroundColor    = "transparent";
-      avatar.textContent              = "";
+      avatar.style.backgroundImage = `url(${photoUrl})`;
+      avatar.style.backgroundColor = "transparent";
+      avatar.textContent = "";
     } else {
-      avatar.style.backgroundImage    = "none";
-      avatar.style.backgroundColor    = getColorForName(userName || "م");
-      avatar.textContent              = (userName || "م").charAt(0);
+      avatar.style.backgroundImage = "none";
+      avatar.style.backgroundColor = getColorForName(userName || "م");
+      avatar.textContent = (userName || "م").charAt(0);
     }
   };
-
   setAvatarImage(userPhoto);
-
   if (userEmail) {
-    fetchUserPhoto(userEmail).then((latestPhoto) => {
-      if (latestPhoto) setAvatarImage(latestPhoto);
+    fetchUserPhoto(userEmail).then((p) => { if (p) setAvatarImage(p); });
+  }
+
+  // ----- هل صاحب الكومنت (يقدر يعدل/يحذف خلال نص ساعة) -----
+  const currentUserEmail = getCurrentUserEmail();
+  const isOwner = currentUserEmail && userEmail && currentUserEmail.toLowerCase() === userEmail.toLowerCase();
+  const isEditable = isOwner && (Date.now() - (createdAt || 0) < 30 * 60 * 1000);
+
+  // ----- المحتوى -----
+  const body = document.createElement("div");
+  body.className = "kc-body";
+  body.innerHTML = `
+    <div class="kc-head">
+      <span class="kc-name">${escapeHtml(userName || "مجهول")}</span>
+      <span class="kc-time" title="${formatDate(createdAt)}">${timeAgo(createdAt)}</span>
+    </div>
+    <div class="kc-stars" aria-label="التقييم ${rating || 0} من 5">${starsMarkup(rating)}</div>
+    <p class="kc-text">${formatRich(escapeHtml(text || ""))}</p>
+    <div class="kc-actions">
+      <button type="button" class="kc-vote kc-like">
+        <i class="fa-regular fa-thumbs-up"></i><span class="like-count">${likes}</span>
+      </button>
+      <button type="button" class="kc-vote kc-dislike">
+        <i class="fa-regular fa-thumbs-down"></i><span class="dislike-count">${dislikes}</span>
+      </button>
+      ${isEditable ? `
+      <div class="kc-menu-wrap">
+        <button type="button" class="kc-menu-btn" aria-label="المزيد"><i class="fa-solid fa-ellipsis"></i></button>
+        <div class="kc-menu">
+          <button type="button" class="kc-edit"><i class="fa-solid fa-pen"></i> تعديل</button>
+          <button type="button" class="kc-delete"><i class="fa-solid fa-trash"></i> حذف</button>
+        </div>
+      </div>` : ""}
+    </div>
+  `;
+
+  if (isEditable) {
+    const menu = body.querySelector(".kc-menu");
+    body.querySelector(".kc-menu-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".kc-menu.open").forEach((m) => { if (m !== menu) m.classList.remove("open"); });
+      menu.classList.toggle("open");
+    });
+    body.querySelector(".kc-edit").addEventListener("click", () => {
+      menu.classList.remove("open");
+      openEditModal(id, text || "");
+    });
+    body.querySelector(".kc-delete").addEventListener("click", () => {
+      menu.classList.remove("open");
+      deleteComment(id);
     });
   }
 
-  const content = document.createElement("div");
-  content.className = "comment-content";
-  const starsHtml = '<i class="fa-solid fa-star" id="star"></i>'.repeat(rating || 0);
-
-  const currentUserEmail = getCurrentUserEmail();
-  const isOwner = currentUserEmail && userEmail && currentUserEmail.toLowerCase() === userEmail.toLowerCase();
-  const HALF_HOUR_MS = 30 * 60 * 1000;
-  const isEditable = isOwner && (Date.now() - (createdAt || 0) < HALF_HOUR_MS);
-
-  let actionBtnsHtml = "";
-  if (isEditable) {
-    actionBtnsHtml = `
-      <div class="comment-action-btns" style="display:flex;gap:10px;">
-        <button class="edit-comment-btn" onclick="openEditModal('${id}', '${escapeHtml(text || "")}')" style="background:none;border:none;color:#3498db;cursor:pointer;font-size:13px;"><i class="fa-solid fa-pen"></i> تعديل</button>
-        <button class="delete-comment-btn" onclick="deleteComment('${id}')" style="background:none;border:none;color:#e53935;cursor:pointer;font-size:13px;"><i class="fa-solid fa-trash"></i> حذف</button>
-      </div>
-    `;
-  }
-
-  content.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div class="comment-name">${escapeHtml(userName || "مجهول")}</div>
-      ${actionBtnsHtml}
-    </div>
-    <div class="comment-date comment-stars">${formatDate(createdAt)}</div>
-    <div class="comment-text">${starsHtml}</div>
-    <div class="comment-text comment-text-body">${escapeHtml(text || "")}</div>
-  `;
-
-  const reactionDiv = document.createElement("div");
-  reactionDiv.className = "comment-reactions";
-  reactionDiv.innerHTML = `
-    <button class="dislike-btn" data-comment-id="${id}">
-      <i class="fa-regular fa-thumbs-down"></i>
-      <span class="dislike-count">${dislikes}</span>
-    </button>
-    <span class="vote-separator"></span>
-    <button class="like-btn" data-comment-id="${id}" style="position:relative;overflow:visible;">
-      <i class="fa-regular fa-thumbs-up"></i>
-      <span class="like-count">${likes}</span>
-    </button>
-  `;
-
   commentDiv.appendChild(avatar);
-  commentDiv.appendChild(content);
-  commentDiv.appendChild(reactionDiv);
+  commentDiv.appendChild(body);
   setTimeout(() => attachReactionEvents(commentDiv, id), 0);
   return commentDiv;
 }
 
+// قفل قائمة (...) لما المستخدم يدوس بره
+document.addEventListener("click", () => {
+  document.querySelectorAll(".kc-menu.open").forEach((m) => m.classList.remove("open"));
+});
+
 // ─── Like / Dislike ──────────────────────────────────────────
 
 function attachReactionEvents(commentDiv, id) {
-  const likeBtn    = commentDiv.querySelector(".like-btn");
-  const dislikeBtn = commentDiv.querySelector(".dislike-btn");
+  const likeBtn    = commentDiv.querySelector(".kc-like");
+  const dislikeBtn = commentDiv.querySelector(".kc-dislike");
   const voteKey    = `vote_${ITEM_ID}_${id}`;
   const prev       = localStorage.getItem(voteKey);
 
@@ -562,41 +754,24 @@ function attachReactionEvents(commentDiv, id) {
 
 function applyVotedStyle(btn, type, on) {
   if (!btn) return;
+  btn.classList.toggle("voted", !!on);
   const icon = btn.querySelector("i");
-  if (on) {
-    btn.classList.add("voted");
-    if (type === "like") {
-      btn.style.color      = "#e53935";
-      btn.style.background = "#fff0f0";
-      btn.style.border     = "1.5px solid #e53935";
-      btn.style.transition = "all 0.25s ease";
-      if (icon) { icon.style.color = "#e53935"; icon.classList.replace("fa-regular","fa-solid"); }
-    } else {
-      btn.style.color      = "#555";
-      btn.style.background = "#f0f0f0";
-      btn.style.border     = "1.5px solid #aaa";
-      btn.style.transition = "all 0.25s ease";
-      if (icon) { icon.style.color = "#555"; icon.classList.replace("fa-regular","fa-solid"); }
-    }
-  } else {
-    btn.classList.remove("voted");
-    btn.style.color      = "";
-    btn.style.background = "";
-    btn.style.border     = "";
-    if (icon) { icon.style.color = ""; icon.classList.replace("fa-solid","fa-regular"); }
+  if (icon) {
+    icon.classList.toggle("fa-solid", !!on);
+    icon.classList.toggle("fa-regular", !on);
   }
 }
 
 function animateLike(btn) {
   btn.animate([
     { transform: "scale(1)",    offset: 0    },
-    { transform: "scale(3.8)",  offset: 0.35 },
-    { transform: "scale(2.8)",  offset: 0.5  },
-    { transform: "scale(1.2)",  offset: 0.75 },
+    { transform: "scale(1.5)",  offset: 0.35 },
+    { transform: "scale(1.3)",  offset: 0.5  },
+    { transform: "scale(1.1)",  offset: 0.75 },
     { transform: "scale(1)",    offset: 1    }
   ], { duration: 600, easing: "cubic-bezier(0.34,1.56,0.64,1)" });
 
-  const colors = ["#e53935","#ff5252","#ff4081","#f06292","#e91e63"];
+  const colors = ["#e8590c","#ff7a2f","#f5a524","#ff8a50","#e8590c"];
   for (let i = 0; i < 7; i++) {
     const p     = document.createElement("span");
     p.textContent = "♥";
@@ -683,6 +858,9 @@ let currentSortMethod = "latest";
 
 window.changeCommentSort = function(sortType) {
   currentSortMethod = sortType;
+  const lbl = document.getElementById("kcSortLabel");
+  if (lbl) lbl.textContent = sortType === "highest" ? "الأعلى تقييماً" : "الأحدث";
+  document.getElementById("kcSortMenu")?.classList.remove("open");
   sortAndRenderComments();
 };
 
@@ -778,80 +956,56 @@ function renderHeaderRating() {
 }
 
 function updateProductStats() {
-  const statsContainer = document.getElementById("starsStats");
-  if (!statsContainer) return;
+  const box = document.getElementById("starsStats");
+  if (!box) return;
 
   const counts = [0, 0, 0, 0, 0];
   allComments.forEach((c) => { if (c.rating >= 1 && c.rating <= 5) counts[c.rating - 1]++; });
-  const total         = counts.reduce((a, b) => a + b, 0);
-  const averageRating = total > 0
-    ? (counts.reduce((sum, count, i) => sum + count * (i + 1), 0) / total).toFixed(1) : 0;
+  const total = counts.reduce((x, y) => x + y, 0);
+  const avg   = total > 0 ? counts.reduce((s, n, i) => s + n * (i + 1), 0) / total : 0;
 
-  statsContainer.innerHTML = "";
-  const mainSection = document.createElement("div");
+  const fmtCount = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + " ألف" : String(n);
 
-  const ratingSection = document.createElement("div");
-  ratingSection.style.cssText = "text-align:center;min-width:120px;";
-
-  const reviewsTitle = document.createElement("h3");
-  reviewsTitle.textContent = "إحصائيات تقييم المنتج";
-  reviewsTitle.style.cssText = `margin:0 0 35px 0;font-size:18px;color:#000;font-weight:600;
-    font-family:"Readex Pro",sans-serif;font-optical-sizing:auto;font-style:normal;`;
-
-  const ratingNumber = document.createElement("h6");
-  ratingNumber.textContent = averageRating;
-  ratingNumber.style.cssText = "font-size:48px;font-weight:bold;color:#333;margin:10px 0;line-height:1;";
-
-  const starsDiv = document.createElement("div");
-  starsDiv.style.cssText = "display:flex;justify-content:center;gap:2px;margin:10px 0;";
+  let starsHtml = "";
   for (let i = 1; i <= 5; i++) {
-    const s = document.createElement("span");
-    s.innerHTML = "★";
-    s.style.cssText = `font-size:28px;color:${i <= Math.round(averageRating) ? "#ffc107" : "#e9ecef"};text-shadow:0 0 2px black;`;
-    starsDiv.appendChild(s);
+    const fill = Math.max(0, Math.min(1, avg - (i - 1))) * 100;
+    starsHtml += `<span class="kc-rstar" style="--fill:${fill}%">★</span>`;
   }
 
-  const reviewCount = document.createElement("div");
-  reviewCount.textContent = `مراجعات ${total}`;
-  reviewCount.style.cssText = `color:rgb(108,117,125);font-size:16px;margin-top:5px;margin-bottom:10px;
-    font-family:"Readex Pro",sans-serif;font-optical-sizing:auto;font-style:normal;`;
-
-  ratingSection.append(reviewsTitle, ratingNumber, starsDiv, reviewCount);
-
-  const detailSection = document.createElement("div");
-  detailSection.style.cssText = "flex:1;min-width:300px;";
+  let rowsHtml = "";
   for (let i = 5; i >= 1; i--) {
-    const percent = total > 0 ? (counts[i - 1] / total) * 100 : 0;
-    const bar = document.createElement("div");
-    bar.style.cssText = "display:flex;align-items:center;gap:12px;margin-bottom:13px;";
-
-    const pLabel = document.createElement("span");
-    pLabel.textContent = `${Math.round(percent)}%`;
-    pLabel.style.cssText = "width:35px;text-align:right;font-size:15px;color:#6c757d;font-weight:500;";
-
-    const pContainer = document.createElement("div");
-    pContainer.style.cssText = `flex:1;height:8px;background-color:rgb(228,219,219);
-      border-radius:6px;overflow:hidden;position:relative;direction:rtl;`;
-    const pBar = document.createElement("div");
-    pBar.style.cssText = `height:100%;width:${percent}%;
-      background:linear-gradient(90deg,#333 0%,#555 100%);border-radius:6px;transition:width 0.3s ease;`;
-    pContainer.appendChild(pBar);
-
-    const sNum = document.createElement("span");
-    sNum.textContent = i;
-    sNum.style.cssText = "width:20px;text-align:center;font-size:14px;font-weight:600;color:#333;";
-
-    bar.append(pLabel, pContainer, sNum);
-    detailSection.appendChild(bar);
+    const pct = total > 0 ? (counts[i - 1] / total) * 100 : 0;
+    rowsHtml += `
+      <div class="kc-rate-row">
+        <span class="kc-rate-num">${i}</span>
+        <div class="kc-rate-track"><div class="kc-rate-fill" style="width:${pct}%"></div></div>
+      </div>`;
   }
 
-  mainSection.append(ratingSection, detailSection);
-  statsContainer.appendChild(mainSection);
+  box.innerHTML = `
+    <div class="kc-rate">
+      <div class="kc-rate-top">
+        <h3 class="kc-rate-title">التقييمات والمراجعات</h3>
+        <button type="button" class="kc-rate-arrow" aria-label="عرض التعليقات"
+          onclick="document.querySelector('.kc-list-head')?.scrollIntoView({behavior:'smooth',block:'start'})">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+      <div class="kc-rate-body">
+        <div class="kc-rate-summary">
+          <div class="kc-rate-score">${avg.toFixed(1)}</div>
+          <div class="kc-rate-stars" aria-label="متوسط التقييم ${avg.toFixed(1)} من 5">${starsHtml}</div>
+          <div class="kc-rate-count">(${fmtCount(total)} مراجعة)</div>
+        </div>
+        <div class="kc-rate-divider"></div>
+        <div class="kc-rate-bars">${rowsHtml}</div>
+      </div>
+    </div>`;
 }
 
 function updateCommentCount() {
   const el = document.getElementById("totalComments");
-  if (el) el.textContent = `عدد التقييمات: ${allComments.length}`;
+  if (el) el.textContent = allComments.length;
 }
 
 // ============================================================
@@ -988,3 +1142,57 @@ document.addEventListener("DOMContentLoaded", () => {
     postBtn.addEventListener("click", window.postComment);
   }
 });
+
+// ============================================================
+//  ✍️ أدوات صندوق التعليق (غامق/مائل/خط/إيموجي/منشن) + قائمة الترتيب
+// ============================================================
+(function setupComposer() {
+  const input = document.getElementById("commentInput");
+  if (!input) return;
+
+  function insertAtCursor(text) {
+    const s = input.selectionStart ?? input.value.length;
+    const e = input.selectionEnd ?? input.value.length;
+    input.value = input.value.slice(0, s) + text + input.value.slice(e);
+    const pos = s + text.length;
+    input.focus();
+    input.setSelectionRange(pos, pos);
+  }
+
+  function wrapSelection(mark) {
+    const s = input.selectionStart, e = input.selectionEnd;
+    const sel = input.value.slice(s, e);
+    input.value = input.value.slice(0, s) + mark + sel + mark + input.value.slice(e);
+    input.focus();
+    if (sel) input.setSelectionRange(s + mark.length, e + mark.length);
+    else input.setSelectionRange(s + mark.length, s + mark.length);
+  }
+
+  const marks = { bold: "**", italic: "*", underline: "__" };
+  document.querySelectorAll(".kc-tool[data-fmt]").forEach((b) =>
+    b.addEventListener("click", () => wrapSelection(marks[b.dataset.fmt])));
+
+  const pop = document.getElementById("kcEmojiPop");
+  const emojis = ["😀","😍","👍","❤️","🔥","👏","😂","😊","🙏","💯","⭐","🎉","😢","😡","🤩","👌","🛏️","✨"];
+  if (pop) {
+    emojis.forEach((em) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = em;
+      b.addEventListener("click", () => { insertAtCursor(em); pop.classList.remove("open"); });
+      pop.appendChild(b);
+    });
+  }
+  document.getElementById("kcEmojiBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation(); pop?.classList.toggle("open");
+  });
+  document.getElementById("kcMentionBtn")?.addEventListener("click", () => insertAtCursor("@"));
+
+  document.getElementById("kcSortBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation(); document.getElementById("kcSortMenu")?.classList.toggle("open");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (pop && !pop.contains(e.target)) pop.classList.remove("open");
+    document.getElementById("kcSortMenu")?.classList.remove("open");
+  });
+})();

@@ -30,7 +30,54 @@ window.switchTab=function(name,btn){
   if(name==="comments"){const e=localStorage.getItem("kashmirSessionEmail");renderMyComments(e);}
   if(name==="orders"){const e=localStorage.getItem("kashmirSessionEmail");renderOrders(e);}
   if(name==="discount"){const e=localStorage.getItem("kashmirSessionEmail");renderDiscountCoupons(e);}
+  if(name==="wallet"){const e=localStorage.getItem("kashmirSessionEmail");renderWallet(e);}
 };
+
+// ---------- 💰 رصيدك ----------
+// فتح اللعبة جوه الصفحة (iframe بملء الشاشة) — الجوائز بتتضاف للرصيد تلقائي
+window.openGame=function(){
+  let box=document.getElementById("gameFrameBox");
+  if(!box){box=document.createElement("div");box.id="gameFrameBox";document.body.appendChild(box);}
+  box.innerHTML=`<iframe src="../game.html" allow="autoplay" title="Gravity Surge"></iframe>`;
+  box.classList.add("open");document.body.style.overflow="hidden";
+};
+window.closeGame=function(){
+  const box=document.getElementById("gameFrameBox");
+  if(box){box.classList.remove("open");box.innerHTML="";}
+  document.body.style.overflow="";
+  const e=localStorage.getItem("kashmirSessionEmail");if(e)renderWallet(e);   // نحدّث الرصيد بعد اللعب
+};
+window.addEventListener("message",ev=>{if(ev.data&&ev.data.type==="gs-close")window.closeGame();});
+
+async function renderWallet(email){
+  const list=document.getElementById("walletList"),balEl=document.getElementById("walletBal"),stats=document.getElementById("walletStats");
+  if(!list)return;
+  const fm=n=>Number(n||0).toLocaleString("ar-EG",{minimumFractionDigits:2,maximumFractionDigits:2})+" ج.م.";
+  if(!email){list.innerHTML=`<div class="wl-empty">سجّل الدخول الأول</div>`;return;}
+  list.innerHTML=`<p class="my-comments-loading">جاري التحميل...</p>`;
+  let w=null;
+  try{const s=await get(ref(db,`wallet/${eKey(email)}`));w=s.exists()?s.val():null;}
+  catch(e){console.error("renderWallet:",e);list.innerHTML=`<div class="wl-empty">تعذّر تحميل الرصيد</div>`;return;}
+  try{const gv=await get(ref(db,"gameConfig/visible"));const card=document.querySelector(".wl-game");if(card)card.style.display=gv.val()===true?"":"none";}catch(e){}
+  const bal=Math.max(0,Number(w&&w.balance)||0);
+  const log=Object.entries((w&&w.log)||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(b.at||0)-(a.at||0));
+  const sum=t=>log.filter(x=>x.type===t&&!x.deleted).reduce((n,x)=>n+(Number(x.amount)||0),0);
+  balEl.textContent=fm(bal);
+  stats.innerHTML=`
+    <div class="my-stat-card"><div class="my-stat-icon green"><i class="fa-solid fa-circle-plus"></i></div><div><div style="font-size:12px;color:#888">إجمالي اللي اتضاف</div><b>${fm(sum("credit"))}</b></div></div>
+    <div class="my-stat-card"><div class="my-stat-icon gold"><i class="fa-solid fa-bag-shopping"></i></div><div><div style="font-size:12px;color:#888">إجمالي اللي صرفته</div><b>${fm(sum("debit"))}</b></div></div>`;
+  if(!log.length){list.innerHTML=`<div class="wl-empty">مفيش حركات على رصيدك لسه</div>`;return;}
+  list.innerHTML=log.map(x=>{
+    const amt=Number(x.amount)||0;
+    const cfg={credit:["تمت إضافة رصيد","in","+"],refund:["استرجاع للرصيد","in","+"],debit:["صرفته في طلب","out","−"],deduct:["خصم من الرصيد","out","−"]}[x.type]||["حركة","","" ];
+    const when=x.at?new Date(x.at).toLocaleString("ar-EG",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+    let d="";
+    if(x.type==="debit")d=`${x.orderCode?`طلب <b>${escHtml(x.orderCode)}</b>`:""}${x.desc?` — ${escHtml(x.desc)}`:""}`;
+    else d=escHtml(x.note||"")+(x.orderCode?` (طلب ${escHtml(x.orderCode)})`:"");
+    const edits=Object.values(x.edits||{}).sort((a,b)=>(a.at||0)-(b.at||0)).map(e=>`<div style="color:#b26a00;font-size:12px;margin-top:3px">✏️ ${escHtml(new Date(e.at).toLocaleString("ar-EG",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}))} — ${escHtml(e.text)}</div>`).join("");
+    return `<div class="wl-item"${x.deleted?' style="opacity:.55"':""}><div><div class="wl-t">${cfg[0]}${x.deleted?" — 🗑️ محذوفة":""}</div><div class="wl-d">${d?d+"<br>":""}${escHtml(when)}${edits}</div></div><div class="wl-a ${cfg[1]}"${x.deleted?' style="text-decoration:line-through"':""}>${cfg[2]}${fm(amt)}</div></div>`;
+  }).join("");
+}
 
 // dark mode
 const dmToggle=document.getElementById("darkModeToggle");
@@ -82,8 +129,10 @@ async function renderDiscountCoupons(email){
 
   const now=Date.now(),name=_currentUserName();
   const visible=coupons.filter(c=>{
-    if(c.autoApply)return false; // خصم تلقائي بيتطبق لوحده على السلة، مش كود يتعرض للعميل
-    if(c.unlisted)return false; // كود سبونسر/انفلونسر — شغال بالكود بس مش معروض هنا
+    if(!c.offerKey){   // أكواد العروض (خصم الكمية) بتظهر دايماً مع زرار "شوف العرض"
+      if(c.autoApply)return false; // خصم تلقائي بيتطبق لوحده على السلة، مش كود يتعرض للعميل
+      if(c.unlisted)return false; // كود سبونسر/انفلونسر — شغال بالكود بس مش معروض هنا
+    }
     if(c.active===false)return false;
     if(c.startAt&&now<c.startAt)return false;
     if(c.expiresAt&&now>c.expiresAt)return false;
@@ -115,6 +164,9 @@ async function renderDiscountCoupons(email){
     }
     if(c.maxUsesPerCustomer)usesParts.push(c.maxUsesPerCustomer===1?"مرة واحدة لكل عميل":`${c.maxUsesPerCustomer.toLocaleString("ar-EG")} مرات لكل عميل`);
     const usesText=usesParts.join(" • ");
+    const isOffer=!!c.offerKey;
+    const offerTitle=isOffer?`${c.type==="percent"?`خصم ${c.value}%`:`خصم ${Number(c.value).toLocaleString("ar-EG")} ج.م.`} على «${c.offerName||"العرض"}» لو اشتريت ${Number(c.minOfferQty||1).toLocaleString("ar-EG")} أو أكتر`:"";
+    const offerHref=isOffer?`../offers.html?offer=${encodeURIComponent(c.offerKey)}`:"";
     const card=document.createElement("div");
     card.className="coupon-card";
     card.innerHTML=`
@@ -122,15 +174,16 @@ async function renderDiscountCoupons(email){
       <div class="coupon-body">
         <div class="coupon-meta">
           <div class="coupon-info">
-            <h3>${escHtml(title)}${c.note?` — ${escHtml(c.note)}`:""}</h3>
+            <h3>${escHtml(isOffer?offerTitle:title)}${!isOffer&&c.note?` — ${escHtml(c.note)}`:""}</h3>
             <div class="exp">${escHtml(expText)}</div>
             ${usesText?`<div class="exp">${escHtml(usesText)}</div>`:""}
           </div>
           <div class="coupon-store"><img src="../login.png" alt=""></div>
         </div>
-        <div class="coupon-code-row" onclick="copyCoupon(this,'${escHtml(c.code)}')">
-          <h4>${escHtml(c.code)}</h4>
-        </div>
+        ${isOffer&&c.autoApply
+          ?`<div style="margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#e8f7ec;color:#1b5e20;font-weight:800;font-size:13px;text-align:center">🔁 بيتطبق تلقائي في سلتك لما تشتري ${Number(c.minOfferQty||1).toLocaleString("ar-EG")} من العرض</div>`
+          :`<div class="coupon-code-row" onclick="copyCoupon(this,'${escHtml(c.code)}')"><h4>${escHtml(c.code)}</h4></div>`}
+        ${isOffer?`<a href="${offerHref}" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:11px;border-radius:12px;background:linear-gradient(227deg,#f5934e,#d27039);color:#fff;font-weight:900;font-size:14px;text-decoration:none">شوف العرض <i class="fa-solid fa-arrow-left"></i></a>`:""}
       </div>`;
     box.appendChild(card);
   });
@@ -935,7 +988,8 @@ function orderCardHtml(o){
         <div><div class="lbl">طريقة الدفع</div><div class="val">${escHtml(o.payment)||"—"}</div></div>
         <div><div class="lbl">المستلم</div><div class="val">${escHtml(o.recipient)||"—"}${o.phone?" — "+escHtml(o.phone):""}</div></div>
         <div><div class="lbl">عنوان التوصيل ${o.addressType?"("+escHtml(o.addressType)+")":""}</div><div class="val">${escHtml(o.address)||"—"}</div></div>
-        <div><div class="lbl">إجمالي الطلب</div><div class="val total">${escHtml(o.total)||"—"}</div></div>
+        ${Number(o.walletUsed)>0?`<div><div class="lbl">اتدفع من رصيدك</div><div class="val total" style="color:#1a7f4b">${_money(Number(o.walletUsed))}</div></div>`:""}
+        <div><div class="lbl">${Number(o.walletUsed)>0?"المطلوب دفعه":"إجمالي الطلب"}</div><div class="val total">${escHtml(o.total)||"—"}</div></div>
         <div><div class="lbl">عدد القطع</div><div class="val total" style="font-weight:800">${items.reduce((n,it)=>n+(parseInt(it.qty)||1),0).toLocaleString("ar-EG")} قطعة</div></div>
       </div>
     </div>
@@ -1115,7 +1169,8 @@ function invoiceHtml(o){
       ${o.subtotal?totRow("المجموع الفرعي",o.subtotal):""}
       ${o.shipping?totRow("رسوم الشحن",o.shipping):""}
       ${o.packaging?totRow("رسوم التغليف",o.packaging):""}
-      ${totRow("الإجمالي المطلوب",o.total||"—",true)}
+      ${Number(o.walletUsed)>0?totRow("مدفوع من رصيدك","−"+_money(Number(o.walletUsed))):""}
+      ${totRow(Number(o.walletUsed)>0?"المطلوب دفعه":"الإجمالي المطلوب",o.total||"—",true)}
     </div>
 
     <div style="margin-top:30px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.9;color:#7c5e00">
@@ -1123,7 +1178,7 @@ function invoiceHtml(o){
       يُرجى استلام الطلب خلال ٧ أيام من تاريخ الطلب،  <b style="font-family:monospace">${escHtml(o.code)}</b> .
     </div>
 
-    <div style="text-align:center;margin-top:34px;padding-top:16px;border-top:1px dashed #ddd;font-size:12px;color:#999">شكراً لتسوقك من كشمير هوم 💚 — kashmair.netlify.app</div>
+    <div style="text-align:center;margin-top:34px;padding-top:16px;border-top:1px dashed #ddd;font-size:12px;color:#999">شكراً لتسوقك من كشمير هوم 💚 — kashmair.vercel.app</div>
   </div>`;
 }
 
@@ -1211,6 +1266,13 @@ async function confirmInvoiceDownload(modal){
     btn.disabled = false; btn.innerHTML = old;
   }
 }
+
+// فتح تبويب الرصيد مباشرة: user/accoun.html?tab=wallet
+(function openWalletFromQuery(){
+  if(new URLSearchParams(location.search).get("tab") !== "wallet") return;
+  const btn = Array.from(document.querySelectorAll(".nav-btn")).find(b=>(b.getAttribute("onclick")||"").includes("switchTab('wallet'"));
+  if(btn) window.switchTab("wallet", btn);
+})();
 
 // فتح تبويب الطلبات مباشرة من الرابط: user/accoun.html?tab=orders
 (function openOrdersFromQuery(){

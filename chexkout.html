@@ -421,6 +421,20 @@
                         <span class="cn-sum-label">المجموع</span>
                     </div>
 
+                    <!-- 💰 رصيدك (js/wallet.js) -->
+                    <label class="cn-wallet-box" id="cnWalletBox" style="display:none">
+                        <input type="checkbox" id="cnWalletUse">
+                        <span class="cn-wallet-text"><b>استخدم رصيدك</b><small>المتاح: <span id="cnWalletBal">0.00 ج.م.</span></small></span>
+                    </label>
+                    <div class="cn-sum-row cn-wallet-row" id="cnWalletRow" style="display:none">
+                        <span class="cn-sum-value" id="cnWalletUsed">−0.00 ج.م.</span>
+                        <span class="cn-sum-label">من رصيدك</span>
+                    </div>
+                    <div class="cn-sum-row cn-sum-total" id="cnDueRow" style="display:none">
+                        <span class="cn-sum-value" id="cnDueValue">0.00 ج.م.</span>
+                        <span class="cn-sum-label">المطلوب دفعه</span>
+                    </div>
+
                     <!-- وسيلة الدفع المختارة -->
                     <div class="cn-selected-pay" id="cnSelectedPay" style="display:none">
                         <img id="cnSelectedPayImg" src="" alt="">
@@ -716,6 +730,21 @@
 
 <script type="module" src="js/cart-suggestions.js"></script>
 <script type="module" src="js/checkout-address.js"></script>
+<style>
+.cn-wallet-box{display:flex;align-items:center;gap:10px;margin:12px 0 4px;padding:12px 14px;border:1.5px dashed #1a7f4b;border-radius:12px;background:#f0faf4;cursor:pointer;direction:rtl}
+.cn-wallet-box input{width:18px;height:18px;accent-color:#1a7f4b;flex:none}
+.cn-wallet-box  span b{
+    font-family: 'Cairo', sans-serif;
+}
+.cn-wallet-text span{
+    font-weight: 700;
+    color: black;
+}
+.cn-wallet-text{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.cn-wallet-text small{color:#555;font-size:12px;font-family: 'Cairo', sans-serif;}
+.cn-wallet-row .cn-sum-value{color:#1a7f4b;font-weight:700}
+</style>
+<script type="module" src="js/wallet.js"></script>
 <script type="module" src="js/orders-save.js"></script>
 <script type="module" src="js/coupons.js"></script>
 <script type="module" src="js/coupon-popup.js"></script>

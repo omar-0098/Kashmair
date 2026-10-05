@@ -160,8 +160,10 @@ tfoot td{font-weight:800;background:#f3f7ff;border-top:2px solid var(--line)}
     <button class="nv" data-view="cancelled"><i class="fa-solid fa-ban"></i> الطلبات الملغية <span class="cnt" id="cntCancelled" style="background:#fde8ec;color:var(--err)">0</span></button>
     <button class="nv" data-view="comments"><i class="fa-solid fa-comments"></i> التعليقات <span class="cnt" id="cntComments">0</span></button>
     <button class="nv" data-view="accounts"><i class="fa-solid fa-users"></i> الحسابات <span class="cnt" id="cntUsers">0</span></button>
+    <button class="nv" data-view="wallets"><i class="fa-solid fa-wallet"></i> الأرصدة</button>
     <button class="nv" data-view="coupons"><i class="fa-solid fa-tag"></i> أكواد الخصم <span class="cnt" id="cntCoupons">0</span></button>
     <button class="nv" data-view="analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
+    <button class="nv" id="nvOffers" data-offers><i class="fa-solid fa-tags"></i> العروض</button>
     <button class="nv" data-view="revenue"><i class="fa-solid fa-sack-dollar"></i> الإيرادات</button>
     <div class="sec-t">أخرى</div>
     <a class="nv" href="accoun.html"><i class="fa-solid fa-user"></i> حسابي</a>
@@ -182,5 +184,31 @@ tfoot td{font-weight:800;background:#f3f7ff;border-top:2px solid var(--line)}
 </div>
 <div id="modal"><div class="mbox"><div class="mh"><span id="mt"></span><button class="mx" id="mx">✕</button></div><div class="mb" id="mbody"></div></div></div>
 <script type="module" src="../js/admin.js?v=8"></script>
+<script>
+/* زرار "العروض": بيفتح صفحة الإحصائيات على تبويب العروض (من غير ما نغيّر admin.js) */
+(function(){
+  var off=document.getElementById("nvOffers");
+  if(!off)return;
+  var statsBtn=document.querySelector('.nv[data-view="analytics"]'),busy=false;
+  function setActive(on){
+    if(on){document.querySelectorAll(".nv").forEach(function(b){b.classList.remove("active");});off.classList.add("active");}
+    else off.classList.remove("active");
+  }
+  off.addEventListener("click",function(){
+    window._at="offers";
+    busy=true;if(statsBtn)statsBtn.click();busy=false;
+    setActive(true);
+    setTimeout(function(){var t=document.querySelector('[data-atab="offers"]');if(t&&!t.classList.contains("on"))t.click();setActive(true);},0);
+    var sb=document.querySelector(".side,aside");if(sb&&sb.classList.contains("open"))sb.classList.remove("open");
+  });
+  /* أي زرار تاني في القايمة: شيل التفعيل من العروض، والإحصائيات ترجع على النظرة العامة */
+  document.addEventListener("click",function(e){
+    var b=e.target.closest(".nv[data-view]");
+    if(b&&!busy){ if(b.dataset.view==="analytics")window._at="over"; setActive(false); }
+    var t=e.target.closest("[data-atab]");
+    if(t){ setTimeout(function(){ setActive(window._at==="offers"); },0); }
+  },true);
+})();
+</script>
 </body>
 </html>

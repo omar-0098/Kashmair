@@ -3,7 +3,7 @@
 //  الملف ده بيتحمّل في chexkout.html (type="module")
 // ============================================================
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,set,get,update}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{getDatabase,ref,set,get,update,runTransaction}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const cfg={apiKey:"AIzaSyCCk0w_KHVCswjp16TSkNToRSSOjlPC5kE",authDomain:"data-customer-d722f.firebaseapp.com",databaseURL:"https://data-customer-d722f-default-rtdb.firebaseio.com/",projectId:"data-customer-d722f",storageBucket:"data-customer-d722f.firebasestorage.app",messagingSenderId:"398522341614",appId:"1:398522341614:web:99e0f897c61ec960cffbff"};
 const app=getApps().length?getApp():initializeApp(cfg);
@@ -77,6 +77,98 @@ function buildOrder(code){
   return order;
 }
 
+// ---------- 💰 رصيدك ----------
+const WALLET_LABEL=window.kashmirWalletLabel||"الدفع من الرصيد";
+const r2=n=>Math.round((Number(n)||0)*100)/100;
+const fmMoney=n=>Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ج.م.";
+// المبلغ اللي العميل اختار يدفعه من رصيده (محسوب في js/wallet.js)
+function walletWanted(){const W=window.kashmirWallet||{};return W.on?r2(W.use):0;}
+// يسجّل في الطلب المبلغ المخصوم من الرصيد، و order.total يبقى الباقي بعد الرصيد
+function applyWallet(order,use){
+  const W=window.kashmirWallet||{};
+  const full=r2(W.total);
+  order.walletUsed=use;
+  order.totalBeforeWallet=full;
+  order.total=fmMoney(Math.max(0,full-use));
+  if(Math.max(0,full-use)<=0.005)order.payment=WALLET_LABEL;
+}
+const itemsDesc=order=>(order.items||[]).map(i=>i.name+(i.qty>1?" ×"+i.qty:"")).join("، ");
+// خصم ذرّي من الرصيد (transaction) — لو الرصيد مش كفاية يرجّع false من غير ما يخصم
+async function walletDeduct(order,use){
+  const ek=eKey(order.email);
+  const res=await runTransaction(ref(db,`wallet/${ek}/balance`),cur=>{
+    const b=Number(cur)||0;
+    if(b+0.0001<use)return;           // abort
+    return r2(b-use);
+  });
+  if(!res.committed)return false;
+  try{
+    await set(ref(db,`wallet/${ek}/log/d_${order.id}`),{type:"debit",amount:use,at:Date.now(),orderId:order.id,orderCode:order.code,desc:itemsDesc(order)});
+  }catch(e){console.error("wallet log failed",e);}
+  return true;
+}
+async function walletRefund(order,use,note){
+  const ek=eKey(order.email);
+  try{
+    await runTransaction(ref(db,`wallet/${ek}/balance`),cur=>r2((Number(cur)||0)+use));
+    await set(ref(db,`wallet/${ek}/log/r_${order.id}`),{type:"refund",amount:use,at:Date.now(),orderId:order.id,orderCode:order.code,note:note||"استرجاع"});
+  }catch(e){console.error("wallet refund failed",e);}
+}
+
+// حفظ الطلب في Firebase (نفس المسار العادي القديم)
+async function persistOrder(order){
+  localStorage.setItem("kashmirPendingOrder",JSON.stringify(order));
+  if(!order.email)return;
+  try{
+    await set(ref(db,`userOrders/${eKey(order.email)}/${order.id}`),order);
+    try{await set(ref(db,`orders/${order.id}`),order);}catch(e){console.error("orders/ write failed",e);}
+    localStorage.removeItem("kashmirPendingOrder");
+  }catch(e){console.error("order save failed",e);}
+  if(order.couponId){
+    try{
+      const snap=await get(ref(db,`coupons/${order.couponId}/usedCount`));
+      const cur=snap.exists()?(Number(snap.val())||0):0;
+      const ek=eKey(order.email);
+      const ubSnap=await get(ref(db,`coupons/${order.couponId}/usedBy/${ek}`));
+      const curForMe=ubSnap.exists()?(Number(ubSnap.val())||0):0;
+      await update(ref(db),{
+        [`coupons/${order.couponId}/usedCount`]:cur+1,
+        [`coupons/${order.couponId}/usedBy/${ek}`]:curForMe+1
+      });
+    }catch(e){console.error("coupon usedCount update failed",e);}
+    localStorage.removeItem("kashmirCoupon");
+  }
+}
+
+// طلب بيستخدم الرصيد (كله أو جزء) بالدفع العادي: نمنع المسار القديم ونكمل بنفسنا بعد ما الخصم يتأكد
+let placing=false;
+async function placeWalletOrder(form,codeInput,btn,use){
+  if(placing||orderSaved)return;
+  placing=true;
+  const oldText=btn.textContent;
+  btn.disabled=true;btn.textContent="جاري تأكيد الطلب...";
+  try{
+    const code=makeOrderCode();
+    codeInput.value=code;
+    const order=buildOrder(code);
+    if(!order.email)throw new Error("سجّل الدخول الأول عشان تستخدم رصيدك");
+    applyWallet(order,use);
+    const ok=await walletDeduct(order,use);
+    if(!ok)throw new Error("رصيدك الحالي مش كفاية. حدّث الصفحة وجرّب تاني.");
+    orderSaved=true;
+    await persistOrder(order);
+    // نبعت للشيت (Google Script) — الـ hook تحت هو اللي بيفضّي السلة ويحوّل لصفحة الطلبات
+    fetch(form.action,{method:"POST",body:new FormData(form)}).catch(()=>{});
+  }catch(err){
+    console.error("wallet order failed:",err);
+    const m=err&&err.message||"";
+    alert(/[\u0600-\u06FF]/.test(m)?m:"حصلت مشكلة وإحنا بنأكد الطلب. حاول تاني.");
+    placing=false;
+    btn.textContent=oldText;
+    if(window.refreshPayButtonState)window.refreshPayButtonState();
+  }
+}
+
 // ---------- 💳 الدفع الأونلاين (EasyKash) ----------
 // الطلب بيتحفظ "معلّق" في paymentOrders، ومبيظهرش في طلبات العميل ولا عندك غير لما EasyKash يأكد الدفع (السيرفر بس هو اللي بيعمل كده).
 let paying=false;
@@ -86,12 +178,20 @@ async function startOnlinePayment(btn){
   const oldText=btn.textContent;
   btn.disabled=true;
   btn.textContent="جاري تحويلك لصفحة الدفع...";
+  let order=null,walletTaken=0;
   try{
-    const order=buildOrder(makeOrderCode());
+    order=buildOrder(makeOrderCode());
     if(!order.email)throw new Error("سجّل الدخول الأول عشان تكمل الدفع الأونلاين");
     order.payment=document.getElementById("paymentMethodInput").value||ONLINE_LABEL;
     // اسم الطريقة (card / wallet / fawry / aman / meeza) من الكارت المختار — السيرفر هو اللي يحوّله لرقم EasyKash
     const method=(document.querySelector(".cn-pay-option.active")?.dataset.method||"").replace(/^online-?/,"");
+    // رصيد جزئي + دفع أونلاين: نخصم من الرصيد الأول، والباقي (order.total) يتدفع أونلاين
+    const wUse=walletWanted();
+    if(wUse>0){
+      applyWallet(order,wUse);
+      if(!(await walletDeduct(order,wUse)))throw new Error("رصيدك الحالي مش كفاية. حدّث الصفحة وجرّب تاني.");
+      walletTaken=wUse;
+    }
     await set(ref(db,`paymentOrders/${order.id}`),{order,state:"pending",createdAt:Date.now()});
     const res=await fetch("/api/create-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId:order.id,method})});
     const data=await res.json().catch(()=>({}));
@@ -99,6 +199,7 @@ async function startOnlinePayment(btn){
     location.href=data.url;
   }catch(err){
     console.error("online payment failed:",err);
+    if(walletTaken>0&&order)await walletRefund(order,walletTaken,"استرجاع — تعذّر بدء الدفع الأونلاين");
     const m=err&&err.message||"";
     alert(/[\u0600-\u06FF]/.test(m)?m:"تعذّر بدء الدفع الأونلاين. حاول تاني أو اختر طريقة دفع تانية.");
     paying=false;
@@ -122,6 +223,14 @@ if(form){
       e.preventDefault();
       e.stopImmediatePropagation();
       startOnlinePayment(btn);
+      return;
+    }
+    // 💰 استخدام الرصيد (دفع كامل أو جزئي بالطريقة العادية)
+    const wUse=walletWanted();
+    if(wUse>0){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      placeWalletOrder(form,codeInput,btn,wUse);
       return;
     }
     if(orderSaved)return;

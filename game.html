@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Gravity Surge — العب واكسب | كشمير هوم</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  /* ===== أساسيات ===== */
+  :root{--cy:#22f0ff;--mg:#ff2bd6;--yl:#ffe14d;--gr:#3dff9a;--rd:#ff3b5c;--bg:#05010f}
+  html,body{height:100%;margin:0;background:var(--bg);overscroll-behavior:none}
+  body{font-family:'Almarai',system-ui,sans-serif;color:#e8e6ff;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .orb{font-family:'Orbitron','Almarai',sans-serif;letter-spacing:.04em}
+  #stage{touch-action:none;cursor:pointer}
+  canvas{display:block}
+  .glow-cy{text-shadow:0 0 12px var(--cy),0 0 28px rgba(34,240,255,.5)}
+  .glow-mg{text-shadow:0 0 12px var(--mg),0 0 28px rgba(255,43,214,.5)}
+  .panel{background:rgba(12,6,32,.82);border:1px solid rgba(34,240,255,.35);box-shadow:0 0 24px rgba(34,240,255,.18),inset 0 0 22px rgba(255,43,214,.08);backdrop-filter:blur(6px)}
+  .btn{border:1px solid rgba(34,240,255,.5);background:rgba(34,240,255,.08);color:#d6fbff;border-radius:12px;padding:8px 14px;font-weight:800;font-size:13px;transition:.15s}
+  .btn:hover{background:rgba(34,240,255,.2);box-shadow:0 0 14px rgba(34,240,255,.45)}
+  .btn:active{transform:scale(.96)}
+  .btn-main{background:linear-gradient(135deg,var(--mg),#7a3dff);border-color:transparent;color:#fff;box-shadow:0 0 22px rgba(255,43,214,.5)}
+  /* ===== شريط المراحل ===== */
+  #msFill{transition:width .25s linear;background:linear-gradient(90deg,var(--cy),var(--mg));box-shadow:0 0 12px var(--mg)}
+  .ms-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#150a33;border:2px solid #3a2a7a;transition:.25s}
+  .ms-dot.on{background:var(--cy);border-color:#fff;box-shadow:0 0 12px var(--cy)}
+  .ms-dot.rw::after{content:'💰';position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:11px;line-height:1}
+  .ms-dot.rw.done::after{content:'✅'}
+  .ms-lbl{position:absolute;top:13px;transform:translateX(-50%);font-size:9px;color:#8f86c9;font-family:'Orbitron',sans-serif}
+  /* ===== إشعارات ===== */
+  #toast{position:absolute;left:50%;top:14%;transform:translate(-50%,-30px) scale(.9);opacity:0;pointer-events:none;transition:.35s cubic-bezier(.2,1.4,.4,1);z-index:30;width:min(92%,340px);text-align:center}
+  #toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+  .fade-in{animation:fi .25s ease-out}
+  @keyframes fi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .pulse{animation:pl 1.2s ease-in-out infinite}
+  @keyframes pl{50%{opacity:.45}}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px}
+  .lb-row.me{background:rgba(255,43,214,.16);border:1px solid rgba(255,43,214,.6)}
+</style>
+</head>
+<body>
+<div id="app" class="relative mx-auto flex h-full w-full max-w-[560px] flex-col">
+
+  <!-- ===== الهيدر: النتيجة / أعلى نتيجة / المستوى ===== -->
+  <header class="flex items-stretch gap-2 px-3 pt-3" style="padding-top:max(12px,env(safe-area-inset-top))">
+    <div class="panel flex-1 rounded-2xl px-3 py-2 text-center">
+      <div class="text-[10px] text-cyan-200/70">النتيجة</div>
+      <div id="hScore" class="orb text-2xl glow-cy leading-none mt-1">0</div>
+    </div>
+    <div class="panel flex-1 rounded-2xl px-3 py-2 text-center">
+      <div class="text-[10px] text-fuchsia-200/70">أعلى نتيجة</div>
+      <div id="hBest" class="orb text-2xl glow-mg leading-none mt-1">0</div>
+    </div>
+    <div class="panel flex-1 rounded-2xl px-3 py-2 text-center">
+      <div class="text-[10px] text-yellow-100/70">المستوى</div>
+      <div id="hLevel" class="orb text-2xl leading-none mt-1" style="color:var(--yl);text-shadow:0 0 12px var(--yl)">1</div>
+    </div>
+  </header>
+
+  <!-- ===== شريط المراحل (Milestones) ===== -->
+  <section class="px-5 pt-5 pb-4">
+    <div dir="ltr" class="relative h-[14px]">
+      <div class="absolute left-0 right-0 top-1/2 h-[6px] -translate-y-1/2 overflow-hidden rounded-full bg-[#150a33] border border-[#3a2a7a]">
+        <div id="msFill" class="h-full" style="width:0%"></div>
+      </div>
+      <div id="msDots"></div>
+    </div>
+    <div class="mt-4 flex items-center justify-between text-[11px] text-indigo-200/70">
+      <span id="msHint">وصّل للمستوى 10 — المستوى المستحيل 🔥</span>
+      <span id="rwState" class="rounded-full border px-2 py-[2px] text-[10px] font-bold"></span>
+    </div>
+  </section>
+
+  <!-- ===== منطقة اللعب ===== -->
+  <main id="stage" class="relative min-h-0 flex-1">
+    <canvas id="cv"></canvas>
+
+    <div id="toast"><div class="panel rounded-2xl px-4 py-3"><div id="toastT" class="orb text-base glow-cy"></div><div id="toastB" class="mt-1 text-sm leading-relaxed"></div></div></div>
+
+    <!-- شاشة البداية -->
+    <div id="ovStart" class="absolute inset-0 z-20 flex items-center justify-center p-4">
+      <div class="panel fade-in w-full max-w-[330px] rounded-3xl p-5 text-center">
+        <div class="orb text-3xl glow-cy">GRAVITY<br><span class="glow-mg" style="color:var(--mg)">SURGE</span></div>
+        <p class="mt-3 text-sm leading-7 text-indigo-100/80">اضغط في أي مكان عشان تعكس الجاذبية وتنط بين الجدارين. اتفادى العوائق، اجمع العملات، واوصل للمراحل اللي بتكسّبك فلوس في رصيدك.</p>
+        <div id="startRw" class="mt-3 text-xs text-yellow-200"></div>
+        <div id="sTries" class="mt-1 text-xs text-fuchsia-200"></div>
+        <button class="btn btn-main mt-4 w-full py-3 text-base pulse" id="btnStart">▶ اضغط للبدء</button>
+        <div class="mt-3 flex justify-center gap-2">
+          <button class="btn" data-open="lb">🏆 المتصدرين</button>
+          <button class="btn" data-open="rw">💰 الجوائز</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- شاشة الخسارة (إعادة فورية بنقرة) -->
+    <div id="ovDead" class="absolute inset-0 z-20 hidden items-center justify-center p-4">
+      <div class="panel fade-in w-full max-w-[330px] rounded-3xl p-5 text-center">
+        <div class="orb text-xl" style="color:var(--rd);text-shadow:0 0 14px var(--rd)">CRASHED</div>
+        <div class="mt-2 text-xs text-indigo-200/70">نتيجتك</div>
+        <div id="dScore" class="orb text-5xl glow-cy leading-none">0</div>
+        <div id="dBest" class="mt-2 text-sm"></div>
+        <div id="dRank" class="mt-1 text-xs text-fuchsia-200"></div>
+        <div id="dRewards" class="mt-3 text-sm leading-7"></div>
+        <div id="dNext" class="mt-1 text-xs text-yellow-200/90"></div>
+        <div id="dTries" class="mt-1 text-xs text-fuchsia-200"></div>
+        <button class="btn btn-main mt-4 w-full py-3 text-base pulse" id="btnRetry">↻ جرّب تاني</button>
+        <div class="mt-3 flex justify-center gap-2">
+          <button class="btn" data-open="lb">🏆 المتصدرين</button>
+          <button class="btn" data-open="rw">💰 الجوائز</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- اللعبة مقفولة من الإدارة -->
+    <div id="ovOff" class="absolute inset-0 z-30 hidden items-center justify-center bg-black/70 p-4">
+      <div class="panel fade-in w-full max-w-[330px] rounded-3xl p-5 text-center">
+        <div class="text-4xl">🚧</div>
+        <div class="orb mt-2 text-lg glow-mg" style="color:var(--mg)">غير متاحة حالياً</div>
+        <p class="mt-2 text-sm leading-7 text-indigo-100/80">اللعبة مقفولة دلوقتي من الإدارة. ارجع تاني قريب! 💜</p>
+      </div>
+    </div>
+
+    <!-- شاشة القفل بعد عدد الخسارات اللي حددته الإدارة -->
+    <div id="ovLock" class="absolute inset-0 z-30 hidden items-center justify-center bg-black/60 p-4">
+      <div class="panel fade-in w-full max-w-[330px] rounded-3xl p-5 text-center">
+        <div class="text-4xl">🔒</div>
+        <div class="orb mt-2 text-lg" style="color:var(--rd);text-shadow:0 0 14px var(--rd)">اللعبة مقفولة</div>
+        <p id="lockMsg" class="mt-2 text-sm leading-7 text-indigo-100/80"></p>
+        <div id="lockTime" class="orb mt-2 text-4xl glow-cy">00:00</div>
+        <div class="mt-1 text-xs text-indigo-200/60">وقت الانتظار المتبقي</div>
+        <button class="btn mt-4 w-full" data-open="lb">🏆 المتصدرين</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="flex items-center justify-between px-3 pb-3 pt-2" style="padding-bottom:max(12px,env(safe-area-inset-bottom))">
+    <button class="btn" data-open="lb">🏆 المتصدرين</button>
+    <button class="btn" data-open="rw">💰 الجوائز</button>
+    <button class="btn hidden" id="btnClose">✕ خروج</button>
+    <button class="btn" id="btnMute">🔊</button>
+  </footer>
+
+  <!-- ===== نافذة المتصدرين ===== -->
+  <div id="mdLb" class="absolute inset-0 z-40 hidden items-center justify-center bg-black/70 p-4">
+    <div class="panel fade-in max-h-[88%] w-full max-w-[380px] overflow-auto rounded-3xl p-4">
+      <div class="flex items-center justify-between"><div class="orb text-lg glow-mg" style="color:var(--mg)">🏆 المتصدرين</div><button class="btn" data-close>✕</button></div>
+      <div class="mt-1 text-[11px] text-indigo-200/60">اللاعبين اللي لعبوا اللعبة بس — أعلى نتيجة لكل لاعب</div>
+      <div id="lbList" class="mt-3 space-y-1"></div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة الجوائز ===== -->
+  <div id="mdRw" class="absolute inset-0 z-40 hidden items-center justify-center bg-black/70 p-4">
+    <div class="panel fade-in max-h-[88%] w-full max-w-[380px] overflow-auto rounded-3xl p-4">
+      <div class="flex items-center justify-between"><div class="orb text-lg glow-cy">💰 جوائز المراحل</div><button class="btn" data-close>✕</button></div>
+      <div id="rwNote" class="mt-1 text-[12px] leading-6 text-indigo-100/70"></div>
+      <div id="rwList" class="mt-3 space-y-1"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* =====================================================================
+   GRAVITY SURGE — لعبة أركيد نيون (HTML5 Canvas + Vanilla JS)
+   - لمسة/نقرة/مسافة = عكس الجاذبية (الكرة بتنط بين الجدارين)
+   - كل 100 نقطة = مستوى جديد (سرعة أعلى + عوائق أصعب) لحد المستوى 10
+   - جوائز المراحل بتتحدد من لوحة الأدمن (gameConfig) وبتتضاف لرصيد العميل
+   ===================================================================== */
+
+// ------------------------------------------------------------------
+// 0) Firebase (اختياري: لو فشل التحميل اللعبة تشتغل عادي من غير جوائز)
+// ------------------------------------------------------------------
+const FB_CFG={apiKey:"AIzaSyCCk0w_KHVCswjp16TSkNToRSSOjlPC5kE",authDomain:"data-customer-d722f.firebaseapp.com",databaseURL:"https://data-customer-d722f-default-rtdb.firebaseio.com/",projectId:"data-customer-d722f",storageBucket:"data-customer-d722f.firebasestorage.app",messagingSenderId:"398522341614",appId:"1:398522341614:web:99e0f897c61ec960cffbff"};
+const eKey=e=>String(e||"").replace(/\./g,"_").replace(/@/g,"__");
+const EMAIL=(localStorage.getItem("kashmirSessionEmail")||"").trim();
+const EK=EMAIL?eKey(EMAIL):"";
+let FB=null;                       // {db, ref, onValue, runTransaction, set}
+let cfg={enabled:false,approval:false,levels:{},times:{},visible:false,maxLosses:0,lockMinutes:0};
+let cfgReady=false;                // اتحمّلت إعدادات الإدارة؟   // إعدادات الجوائز من الأدمن
+let plays={losses:0,lockedUntil:0};   // عدد الخسارات المتتالية + وقت فتح اللعبة (من السيرفر)
+let srvOff=0;                      // فرق ساعة جهاز العميل عن ساعة Firebase (عشان تغيير الساعة ميفتحش القفل)
+let lb=[];                         // المتصدرين الحقيقيين (اللي لعبوا فعلاً)
+let claimed={};                    // مستويات استلمها العميل قبل كده {2:{...}}
+
+async function initFirebase(){
+  try{
+    const A=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const D=await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    const db=D.getDatabase(A.getApps().length?A.getApp():A.initializeApp(FB_CFG));
+    FB={db,ref:D.ref,onValue:D.onValue,runTransaction:D.runTransaction,set:D.set};
+    D.onValue(D.ref(db,".info/serverTimeOffset"),s=>{srvOff=Number(s.val())||0;});
+    D.onValue(D.ref(db,"gameScores"),s=>{
+      const v=s.val()||{};
+      lb=Object.entries(v).map(([ek,x])=>({ek,n:(x&&x.name)||"لاعب",s:Number(x&&x.best)||0})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,20);
+      renderLb();
+    },()=>{});
+    if(EK)D.onValue(D.ref(db,`gamePlays/${EK}`),s=>{plays=s.val()||{losses:0,lockedUntil:0};refreshLock();},()=>{});
+    D.onValue(D.ref(db,"gameConfig"),s=>{
+      const v=s.val()||{};
+      cfgReady=true;cfg={visible:v.visible===true,enabled:!!v.enabled,approval:!!v.approval,levels:v.levels||{},times:v.times||{},maxLosses:Math.max(0,parseInt(v.maxLosses)||0),lockMinutes:Math.max(0,Number(v.lockMinutes)||0)};
+      renderMilestones();renderRewardsModal();renderStartInfo();refreshLock();
+    },()=>{});
+    if(EK)D.onValue(D.ref(db,`gameClaims/${EK}`),s=>{
+      claimed=s.val()||{};renderMilestones();renderRewardsModal();renderStartInfo();
+    },()=>{});
+  }catch(e){console.warn("firebase unavailable",e);}
+}
+const levelDur=lv=>lv<MAX_LEVEL?(Number(cfg.times&&cfg.times[lv])||0):0;   // مدة المستوى بالثواني (0 = بالنقط)
+const rewardOf=lv=>{const a=Number(cfg.levels&&cfg.levels[lv])||0;return cfg.enabled&&a>0?a:0;};
+const fmtEGP=n=>Number(n).toLocaleString("en-US",{maximumFractionDigits:2})+" ج.م.";
+
+// استلام جائزة مرحلة: مرة واحدة بس لكل حساب (transaction بيمنع التكرار)
+const inflight={};
+async function claimReward(level){
+  const amt=rewardOf(level);
+  if(!amt||!FB||!EK||claimed[level]||inflight[level])return null;
+  inflight[level]=true;
+  try{
+    const status=cfg.approval?"pending":"paid";
+    const r=await FB.runTransaction(FB.ref(FB.db,`gameClaims/${EK}/${level}`),cur=>cur?undefined:{level,amount:amt,at:Date.now(),status});
+    if(!r.committed)return null;                       // اتاخدت قبل كده
+    claimed[level]={level,amount:amt,status};
+    if(!cfg.approval){
+      const br=await FB.runTransaction(FB.ref(FB.db,`wallet/${EK}/balance`),cur=>Math.round(((Number(cur)||0)+amt)*100)/100);
+      claimed[level].balance=Number(br.snapshot.val())||0;
+      await FB.set(FB.ref(FB.db,`wallet/${EK}/log/g_${level}_${Date.now().toString(36)}`),{type:"credit",amount:amt,at:Date.now(),note:`جائزة لعبة Gravity Surge — المستوى ${level}`,by:"game"});
+    }
+    return {level,amount:amt,status,balance:(claimed[level]||{}).balance};
+  }catch(e){console.error("claim failed",e);return null;}
+  finally{delete inflight[level];}
+}
+
+// اسم اللاعب في المتصدرين: الاسم الأول + أول حرف من الأخير (خصوصية)
+function playerName(){
+  try{const u=JSON.parse(localStorage.getItem("kashmirUser")||"null");
+    if(u){const f=(u.firstName||u.name||"").trim(),l=(u.lastName||"").trim();return(f+(l?" "+l[0]+".":"")).trim()||"لاعب";}}catch(e){}
+  return "لاعب";
+}
+const nowS=()=>Date.now()+srvOff;
+// تسجيل أعلى نتيجة (المتصدرين) + عدّاد الخسارات والقفل
+async function recordDeath(sc){
+  if(!FB||!EK)return;
+  try{
+    if(sc>0)await FB.runTransaction(FB.ref(FB.db,`gameScores/${EK}`),cur=>(cur&&Number(cur.best)>=sc)?undefined:{name:playerName(),best:sc,at:Date.now()});
+  }catch(e){console.error("score save failed",e);}
+  if(cfg.maxLosses>0&&cfg.lockMinutes>0){
+    try{
+      await FB.runTransaction(FB.ref(FB.db,`gamePlays/${EK}`),cur=>{
+        const t=nowS();cur=cur||{losses:0,lockedUntil:0};
+        if((cur.lockedUntil||0)>t)return cur;
+        const l=(cur.losses||0)+1;
+        return l>=cfg.maxLosses?{losses:0,lockedUntil:t+cfg.lockMinutes*60000,at:t}:{losses:l,lockedUntil:0,at:t};
+      });
+    }catch(e){console.error("plays save failed",e);}
+  }
+}
+
+// ------------------------------------------------------------------
+// 1) عناصر الواجهة
+// ------------------------------------------------------------------
+const $=id=>document.getElementById(id);
+const stage=$("stage"),cv=$("cv"),ctx=cv.getContext("2d");
+const MAX_LEVEL=10,PTS_PER_LEVEL=100;
+
+// ------------------------------------------------------------------
+// 2) صوت (WebAudio بسيط من غير ملفات)
+// ------------------------------------------------------------------
+let actx=null,muted=localStorage.getItem("gsMute")==="1";
+function beep(f=440,d=.08,type="square",v=.05,slide=0){
+  if(muted)return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==="suspended")actx.resume();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,actx.currentTime);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),actx.currentTime+d);
+    g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);
+    o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);
+  }catch(e){}
+}
+const sfx={flip:()=>beep(520,.07,"square",.04,260),coin:()=>{beep(880,.07,"triangle",.07);setTimeout(()=>beep(1320,.09,"triangle",.07),60);},
+  die:()=>{beep(180,.4,"sawtooth",.1,-140);beep(90,.5,"square",.08,-50);},
+  level:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.12,"triangle",.08),i*80));},
+  reward:()=>{[784,988,1175,1568,1976].forEach((f,i)=>setTimeout(()=>beep(f,.14,"triangle",.09),i*90));}};
+$("btnMute").textContent=muted?"🔇":"🔊";
+$("btnMute").onclick=e=>{e.stopPropagation();muted=!muted;localStorage.setItem("gsMute",muted?"1":"0");$("btnMute").textContent=muted?"🔇":"🔊";};
+
+// ------------------------------------------------------------------
+// 3) إعدادات اللعبة والحالة
+// ------------------------------------------------------------------
+const W=360,H=640;               // مقاس العالم المنطقي (بيتكبّر/يتصغّر على الشاشة)
+const WALL=18,R=11,PY=470;       // سمك الجدار - نصف قطر الكرة - مكان الكرة الرأسي
+const LEFT=WALL+R,RIGHT=W-WALL-R;
+const GRAV=4600,SPIKE_W=24,SPIKE_H=40;
+
+let state="ready";               // ready | play | dead
+let best=Number(localStorage.getItem("gsBest"))||0;
+let lvTime=0,P,obs,coins,parts,trail,score,dist,level,speed,gapLeft,time,shake,flash,bannerT,bannerTxt,deadAt,runRewards,lastPatternY;
+let bgOff=0;
+const stars=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H,s:Math.random()*1.6+.4,v:Math.random()*.5+.2}));
+
+function targetSpeed(lv){return 190+(lv-1)*31;}   // L1=190 ... L10=469 px/s
+
+function reset(){
+  P={x:LEFT,vx:0,dir:-1,landed:true};
+  obs=[];coins=[];parts=[];trail=[];
+  lvTime=0;score=0;dist=0;level=1;speed=targetSpeed(1);gapLeft=240;time=0;shake=0;flash=0;bannerT=0;bannerTxt="";
+  runRewards=[];
+}
+reset();
+
+// ------------------------------------------------------------------
+// 4) توليد العوائق (الصعوبة بتزيد مع المستوى)
+// ------------------------------------------------------------------
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const side=()=>Math.random()<.5?-1:1;
+
+function spawnPattern(){
+  // أنواع العوائق المتاحة حسب المستوى
+  const pool=["spike","spike"];
+  if(level>=2)pool.push("bar");
+  if(level>=3)pool.push("laser","stagger");
+  if(level>=4)pool.push("shrink");
+  if(level>=6)pool.push("bar2","stagger","laser");
+  if(level>=8)pool.push("shrink","stagger");
+  const t=pick(pool);
+  let h=40;
+  if(t==="spike"){obs.push({t:"spike",side:side(),y:-SPIKE_H,h:SPIKE_H,w:SPIKE_W+Math.min(level,8)*2});h=SPIKE_H;}
+  else if(t==="stagger"){
+    const s=side(),sep=Math.max(150,speed*.5);
+    obs.push({t:"spike",side:s,y:-SPIKE_H,h:SPIKE_H,w:SPIKE_W+4});
+    obs.push({t:"spike",side:-s,y:-SPIKE_H-sep,h:SPIKE_H,w:SPIKE_W+4});
+    h=SPIKE_H+sep;
+  }
+  else if(t==="bar"||t==="bar2"){
+    const n=t==="bar2"?2:1;
+    for(let i=0;i<n;i++)obs.push({t:"bar",y:-16-i*Math.max(150,speed*.52),h:14,w:rnd(90,120),f:rnd(1.6,2.6)+level*.12,ph:rnd(0,6.28)});
+    h=16+(n-1)*Math.max(150,speed*.52);
+  }
+  else if(t==="laser"){obs.push({t:"laser",safe:side(),y:-10,h:10,gap:72-Math.min(level,9)*2});h=10;}
+  else if(t==="shrink"){obs.push({t:"shrink",side:side(),y:-80,h:70,w0:150});h=80;}
+  // عملة بين العوائق (على جدار عشوائي)
+  const spacing=Math.max(185,speed*.62)+rnd(0,55);
+  if(Math.random()<.6)coins.push({x:Math.random()<.5?LEFT:RIGHT,y:-h-spacing*.5,got:false,ph:rnd(0,6)});
+  gapLeft=h+spacing;
+}
+
+// ------------------------------------------------------------------
+// 5) تصادم
+// ------------------------------------------------------------------
+function circleRect(cx,cy,r,rx,ry,rw,rh){
+  const nx=Math.max(rx,Math.min(cx,rx+rw)),ny=Math.max(ry,Math.min(cy,ry+rh));
+  const dx=cx-nx,dy=cy-ny;return dx*dx+dy*dy<r*r;
+}
+function hitsPlayer(o){
+  const cx=P.x,cy=PY,r=R-1.5;
+  if(o.t==="spike"){
+    const x=o.side<0?WALL:W-WALL-o.w;
+    return circleRect(cx,cy,r,x,o.y+4,o.w,o.h-8);
+  }
+  if(o.t==="bar"){
+    const x=o.x-o.w/2;return circleRect(cx,cy,r,x,o.y,o.w,o.h);
+  }
+  if(o.t==="laser"){
+    if(!o.armed)return false;
+    const x0=o.safe<0?WALL+o.gap:WALL,x1=o.safe<0?W-WALL:W-WALL-o.gap;
+    return circleRect(cx,cy,r,x0,o.y,x1-x0,o.h);
+  }
+  if(o.t==="shrink"){
+    const w=o.w;const x=o.side<0?WALL:W-WALL-w;
+    return circleRect(cx,cy,r,x,o.y+3,w,o.h-6);
+  }
+  return false;
+}
+
+// ------------------------------------------------------------------
+// 6) جسيمات / اهتزاز
+// ------------------------------------------------------------------
+function burst(x,y,color,n=18,sp=260,life=.7){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*6.283,s=rnd(sp*.25,sp);
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:life*rnd(.5,1),max:life,color,size:rnd(1.5,4)});
+  }
+}
+
+// ------------------------------------------------------------------
+// 7) تحديث اللعبة
+// ------------------------------------------------------------------
+function flip(){
+  if(state!=="play")return;
+  P.dir*=-1;P.landed=false;sfx.flip();
+  burst(P.x,PY,"#22f0ff",6,120,.35);
+}
+
+function levelUp(lv){
+  flash=.55;bannerT=1.6;bannerTxt=lv>=MAX_LEVEL?"LEVEL 10 — IMPOSSIBLE":"LEVEL "+lv;
+  sfx.level();shake=Math.max(shake,5);
+  burst(P.x,PY,"#ffe14d",26,320,.9);
+  updateHud();
+  const amt=rewardOf(lv);
+  if(amt>0){
+    if(!EK){showToast("🔒 جائزة المستوى "+lv,`كنت هتكسب ${fmtEGP(amt)} — سجّل دخول الأول عشان تستلم الجوائز`);}
+    else if(claimed[lv]){/* اتاخدت قبل كده */}
+    else claimReward(lv).then(r=>{
+      if(!r)return;
+      runRewards.push(r);sfx.reward();
+      if(r.status==="paid")showToast(`✅ تم إيداع ${fmtEGP(r.amount)} في رصيدك`,`مبروك وصلت للمستوى ${lv}!${r.balance!=null?" رصيدك دلوقتي "+fmtEGP(r.balance):""}`,6500);
+      else showToast(`🎉 مبروك! وصلت للمستوى ${lv}`,`جايزتك ${fmtEGP(r.amount)} اتسجّلت وهتتضاف لرصيدك بعد موافقة الإدارة`);
+      renderMilestones();renderRewardsModal();
+    });
+  }else{
+    showToast("⚡ المستوى "+lv,lv>=MAX_LEVEL?"المستوى المستحيل! أنت أسطورة 🔥":"السرعة زادت — ركّز!");
+  }
+}
+
+function die(){
+  state="dead";deadAt=performance.now();
+  sfx.die();shake=16;flash=.4;
+  burst(P.x,PY,"#ff2bd6",40,380,1);burst(P.x,PY,"#22f0ff",26,300,.9);burst(P.x,PY,"#ffffff",10,200,.5);
+  const s=Math.floor(score);
+  const newBest=s>best;
+  if(newBest){best=s;localStorage.setItem("gsBest",String(best));}
+  updateHud();
+  $("dScore").textContent=s;
+  $("dBest").innerHTML=newBest&&s>0?`<span style="color:var(--yl)">🔥 رقم قياسي جديد!</span>`:`أعلى نتيجة: <b>${best}</b>`;
+  const my=Math.max(best,s),rk=1+lb.filter(x=>x.s>my&&x.ek!==EK).length;
+  $("dRank").textContent=!EK?"سجّل دخول عشان اسمك يظهر في المتصدرين":(my>0?`ترتيبك في المتصدرين: #${rk}`:"");
+  recordDeath(s);
+  $("dRewards").innerHTML=runRewards.length
+    ?runRewards.map(r=>r.status==="paid"
+      ?`<div style="color:var(--gr);background:rgba(61,255,154,.1);border:1px solid rgba(61,255,154,.4);border-radius:12px;padding:8px 10px;margin-top:6px">✅ <b>تم إيداع ${fmtEGP(r.amount)} في رصيدك</b><br><span style="font-size:12px">جايزة المستوى ${r.level}${r.balance!=null?" — رصيدك دلوقتي "+fmtEGP(r.balance):""}</span></div>`
+      :`<div style="color:var(--yl)">⏳ جايزة المستوى ${r.level} (${fmtEGP(r.amount)}) بانتظار موافقة الإدارة</div>`).join("")
+    :"";
+  // أقرب جائزة قدامك
+  const nx=nextReward();
+  $("dNext").textContent=nx?`الجائزة الجاية: ${fmtEGP(nx.amount)} عند الوصول للمستوى ${nx.level}`:"";
+  setTimeout(()=>{if(isLocked()||isOff()){refreshLock();return;}$("ovDead").classList.remove("hidden");$("ovDead").classList.add("flex");},380);
+}
+function nextReward(){
+  for(let lv=level+1;lv<=MAX_LEVEL;lv++){const a=rewardOf(lv);if(a>0&&!claimed[lv])return{level:lv,amount:a};}
+  return null;
+}
+
+function update(dt){
+  time+=dt;
+  // السرعة بتقرب تدريجياً من سرعة المستوى
+  speed+=(targetSpeed(level)-speed)*Math.min(1,dt*2.2);
+  const dy=speed*dt;
+  bgOff=(bgOff+dy*.6)%48;
+
+  // الفيزياء: جاذبية أفقية ناحية الجدار
+  P.vx+=P.dir*GRAV*dt;
+  P.x+=P.vx*dt;
+  if(P.x<=LEFT){if(!P.landed&&Math.abs(P.vx)>200){burst(LEFT-R+2,PY,"#ff2bd6",7,140,.3);shake=Math.max(shake,2.2);}P.x=LEFT;P.vx=0;P.landed=true;}
+  if(P.x>=RIGHT){if(!P.landed&&Math.abs(P.vx)>200){burst(RIGHT+R-2,PY,"#ff2bd6",7,140,.3);shake=Math.max(shake,2.2);}P.x=RIGHT;P.vx=0;P.landed=true;}
+  trail.push({x:P.x,t:time});while(trail.length&&time-trail[0].t>.22)trail.shift();
+
+  // النتيجة والمستوى
+  dist+=dy;score+=dy/18;
+  // المستوى بيخلص بمدة حددتها الإدارة (ثواني) — لو مفيش مدة بيخلص بالنقط (100 نقطة)
+  lvTime+=dt;
+  if(level<MAX_LEVEL){
+    const dur=levelDur(level);
+    if(dur>0?lvTime>=dur:score>=level*PTS_PER_LEVEL){level++;lvTime=0;levelUp(level);}
+  }
+
+  // توليد العوائق
+  gapLeft-=dy;
+  if(gapLeft<=0)spawnPattern();
+
+  // تحريك العوائق
+  for(const o of obs){
+    o.y+=dy;
+    if(o.t==="bar")o.x=W/2+Math.sin(time*o.f+o.ph)*(W/2-WALL-o.w/2);
+    if(o.t==="laser")o.armed=o.y>PY-250;
+    if(o.t==="shrink"){const p=Math.max(0,Math.min(1,(o.y+o.h)/(PY-60)));o.w=o.w0-(o.w0-26)*p;}
+    if(!o.dead&&hitsPlayer(o)){die();return;}
+  }
+  obs=obs.filter(o=>o.y<H+60);
+
+  // العملات
+  for(const c of coins){
+    c.y+=dy;
+    if(!c.got&&Math.hypot(c.x-P.x,c.y-PY)<R+11){
+      c.got=true;score+=5;sfx.coin();burst(c.x,c.y,"#ffe14d",14,220,.5);
+    }
+  }
+  coins=coins.filter(c=>!c.got&&c.y<H+30);
+
+  // جسيمات
+  for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;}
+  parts=parts.filter(p=>p.life>0);
+  if(shake>0)shake=Math.max(0,shake-dt*30);
+  if(flash>0)flash=Math.max(0,flash-dt*1.4);
+  if(bannerT>0)bannerT-=dt;
+  updateHud();
+}
+
+// ------------------------------------------------------------------
+// 8) الرسم
+// ------------------------------------------------------------------
+function glowRect(x,y,w,h,color,blur=14){
+  ctx.shadowColor=color;ctx.shadowBlur=blur;ctx.fillStyle=color;ctx.fillRect(x,y,w,h);ctx.shadowBlur=0;
+}
+function spikePath(o){
+  // مثلثات متتابعة قاعدتها على الجدار وراسها لجوه النفق
+  const n=3,sh=o.h/n;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const y0=o.y+i*sh;
+    if(o.side<0){ctx.moveTo(WALL,y0);ctx.lineTo(WALL+o.w,y0+sh/2);ctx.lineTo(WALL,y0+sh);}
+    else{ctx.moveTo(W-WALL,y0);ctx.lineTo(W-WALL-o.w,y0+sh/2);ctx.lineTo(W-WALL,y0+sh);}
+  }
+}
+function draw(){
+  ctx.save();
+  // خلفية
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0a0224");g.addColorStop(1,"#14043a");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // نجوم
+  ctx.fillStyle="#8f86ff";
+  for(const s of stars){s.y+=s.v*(state==="play"?speed/120:.4);if(s.y>H){s.y=0;s.x=Math.random()*W;}ctx.globalAlpha=.25+s.s/3;ctx.fillRect(s.x,s.y,s.s,s.s);}
+  ctx.globalAlpha=1;
+  // شبكة نيون بتنزل
+  ctx.strokeStyle="rgba(255,43,214,.13)";ctx.lineWidth=1;
+  for(let y=-48+bgOff;y<H;y+=48){ctx.beginPath();ctx.moveTo(WALL,y);ctx.lineTo(W-WALL,y);ctx.stroke();}
+  ctx.strokeStyle="rgba(34,240,255,.07)";
+  for(let x=WALL+40;x<W-WALL;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+
+  // اهتزاز الشاشة
+  if(shake>0)ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
+
+  // الجدران
+  glowRect(0,0,WALL,H,"#22f0ff",16);glowRect(W-WALL,0,WALL,H,"#ff2bd6",16);
+  ctx.fillStyle="#0a0224";ctx.fillRect(4,0,WALL-8,H);ctx.fillRect(W-WALL+4,0,WALL-8,H);
+
+  // عملات
+  for(const c of coins){
+    const sc=.75+Math.abs(Math.sin(time*5+c.ph))*.25;
+    ctx.shadowColor="#ffe14d";ctx.shadowBlur=14;ctx.fillStyle="#ffe14d";
+    ctx.beginPath();ctx.ellipse(c.x,c.y,8*sc,8,0,0,6.283);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#b88a00";ctx.fillRect(c.x-1,c.y-4,2,8);
+  }
+
+  // عوائق
+  for(const o of obs){
+    if(o.t==="spike"){ctx.shadowColor="#ff3b5c";ctx.shadowBlur=14;ctx.fillStyle="#ff3b5c";spikePath(o);ctx.fill();ctx.shadowBlur=0;}
+    else if(o.t==="bar"){glowRect(o.x-o.w/2,o.y,o.w,o.h,"#ffe14d",14);ctx.fillStyle="#0a0224";ctx.fillRect(o.x-o.w/2+4,o.y+4,o.w-8,o.h-8);}
+    else if(o.t==="laser"){
+      const x0=o.safe<0?WALL+o.gap:WALL,x1=o.safe<0?W-WALL:W-WALL-o.gap;
+      if(o.armed){
+        glowRect(x0,o.y,x1-x0,o.h,"#ff3b5c",18);
+        ctx.fillStyle="#fff";ctx.fillRect(x0,o.y+o.h/2-1.5,x1-x0,3);
+      }else{
+        ctx.strokeStyle="rgba(255,59,92,.55)";ctx.setLineDash([8,8]);ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(x0,o.y+o.h/2);ctx.lineTo(x1,o.y+o.h/2);ctx.stroke();ctx.setLineDash([]);
+      }
+      // مصدر الليزر + علامة الأمان
+      glowRect(o.safe<0?WALL:W-WALL-o.gap,o.y-2,o.gap,o.h+4,"rgba(61,255,154,.0)",0);
+      ctx.fillStyle="rgba(61,255,154,.55)";ctx.fillRect(o.safe<0?WALL:W-WALL-o.gap,o.y+o.h/2-1,o.gap,2);
+    }
+    else if(o.t==="shrink"){
+      const x=o.side<0?WALL:W-WALL-o.w;
+      glowRect(x,o.y,o.w,o.h,"#7a3dff",16);
+      ctx.fillStyle="#150a33";ctx.fillRect(x+3,o.y+3,o.w-6,o.h-6);
+      ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1;
+      for(let k=-o.h;k<o.w;k+=12){ctx.beginPath();ctx.moveTo(x+k,o.y+o.h);ctx.lineTo(x+k+o.h,o.y);ctx.stroke();}
+    }
+  }
+
+  // أثر الكرة
+  if(state!=="dead"){
+    for(let i=0;i<trail.length;i++){
+      const t=trail[i],a=i/trail.length;
+      ctx.globalAlpha=a*.4;ctx.fillStyle="#22f0ff";
+      ctx.beginPath();ctx.arc(t.x,PY-(time-t.t)*speed*1.2,R*a,0,6.283);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    // الكرة
+    ctx.shadowColor="#22f0ff";ctx.shadowBlur=24;
+    const og=ctx.createRadialGradient(P.x-3,PY-3,1,P.x,PY,R);og.addColorStop(0,"#ffffff");og.addColorStop(.45,"#22f0ff");og.addColorStop(1,"#0a8fff");
+    ctx.fillStyle=og;ctx.beginPath();ctx.arc(P.x,PY,R,0,6.283);ctx.fill();ctx.shadowBlur=0;
+  }
+
+  // جسيمات
+  for(const p of parts){
+    ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;
+    ctx.shadowColor=p.color;ctx.shadowBlur=8;
+    ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+  }
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+
+  // بانر المستوى
+  if(bannerT>0){
+    const a=Math.min(1,bannerT/.5),sc=1+(1.6-bannerT)*.08;
+    ctx.save();ctx.translate(W/2,H*.3);ctx.scale(sc,sc);ctx.globalAlpha=a;
+    ctx.textAlign="center";ctx.font="900 30px Orbitron, sans-serif";ctx.fillStyle="#ffe14d";ctx.shadowColor="#ffe14d";ctx.shadowBlur=24;
+    ctx.fillText(bannerTxt,0,0);ctx.restore();
+  }
+  // وميض
+  if(flash>0){ctx.fillStyle=`rgba(255,255,255,${flash*.35})`;ctx.fillRect(-20,-20,W+40,H+40);}
+  ctx.restore();
+}
+
+// ------------------------------------------------------------------
+// 9) حجم الكانفاس (مقاس ثابت 360×640 مع Letterbox + دقة الشاشة)
+// ------------------------------------------------------------------
+function resize(){
+  const cw=stage.clientWidth,ch=stage.clientHeight;
+  if(!cw||!ch)return;
+  const sc=Math.min(cw/W,ch/H),dpr=Math.min(window.devicePixelRatio||1,2.5);
+  cv.style.width=W*sc+"px";cv.style.height=H*sc+"px";
+  cv.style.margin=`${(ch-H*sc)/2}px auto 0`;
+  cv.width=Math.round(W*sc*dpr);cv.height=Math.round(H*sc*dpr);
+  ctx.setTransform(sc*dpr,0,0,sc*dpr,0,0);
+}
+addEventListener("resize",resize);
+new ResizeObserver(resize).observe(stage);
+
+// ------------------------------------------------------------------
+// 10) واجهة: HUD / شريط المراحل / المتصدرين / الجوائز
+// ------------------------------------------------------------------
+function updateHud(){
+  $("hScore").textContent=Math.floor(score);
+  $("hBest").textContent=Math.max(best,Math.floor(score));
+  $("hLevel").textContent=level;
+  const dur=levelDur(level);
+  const frac=level>=MAX_LEVEL?1:(dur>0?Math.min(1,lvTime/dur):Math.min(1,(score-(level-1)*PTS_PER_LEVEL)/PTS_PER_LEVEL));
+  const pct=Math.min(1,((level-1)+(level>=MAX_LEVEL?0:Math.max(0,frac)))/(MAX_LEVEL-1))*100;
+  const hint=state==="play"?(level>=MAX_LEVEL?"المستوى المستحيل 🔥 — كمّل لأقصى حد!":(dur>0?`المستوى ${level} بيخلص بعد ${mmss(Math.max(0,dur-lvTime)*1000)} ⏱️`:`المستوى ${level+0}: ${Math.max(0,level*PTS_PER_LEVEL-Math.floor(score))} نقطة للمستوى اللي بعده`)):"وصّل للمستوى 10 — المستوى المستحيل 🔥";
+  if($("msHint").textContent!==hint)$("msHint").textContent=hint;
+  $("msFill").style.width=pct+"%";
+  const dots=$("msDots").children;
+  for(let i=0;i<dots.length;i+=2){const lv=i/2+1;dots[i].classList.toggle("on",level>=lv);}
+}
+function renderMilestones(){
+  const box=$("msDots");let h="";
+  for(let lv=1;lv<=MAX_LEVEL;lv++){
+    const left=(lv-1)/(MAX_LEVEL-1)*100;
+    const rw=lv>=2&&rewardOf(lv)>0;
+    h+=`<div class="ms-dot ${level>=lv?"on":""} ${rw?"rw":""} ${rw&&claimed[lv]?"done":""}" style="left:${left}%"></div><div class="ms-lbl" style="left:${left}%">${lv===MAX_LEVEL?"10🔥":lv}</div>`;
+  }
+  box.innerHTML=h;
+  const st=$("rwState");
+  if(!cfg.enabled){st.textContent="الجوائز متوقفة";st.style.cssText="color:#8f86c9;border-color:#3a2a7a";}
+  else if(!EK){st.textContent="🔒 سجّل دخول للجوائز";st.style.cssText="color:#ffe14d;border-color:#ffe14d55";}
+  else{st.textContent="💰 الجوائز شغالة";st.style.cssText="color:#3dff9a;border-color:#3dff9a66";}
+}
+function renderStartInfo(){
+  const tot=Object.keys(cfg.levels||{}).reduce((t,lv)=>t+rewardOf(+lv),0);
+  $("startRw").textContent=tot>0?`💰 جوائز مجموعها لحد ${fmtEGP(tot)} في انتظارك`:"";
+}
+function renderRewardsModal(){
+  const list=$("rwList");let h="";
+  for(let lv=2;lv<=MAX_LEVEL;lv++){
+    const a=rewardOf(lv),cl=claimed[lv];
+    h+=`<div class="lb-row" style="border:1px solid rgba(255,255,255,.08)"><span class="orb" style="width:62px;color:var(--yl)">LV ${lv}</span><span class="flex-1">${a>0?fmtEGP(a):"<span style='opacity:.45'>— بدون جائزة</span>"}</span><span class="text-xs">${a>0?(cl?(cl.status==="paid"?"✅ اتضافت":"⏳ بانتظار الموافقة"):(level>=lv&&state==="play"?"🎯":"🔒")):""}</span></div>`;
+  }
+  list.innerHTML=h;
+  $("rwNote").textContent=!cfg.enabled?"الجوائز متوقفة حالياً من الإدارة — العب للمتعة وارجع تاني!"
+    :!EK?"سجّل دخول بحسابك على الموقع عشان الجوائز تتضاف لرصيدك."
+    :"كل جائزة بتتاخد مرة واحدة بس لكل حساب، وبتتضاف لـ «رصيدك» تشتري بيه من الموقع."+(cfg.approval?" (الجوائز بتتضاف بعد موافقة الإدارة)":"");
+}
+
+// المتصدرين: اللاعبين الحقيقيين بس (اللي لعبوا اللعبة وسجّلوا نتيجة)
+function renderLb(){
+  const el=$("lbList");if(!el)return;
+  if(!lb.length){el.innerHTML=`<div class="py-6 text-center text-sm text-indigo-200/60">لسه محدش سجّل نتيجة — كن أول واحد! 🚀</div>`;return;}
+  el.innerHTML=lb.map((x,i)=>`<div class="lb-row ${x.ek===EK?"me":""}"><span class="orb w-7 text-center" style="color:${i<3?["#ffe14d","#cfd6ff","#ff9a4d"][i]:"#8f86c9"}">${i<3?["🥇","🥈","🥉"][i]:i+1}</span><span class="flex-1 font-bold">${x.n.replace(/[<>&"]/g,"")}${x.ek===EK?" (أنت)":""}</span><span class="orb">${x.s}</span></div>`).join("");
+}
+function toastHide(){$("toast").classList.remove("show");}
+let toastTimer=null;
+function showToast(t,b,ms=3800){
+  $("toastT").textContent=t;$("toastB").textContent=b;
+  $("toast").classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(toastHide,ms);
+}
+
+// النوافذ
+function openModal(k){
+  if(k==="lb")renderLb();if(k==="rw")renderRewardsModal();
+  const m=$(k==="lb"?"mdLb":"mdRw");m.classList.remove("hidden");m.classList.add("flex");
+}
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("pointerdown",e=>{e.stopPropagation();}));
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();openModal(b.dataset.open);}));
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>{["mdLb","mdRw"].forEach(id=>{$(id).classList.add("hidden");$(id).classList.remove("flex");});}));
+["mdLb","mdRw"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target.id===id){$(id).classList.add("hidden");$(id).classList.remove("flex");}}));
+
+// ------------------------------------------------------------------
+// 11) التحكم (لمسة / ماوس / كيبورد) + بدء وإعادة فورية
+// ------------------------------------------------------------------
+const isLocked=()=>!!EK&&cfg.maxLosses>0&&Math.max(0,(plays.lockedUntil||0)-nowS())>0;
+let lockShown=false;
+const mmss=ms=>{const t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),sc=t%60;return(h?String(h).padStart(2,"0")+":":"")+String(m).padStart(2,"0")+":"+String(sc).padStart(2,"0");};
+let offShown=false;
+const isOff=()=>cfgReady&&!cfg.visible;
+function refreshLock(){
+  // اللعبة مقفولة من الإدارة (مش بنقطع لعب شغّال — بتتقفل بعد الخسارة)
+  if(isOff()&&state!=="play"){
+    offShown=true;
+    $("ovOff").classList.remove("hidden");$("ovOff").classList.add("flex");
+    ["ovStart","ovDead","ovLock"].forEach(id=>{$(id).classList.add("hidden");$(id).classList.remove("flex");});
+    return;
+  }else if(offShown){
+    offShown=false;$("ovOff").classList.add("hidden");$("ovOff").classList.remove("flex");
+    reset();state="ready";$("ovStart").classList.remove("hidden");$("ovStart").classList.add("flex");updateHud();
+  }
+  const left=isLocked()?(plays.lockedUntil-nowS()):0;
+  const ov=$("ovLock");
+  if(left>0){
+    lockShown=true;
+    $("lockMsg").textContent=`خسرت ${cfg.maxLosses} ${cfg.maxLosses===1?"مرة":"مرات"} ورا بعض، فاللعبة اتقفلت مؤقتاً. ارجع بعد الوقت ده وجرّب تاني.`;
+    $("lockTime").textContent=mmss(left);
+    ov.classList.remove("hidden");ov.classList.add("flex");
+    ["ovStart","ovDead"].forEach(id=>{$(id).classList.add("hidden");$(id).classList.remove("flex");});
+  }else if(lockShown){
+    lockShown=false;ov.classList.add("hidden");ov.classList.remove("flex");
+    reset();state="ready";$("ovStart").classList.remove("hidden");$("ovStart").classList.add("flex");updateHud();
+  }
+  // المحاولات المتبقية قبل القفل
+  let t="";
+  if(EK&&cfg.maxLosses>0&&cfg.lockMinutes>0&&left<=0){const rem=Math.max(0,cfg.maxLosses-(plays.losses||0));t=`⚠️ فاضل لك ${rem} ${rem===1?"محاولة":"محاولات"} قبل ما اللعبة تتقفل ${cfg.lockMinutes} دقيقة`;}
+  $("sTries").textContent=t;$("dTries").textContent=t;
+}
+setInterval(refreshLock,1000);
+
+function startGame(){
+  if(isOff()||isLocked()){refreshLock();return;}
+  reset();state="play";
+  $("ovStart").classList.add("hidden");$("ovStart").classList.remove("flex");
+  $("ovDead").classList.add("hidden");$("ovDead").classList.remove("flex");
+  updateHud();renderMilestones();
+  if(actx&&actx.state==="suspended")actx.resume();
+}
+function onAction(){
+  if(document.querySelector("#mdLb.flex,#mdRw.flex"))return;
+  if(state==="ready"){startGame();return;}
+  if(state==="dead"){if(performance.now()-deadAt>450)startGame();return;}   // إعادة فورية بعد نص ثانية تقريباً
+  flip();
+}
+stage.addEventListener("pointerdown",e=>{e.preventDefault();onAction();});
+addEventListener("keydown",e=>{
+  if(["Space","ArrowUp","ArrowDown","Enter","KeyW"].includes(e.code)){e.preventDefault();if(!e.repeat)onAction();}
+});
+
+// ------------------------------------------------------------------
+// 12) اللوب الرئيسي (ثابت 60fps مع حد أقصى للـ dt)
+// ------------------------------------------------------------------
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.033,(now-last)/1000);last=now;
+  if(state==="play")update(dt);
+  else{
+    // أنيميشن خفيف للخلفية والجسيمات في الانتظار/الخسارة
+    time+=dt;bgOff=(bgOff+dt*40)%48;
+    for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;}
+    parts=parts.filter(p=>p.life>0);
+    if(shake>0)shake=Math.max(0,shake-dt*30);
+    if(flash>0)flash=Math.max(0,flash-dt*1.4);
+    if(bannerT>0)bannerT-=dt;
+  }
+  draw();
+  requestAnimationFrame(frame);
+}
+$("btnStart").addEventListener("click",e=>{e.stopPropagation();});
+$("btnRetry").addEventListener("click",e=>{e.stopPropagation();});
+$("btnStart").addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();startGame();});
+$("btnRetry").addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();if(performance.now()-deadAt>250){startGame();}});
+
+if(window.parent!==window){$("btnClose").classList.remove("hidden");$("btnClose").onclick=e=>{e.stopPropagation();window.parent.postMessage({type:"gs-close"},"*");};}
+resize();renderMilestones();renderRewardsModal();renderStartInfo();updateHud();
+requestAnimationFrame(frame);
+initFirebase();
+renderLb();refreshLock();
+window.__gs={get state(){return state;},get score(){return score;},get level(){return level;},flip,start:()=>{startGame();},setScore:v=>{score=v;}};
+</script>
+</body>
+</html>

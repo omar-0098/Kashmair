@@ -1074,3 +1074,11 @@ loadFeyat();
 loadMlayat();
 loadPatatin();
 loadParanes();
+
+// ===== وسم "موجود في عرض ..." على منتجات العروض (بيحمّل js/offers-front.js تلقائياً) =====
+if (!document.querySelector("script[data-offers-front]")) {
+  const _of = document.createElement("script");
+  _of.src = new URL("../../js/offers-front.js", import.meta.url).href;
+  _of.dataset.offersFront = "1";
+  document.head.appendChild(_of);
+}

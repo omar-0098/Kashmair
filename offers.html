@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عرض الراحة والنعومة – كشمير هوم</title>
+<link rel="icon" type="image/png" href="https://kashmair.vercel.app/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Reem+Kufi:wght@400..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Readex+Pro&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="stylesheet" href="css/login.css">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.of-wrap,.of-wrap *{box-sizing:border-box}
+.of-wrap{--m:#d27039;--m2:#f5934e;--mut:#3c3c3c;max-width:1100px;margin:18px auto 25px;padding:0 14px}
+.of-hero{background:linear-gradient(227deg, #2196F3, #3F51B5);color:#fff;border-radius:22px;padding:22px 20px;position:relative;overflow:hidden}
+.of-hero::before,.of-hero::after{content:"";position:absolute;top:50%;width:34px;height:34px;border-radius:50%;background:#eef4ff;transform:translateY(-50%)}
+.of-hero::before{right:-17px}.of-hero::after{left:-17px}
+.of-hero h1{font-size:clamp(22px,4vw,32px);font-weight:900;margin:0}
+.of-hero p{margin:4px 0 0;opacity:.92}
+.of-timer{display:flex;gap:8px;margin-top:14px;direction:ltr;justify-content:flex-end}
+.of-box{background:rgba(255,255,255,.22);border-radius:12px;min-width:60px;padding:6px 4px;text-align:center}
+.of-box b{display:block;font-size:22px;font-weight:900}
+.of-box span{font-size:11px}
+.of-ended{display:none;margin-top:12px;font-weight:800;background:rgba(0,0,0,.2);padding:6px 14px;border-radius:12px;width:max-content}
+.of-head{display:flex;justify-content:space-between;align-items:center;margin:24px 2px 12px}
+.of-head h2{font-size:20px;font-weight:900;margin:0}
+.of-head span{font-size:12px;color:var(--mut)}
+.of-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:640px){.of-grid{grid-template-columns:repeat(4,1fr)}}
+.of-card{position:relative;background:#fff;border-radius:16px;padding:14px 10px 12px;text-align:center;text-decoration:none;color:#222;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.of-badge{position:absolute;top:0;left:0;background:var(--m);color:#fff;font-weight:900;font-size:13px;padding:6px 12px;border-radius:0 0 14px 0;direction:ltr}
+.of-card img{width: 103%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    margin-top: 5px;
+    border-radius: 30px;
+    filter: saturate(1.5);}
+.of-card h3{font-size:14px;font-weight:700;margin:10px 0 0;line-height:1.4;min-height:40px}
+.of-price{display:flex;gap:8px;align-items:baseline;justify-content:center;margin-top:2px}
+.of-price b{color:var(--m);font-size:16px;font-weight:900}
+.of-price s{    color: var(--mut);
+    font-size: 13px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;}
+.of-valid{font-size:11px;color:var(--mut);margin-top:6px}
+.of-msg{text-align:center;color:var(--mut);padding:40px 0}
+.of-nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(92%,420px);background:#fff;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;justify-content:space-around;align-items:center;height:62px;z-index:50}
+.of-nav a{color:var(--mut);font-size:20px;text-decoration:none;width:50px;text-align:center}
+.of-nav a.mid{background:var(--m);color:#fff;width:54px;height:54px;border-radius:16px;display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 14px rgba(210,112,57,.5)}
+.of-total{margin-top:26px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:12px;color:#222}
+.of-total>div{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.of-total b{color:var(--m);font-size:20px;font-weight:900}
+.of-addall{border:0;cursor:pointer;font:inherit;font-weight:900;font-size:16px;color:#fff;background:#007aff;padding:14px;border-radius:14px}
+.of-addall:active{transform:scale(.98)}
+.of-save{align-self:flex-start;background:#e8f7ec;color:#1b8a3a;font-weight:800;font-size:13px;padding:4px 12px;border-radius:99px}
+.of-total s{color:var(--mut);font-size:14px;font-weight:600;margin-inline-start:6px}
+.of-valid2{font-size:12px;color:var(--mut)}
+.of-tag{position:absolute;top:10px;left:10px;z-index:2;background:#27304a;color:#fff;font-weight:800;font-size:13px;padding:7px 16px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.25);line-height:1}
+
+/* ===== عناصر الإقناع ===== */
+.of-herosave{font-family: "Almarai", sans-serif;
+    font-weight: 400;
+    font-style: normal;display:none;margin-top:12px;width:max-content;background:#fff;color:var(--m);font-weight:900;padding:6px 16px;border-radius:99px;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.of-urgent{margin:12px 0 0;font-weight:800;font-size:14px;background:rgba(0,0,0,.18);display:inline-block;padding:5px 14px;border-radius:10px}
+.of-hero.urgent{background:linear-gradient(227deg,#ef5350,#c62828)}
+.of-hero.urgent .of-box{animation:ofPulse 1s infinite}
+@keyframes ofPulse{50%{transform:scale(1.06);background:rgba(255,255,255,.35)}}
+.of-card .of-in{font-family: "Almarai", sans-serif;font-size:11px;color:#1b8a3a;font-weight:800;margin-top:6px}
+.of-deal{margin-top:26px;background:#fff;border-radius:22px;padding:22px 18px;box-shadow:0 6px 22px rgba(0,0,0,.1);color:#222;border:2px solid var(--m2);text-align:center}
+.of-deal .of-save{    display: inline-block;
+    background: #e8f7ec;
+    color: #1b8a3a;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 7px;}
+.of-bigprice{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:12px 0 4px;direction:rtl}
+.of-bigprice b{font-size: 30px;
+    color: #000000;
+    line-height: 1;
+    font-weight: 700;}
+.of-bigprice small{font-size:16px;font-weight:800;    font-family: 'Cairo', sans-serif;}
+.of-bigprice s{font-size:18px;color:var(--mut);    font-family: 'Cairo', sans-serif;text-decoration: line-through;}
+.of-back{font-size:13px;color:var(--mut);    font-family: 'Cairo', sans-serif;}
+.of-points{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px;text-align:start; direction: rtl;}
+.of-points li{font-weight: 700;
+    font-size: 14px;
+    font-family: "Almarai", sans-serif;}
+.of-points i{color:#1b8a3a;margin-inline-end:8px}
+.of-addall{width:400px; 
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;}
+.of-addall.done{background:#0570e4;}
+.of-addall{animation:ofGlow 2.2s infinite}
+.of-addall.done{    
+    animation: none;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    width: 380px;
+    padding: 13px;}
+@keyframes ofGlow{0%,100%{box-shadow:0 0 0 0 #033e97ac}50%{box-shadow:0 0 0 10px rgba(210,112,57,0)}}
+.of-trust{display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.of-trust div{background:#fff7f1;border-radius:14px;padding:10px 4px;font-size:12px;font-weight:800;color:#5b4636}
+.of-trust i{display:block;font-size:20px;color:var(--m);margin-bottom:4px}
+.of-wa{display:none;align-items:center;gap:6px;margin-top:14px;color:#1b8a3a;font-weight:800;font-size:13px;text-decoration:none}
+.of-cta{    display: none !important;position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;box-shadow:0 -4px 20px rgba(0,0,0,.15);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:none;align-items:center;gap:12px}
+.of-cta .p{display:flex;flex-direction:column;line-height:1.15;color:#222}
+.of-cta .p b{font-size:20px;font-weight:900;color:var(--m)}
+.of-cta .p s{font-size:12px;color:var(--mut)}
+.of-cta .of-addall{flex:1;padding:12px;font-size:15px}
+.of-lnk{display:flex;flex-direction:column;align-items:center;color:inherit;text-decoration:none;width:100%}
+.of-cols{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.of-col{    border: 1.5px solid #d9d9d9;
+    background: #fff;
+    color: #444;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 11px;
+    border-radius: 99px;
+    cursor: pointer;
+    font-family: "Almarai", sans-serif;}
+.of-col.on{border-color:var(--m);background:var(--m);color:#fff}
+.of-colfix{font-size:12px;font-weight:700;color:#5b4636;margin-top:6px}
+.of-tiers{margin:14px 0;background:#fff7f1;border:2px dashed #f5934e;border-radius:16px;padding:12px;text-align:start}
+.of-tiers-h{font-weight:900;color:#d27039;margin-bottom:8px}
+.of-tier{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #f1e3d8;font-size:13px;color:#444}
+.of-tier:first-of-type{border-top:0}
+.of-tier b{color:#222}
+#urgent{
+      display: inline-block;
+    font-family: "Almarai", sans-serif;
+    font-weight: 400;
+    padding: 7px 26px;
+    border-radius: 36px 1px 1px 36px;
+    position: relative;
+    right: -19px;
+    top: -25px;
+}
+/* ألوان الهيدر: الموقع (style.css) بيغلّب ألوان h1/p/span فبنثبّتها */
+.of-hero,.of-hero h1,.of-hero p,.of-urgent,.of-ended,.of-box b{color:#fff !important;text-align: end;}
+.of-box span{color:rgba(255,255,255,.92) !important}
+.of-herosave{color:#e58c38 !important}
+.of-head span{color:#8a8f99 !important}
+.of-head-r{display:flex;align-items:center;gap:10px}
+.of-vt{display:none;width:40px;height:40px;border:0;border-radius:12px;background:#fff;color:#0f4c9a;font-size:17px;cursor:pointer;place-items:center;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.of-vt:active{transform:scale(.92)}
+@media (max-width:768px){
+  .of-vt{display:grid}
+  .of-grid.of-list{grid-template-columns:1fr}
+  .of-list .of-card{display:grid;grid-template-columns:38% minmax(0,1fr);column-gap:12px;align-items:start;text-align:start;padding:10px}
+  .of-list .of-lnk{display:contents}
+  .of-list .of-lnk img{grid-column:1;grid-row:1 / span 6;width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;margin:0}
+  .of-list .of-card>*:not(.of-lnk):not(.of-tag),.of-list .of-lnk h3{grid-column:2;min-width:0}
+  .of-list .of-lnk h3{min-height:0;margin:0 0 6px}
+  .of-list .of-cols,.of-list .of-price{justify-content:flex-start}
+  .of-list .of-tag{top:6px;left:6px;min-width:0;height:30px;padding:0 12px;font-size:12px}
+}
+.of-video{margin:22px 0 4px}
+.of-video-h{display:flex;align-items:center;gap:8px;font-weight:900;font-size:18px;margin:0 2px 10px;color:#222}
+.of-video-h i{color:var(--m)}
+.of-video-box{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#2b2f3a,#11141b) center/cover no-repeat;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.of-video-box.fb{background:linear-gradient(160deg,#1877f2,#0a3d91)}
+.of-fbtag{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.95);color:#1877f2;font-weight:800;font-size:12px;padding:5px 12px;border-radius:99px;display:flex;gap:6px;align-items:center}
+.of-video-box.nopl{cursor:default;background:#000}
+.of-video-box iframe,.of-video-box video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.of-play{position:absolute;inset:0;margin:auto;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.95);color:var(--m);display:grid;place-items:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.35);transition:transform .2s}
+.of-video-box:hover .of-play{transform:scale(1.08)}
+.of-vcard{display:flex;align-items:center;gap:14px;margin:22px 0 4px;padding:12px;background:#fff;border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,.08);cursor:pointer;direction:rtl;transition:transform .15s,box-shadow .15s}
+.of-vcard:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.13)}
+.of-vthumb{position:relative;flex:0 0 auto;width:150px;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#2b2f3a,#0d1017) center/cover no-repeat;display:block}
+.of-vthumb.fb{background:linear-gradient(160deg,#1877f2,#0a3d91)}
+.of-vthumb .of-play{position:absolute;inset:0;margin:auto;width:46px;height:46px;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.of-vbrand{position:absolute;top:8px;left:8px;color:#fff;font-size:18px;opacity:.9}
+.of-vinfo{flex:1;min-width:0;text-align:start}
+.of-vtitle{font-family: 'Cairo', sans-serif;font-weight:700;font-size:16px;color:#222;line-height:1.5}
+.of-vsub{font-family: 'Cairo', sans-serif;margin-top:5px;font-size:12px;color:#8a8f99;display:flex;align-items:center;gap:6px}
+.of-vm{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:16px;animation:ofVmIn .2s ease-out}
+@keyframes ofVmIn{from{opacity:0}to{opacity:1}}
+.of-vm-p{position:relative;aspect-ratio:var(--r);background:#000;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:ofVmPop .25s ease-out}
+@keyframes ofVmPop{from{transform:scale(.88)}to{transform:none}}
+.of-vm-p.h{width:min(94vw,960px)}
+.of-vm-p.v{height:min(86vh,720px);max-width:94vw}
+.of-vm-p iframe,.of-vm-p video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.of-vm-x{position:absolute;top:14px;left:14px;z-index:2;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer;display:grid;place-items:center}
+.of-vm-x:hover{background:rgba(255,255,255,.3)}
+.of-vm{flex-direction:column;gap:14px}
+.of-vm.has-no .of-vm-p.v{height:min(76vh,680px)}
+.of-vm-no{border:0;cursor:pointer;font:inherit;font-weight:700;    font-family: "Almarai", sans-serif;font-size:14px;color:#fff;background:rgba(255,255,255,.16);padding:11px 22px;border-radius:99px;border:1px solid rgba(255,255,255,.35);transition:background .15s}
+.of-vm-no:hover{background:rgba(255,255,255,.28)}
+
+@media (max-width:500px) {
+  .of-hero h1 {
+    font-size: clamp(17px, 4vw, 32px);
+}
+.of-hero p {
+    margin: 0px 0 0;
+    font-size: 13px;
+}
+.of-box b {
+    font-size: 17px;
+}
+.of-box {
+    min-width: 50px;
+    padding: 4px 4px;
+}
+.of-box span {
+    font-size: 10px;
+}
+.of-herosave{
+  font-size: 11px;
+}
+#urgent{
+  font-size: 12px;
+}
+.of-hero {
+    padding: 13px 20px 0px !important;
+}
+.of-urgent{
+  margin: 7px 0 0;
+}
+.of-vtitle {
+    font-size: 13px;
+}
+.of-vsub {
+    font-size: 11px;
+    margin-top: 4px;
+}
+.of-list .of-card {
+  direction: rtl;
+}
+.of-list .of-tag {
+        top: 6px;
+        right: 6px;
+        min-width: 0;
+        height: fit-content;
+        padding: 6px 12px;
+        font-size: 12px;
+        width: fit-content;
+        font-weight: 600;
+    }
+.of-addall.done {
+    padding: 12px;
+    font-size: 14px;
+}
+.of-wrap {
+    margin: 33px auto 25px;
+}
+.of-head h2 {
+    font-size: 18px;
+}
+.of-addall {
+    width: 100%;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 11px;
+}
+}
+
+
+
+
+
+@media (max-width:400px) {
+    .of-addall {
+    width: 100%;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 11px;
+}
+.of-wrap {
+        margin: 60px auto 25px;
+}
+.of-hero h1 {
+        font-size: clamp(15px, 4vw, 32px);
+    }
+.of-hero p{
+  font-size: 11px;
+ }   
+.of-box {
+        min-width: 45px;
+        padding: 3px 5px;
+    }
+
+.of-timer{
+  margin-top: 11px;
+}
+#urgent{
+  top: -39px;
+  font-size: 10.5px;
+}
+    .of-herosave {
+        font-size: 11px;
+        position: relative;
+        top: 28px;
+    }
+.of-vthumb {
+    width: 129px;
+}
+.of-vthumb .of-play {
+    width: 38px;
+    height: 38px;
+}
+.of-vbrand i{
+  font-size: 14px;
+}
+.of-vbrand {
+    top: 3px;
+}
+.of-vtitle {
+        font-size: 11px;
+}
+.of-vsub {
+        font-size: 10px;
+        margin-top: 2px;
+    }
+.of-addall.done {
+        padding: 11px;
+        font-size: 12.5px;
+        width: 100%;
+    }
+.of-card h3 {
+    font-size: 12px;
+}
+.of-col{
+  font-size: 10.5px;
+  padding: 2px 9px;
+}
+.of-card .of-in {
+    font-size: 10px;
+}
+    .fa-solid, .fas {
+        font-weight: 900;
+        font-size: 10px;
+        margin-left: 1px;
+    }
+.of-vt i{
+  font-size: 13px;
+}
+.of-list .of-lnk h3 {
+        min-height: 0;
+        margin: 0px 0 2px;
+    }
+.of-deal .of-save {
+    font-size: 11.5px;
+    padding: 4px 13px;
+}
+.of-bigprice b {
+    font-size: 18px;
+}
+.of-bigprice small {
+    font-size: 13px;
+    font-weight: 600;
+}
+.of-bigprice {
+    gap: 6px;
+}
+.of-bigprice s {
+    font-size: 14px;
+}
+.of-points li {
+    font-weight: 700;
+    font-size: 12px;
+}
+.of-points {
+    gap: 5px;
+}
+.of-vm-x {
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 88%);
+}
+    .fa-solid, .fas {
+        font-weight: 900;
+        font-size: 14px;
+        margin-left: 0px;
+    }
+
+
+}
+
+
+
+
+
+
+
+</style>
+</head>
+<body>
+
+    <!-- start-cart -->
+    <div class="cart">
+        <div class="top_cart">
+            <h3>المنتاجات : <span class="Count_item_cart">0</span></h3>
+            <span onclick="open_close_cart()" class="close_cart"><i class="fa-regular fa-circle-xmark"></i></span>
+        </div>
+
+
+
+        <div class="items_in_cart" id="cart_items">
+
+
+        </div>
+
+
+        <div class="bottom_cart">
+            <div class="total">
+                <p>السعر :</p>
+                <p class="price_cart_total">0</p>
+            </div>
+
+
+            <div class="button_cart">
+                <a href="chexkout.html" class="btn_cart btn" >شراء</a>
+                <a href="index.html" class="btn_cart btn"><span onclick="open_close_cart()"class="btn_cart trans_bg btn">تسوق</span></a>
+
+            </div>
+        </div>
+
+
+    </div>
+    <!-- end-cart -->
+
+     <!-- start-header  -->
+    <header>
+        <div class="top_top_header">
+            <div class="container">
+            <div class="help">
+                <a href="callme.html"> الدعم </a>
+                <hr>
+                <a href="Privacy.html"> السياسة و الخصوصية </a>
+            </div>
+            <div class="links">
+                         <a target="_blank"
+                        href="https://www.facebook.com/p/%D9%83%D8%B4%D9%85%D9%8A%D8%B1-%D9%87%D9%88%D9%85-kashmir-home-100064031503557/"><i
+                            class="fa-brands fa-facebook"></i></a>
+                    <a target="_blank"
+                        href="https://www.instagram.com/kashmir_home_center/?fbclid=IwY2xjawHwa8xleHRuA2FlbQIxMAABHc8LrSfm4Gu37osiGk8MTGyptSigZZqTQ0WbYC1CRy2d4y0JmsYTbUiQzQ_aem_W7NnxJhHGMWugD_WC8i6EQ#"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a target="_blank" href="https://wa.me/201028604523"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a target="_blank" href="tel:+201028604523"><i class="fa-solid fa-phone"></i></a>
+                    <a target="_blank" href="mailto:kashmirhome.00@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            </div>
+        </div>
+
+
+
+        <div class="top_header">
+            <div class="container">
+
+
+
+                <div class="logo">
+                    <div>
+                        <h1>كشمير <span>هوم</span></h1>
+                    </div>
+                </div>   
+                
+                <div>
+                  <ul class="nav_links">
+
+                        <li><a href="index.html">الرئيسية</a></li>
+
+                           <div class="category_nav">
+                        <div onclick="Open_Categ_list()" class="category_btn">
+                            <p>المنتجات</p>
+                            <i class="fa-solid fa-sort-down"></i>
+                            
+                        </div>
+
+
+                        <div class="categoru_nav_list">
+                            <a href="Furniture/feyat/feyat1.html" >الفوط</a>
+                            <a href="Furniture/mlayat/mlayat1.html">الملايات</a>
+                            <a href="Furniture/paranes/paranes.html">البرانس</a>
+                            <a href="Furniture/patatin/patatin1.html">البطاطين</a>
+                            <a href="Furniture/ellehaf/ellehaf1.html">اللحاف</a>
+                            <a href="Furniture/coferta/coferta1.html">كوفرتا</a>
+                            <!-- <a href="">omar omar</a> -->
+
+
+                           
+
+
+                        </div>
+
+                    </div>
+                                            <span onclick="open_Menu()" class="close_menu"><i class="fa-regular fa-circle-xmark"></i></span>
+
+                        <li class="active"><a href="offers.html">العروض</a></li>
+                        <li><a href="index.html#elaksar_mabia">الاكثر مبيعاََ</a></li>
+                        <li class="check"><a href="chexkout.html">الدفع</a></li>
+                        <li><a href="callme.html">المساعدة </a></li>
+                        <li><a href="Privacy.html">السياسة و الخصوصية</a></li>
+
+
+                    </ul>
+                </div>
+
+
+                <div class="icon_header">
+
+                <form action="/search.html" method="get" class="search_box">
+                    <input type="text" id="search" name="search" placeholder=" ابدأ البحث..." required autocomplete="off">
+                    
+                    <button type="submit" aria-label="بحث">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+
+
+<span onclick="open_Menu()" class="open_menu"><i class="fa-solid fa-bars"></i></span>
+
+<!-- قسم إنشاء الحساب -->
+ <div class="person1" id="registerSection" onclick="openModal()">
+    <div class="person2">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>انشاء حساب</h1>
+    </div>
+</div> 
+
+
+
+
+
+
+                   <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man1" id="welcomeSection" style="display: none;">
+            <div class="man2">
+                <h1 id="welcomeMessage">مرحباً <span id="userName"></span></h1>
+                <a href="user/accoun.html"><i id="icon_person" class="fa-solid fa-circle-user"></i></a> 
+            </div>
+        </div> 
+
+                <div class="header_icons">
+                    <div class="icon">
+                        <!-- <a href="">
+                            <i class="fa-regular fa-heart"></i>
+                            <span class="count count_favourite">0</span>
+                        </a> -->
+                    </div>
+
+                    <div onclick="goToCart()" class="icon">
+                        <!-- <i class="fa-solid fa-cart-shopping"></i> -->
+                         <i class="fa-solid fa-bag-shopping"></i>
+                        <span class="count count_item_header">0</span>
+                    </div>
+
+
+                </div>
+
+
+    </div>
+
+            </div>
+        </div>
+
+        <div class="medal_header">
+            <div class="container">
+                <div class="person">
+                    
+<!-- قسم إنشاء الحساب -->
+ <div class="person3" id="registerSection1" onclick="openModal()">
+    <div class="person4">
+        <i id="person" class="fa-regular fa-user"></i>
+        <h1>  انشاء حساب <span> لكشمير هوم </span>  </h1>
+    </div>
+</div> 
+
+
+             <a href="user/accoun.html">       <!-- قسم الترحيب (مخفي في البداية) -->
+       <div class="man3" id="welcomeSection1" style="display: none;">
+            <div class="man4">
+                <h1 id="welcomeMessage">مرحباً <span id="userName1"></span> <span class="tarhib"> هذا حسابك في كشمير</span></h1>
+              <i id="icon_person" class="fa-solid fa-circle-user"></i>
+            </div>
+        </div> 
+                </div>
+            </div>
+        </div>
+</a> 
+
+
+
+        
+
+    </header>
+    <!-- end-header -->
+
+<div class="of-wrap">
+  <section class="of-hero">
+    <h1 id="title">عرض الراحة والنعومة</h1>
+    <p id="sub">خصومات حصرية لفترة محدودة</p>
+    <div class="of-timer" id="timer">
+      <div class="of-box"><b id="s">00</b><span>ثانية</span></div>
+      <div class="of-box"><b id="m">00</b><span>دقيقة</span></div>
+      <div class="of-box"><b id="h">00</b><span>ساعة</span></div>
+      <div class="of-box"><b id="d">00</b><span>يوم</span></div>
+    </div>
+    <div class="of-ended" id="ended">انتهى العرض</div>
+    <div class="of-herosave" id="heroSave"></div>
+    <div class="of-urgent" id="urgent" style="display:none"></div>
+  </section>
+  <div id="content"><div class="of-msg">جاري التحميل...</div></div>
+</div>
+
+<div class="of-cta" id="ofCta"></div>
+
+<div class="modal-overlay" id="authModal" onclick="handleOverlayClick(event)">
+    <div class="modal-box" id="modalBox">
+ 
+        <!-- زرار القفل / الإغلاق -->
+        <button class="modal-close" onclick="closeModal()" title="إغلاق">🔒</button>
+ 
+        <!-- Main Card بداخل الـ Modal -->
+        <div class="main-card">
+ 
+            <!-- Tab Switcher -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+                    <span class="tab-icon">🔑</span> تسجيل الدخول
+                </button>
+                <button class="tab-btn" id="tab-register" onclick="switchTab('register')">
+                    <span class="tab-icon">✨</span> إنشاء حساب
+                </button>
+            </div>
+ 
+            <!-- ============ LOGIN PANEL ============ -->
+            <div class="panel" id="panel-login">
+ 
+                <div class="step" id="login-step1">
+                    <div class="step-header">
+                        <h2>مرحباً بعودتك 👋</h2>
+                        <p>أدخل بريدك الإلكتروني لنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="login-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="login-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveOTP(this, 5)">
+                    </div>
+                    <div id="otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyOTP()">
+                        <span class="btn-text">تحقق والدخول</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="login-step3">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم الدخول بنجاح! 🎉</h2>
+                    <p>أهلاً بك مجدداً</p>
+                    <button class="btn-ghost" style="margin-top:16px" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+            <!-- ============ REGISTER PANEL ============ -->
+            <div class="panel hidden" id="panel-register">
+ 
+                <div class="steps-indicator">
+                    <div class="step-dot active" id="reg-dot1">1</div>
+                    <div class="step-line" id="reg-line1"></div>
+                    <div class="step-dot" id="reg-dot2">2</div>
+                    <div class="step-line" id="reg-line2"></div>
+                    <div class="step-dot" id="reg-dot3">3</div>
+                </div>
+ 
+                <div class="step" id="register-step1">
+                    <div class="step-header">
+                        <h2>إنشاء حساب جديد ✨</h2>
+                        <p>أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق</p>
+                    </div>
+                    <div class="field-group">
+                        <label>البريد الإلكتروني</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="reg-email" placeholder="example@email.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="sendRegOTP()">
+                        <span class="btn-text">إرسال رمز التحقق</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step2">
+                    <div class="step-header">
+                        <div class="otp-icon">📩</div>
+                        <h2>تحقق من بريدك</h2>
+                        <p>أرسلنا رمز مكون من 6 أرقام إلى<br><strong id="reg-display-email"></strong></p>
+                    </div>
+                    <div class="otp-boxes" id="reg-otp-boxes">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 0)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 1)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 2)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 3)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 4)">
+                        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" onInput="moveRegOTP(this, 5)">
+                    </div>
+                    <div id="reg-otp-timer" class="otp-timer">⏱ انتهت الصلاحية خلال: <span id="reg-countdown">02:00</span></div>
+                    <button class="btn-primary" onclick="verifyRegOTP()">
+                        <span class="btn-text">تحقق والمتابعة</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                    <button class="btn-ghost" onclick="resendRegOTP()">إعادة إرسال الرمز</button>
+                </div>
+ 
+                <div class="step hidden" id="register-step3">
+                    <div class="step-header">
+                        <h2>أكمل بياناتك 👤</h2>
+                        <p>خطوة أخيرة لإتمام التسجيل</p>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأول</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-firstname" placeholder="الاسم الاول">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>الاسم الأخير</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg-lastname" placeholder="الاسم الاخير">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>رقم الهاتف</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📱</span>
+                            <input type="tel" id="reg-phone" placeholder="+20 1XX XXX XXXX">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="registerUser()">
+                        <span class="btn-text">إنشاء الحساب</span>
+                        <span class="btn-arrow">←</span>
+                    </button>
+                </div>
+ 
+                <div class="step hidden" id="register-step4">
+                    <div class="success-anim">
+                        <div class="success-ring"></div>
+                        <div class="success-check">✓</div>
+                    </div>
+                    <h2>تم إنشاء حسابك! 🎉</h2>
+                    <p>مرحباً بك في عائلتنا</p>
+                    <div class="user-summary" id="user-summary"></div>
+                    <button class="btn-ghost" onclick="resetRegister()">تسجيل حساب آخر</button>
+                    <button class="btn-ghost" style="margin-top:8px;border-color:#e2e8f0" onclick="closeModal()">إغلاق 🔒</button>
+                </div>
+ 
+            </div>
+ 
+        </div><!-- /main-card -->
+    </div><!-- /modal-box -->
+</div><!-- /modal-overlay -->
+ 
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/script.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+<script src="js/user.js" type="module"></script>
+<script src="js/login2.js" type="module"></script>
+<script src="js/main.js"></script>
+<script src="js/offer-cart-style.js"></script>
+
+<script type="module">
+import { db } from "./js/firebase-config.js";
+import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+/* العرض بيتقرا من Firebase (Realtime Database: offers/current) — بتتحكم فيه من لوحة الأدمن ← الإحصائيات ← العروض */
+const RTDB = "https://data-customer-d722f-default-rtdb.firebaseio.com";
+let OFFER = { id: "offer", name: "عرض الراحة والنعومة", price: 0, img: "", note: "" };
+let OFFER_PRODUCTS = [];
+let OFFER_TIERS = [];
+let OFFER_VIDEO = null;
+let OFFER_KEY = "comfort";
+let end = 0, endLabel = "";
+
+const SECTIONS = {
+  coferta: "كوفرتة", ellehaf: "لحاف", feyat: "فوط",
+  mlayat: "ملايات", patatin: "بطاطين", paranes: "برانس"
+};
+const COLLECTIONS = Object.keys(SECTIONS);
+const ITEM_PAGE = "Furniture/item.html";
+const PLACEHOLDER = "images/placeholder.jpg";
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+
+function tick(){
+  const left = end - Date.now();
+  if (left <= 0){
+    $("timer").style.display = "none";
+    $("ended").style.display = "block";
+    document.querySelectorAll(".of-card").forEach(c => c.style.opacity = .5);
+    return false;
+  }
+  const u = $("urgent"), hero = document.querySelector(".of-hero");
+  const hrs = Math.floor(left/36e5), days = Math.floor(left/864e5);
+  u.style.display = "inline-block";
+  if (left < 864e5){ hero.classList.add("urgent"); u.textContent = "⏳ العرض بينتهي النهاردة — باقي " + hrs + " ساعة بس"; }
+  else if (days < 3){ u.textContent = "⏳ باقي أقل من " + (days + 1) + " أيام على انتهاء العرض"; }
+  else u.textContent = "العرض شغّال لحد " + endLabel;
+  $("d").textContent = pad(Math.floor(left/864e5));
+  $("h").textContent = pad(Math.floor(left/36e5)%24);
+  $("m").textContent = pad(Math.floor(left/6e4)%60);
+  $("s").textContent = pad(Math.floor(left/1e3)%60);
+  return true;
+}
+
+document.addEventListener("error", e => {      // لو الصورة مش موجودة محلياً جرّبها من الموقع الأونلاين مرة واحدة
+  const im = e.target; if (!im || im.tagName !== "IMG") return;
+  if (im.dataset.fb) { if (!im.dataset.fb2) { im.dataset.fb2 = "1"; im.src = "data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect width=%27200%27 height=%27200%27 fill=%27%23eceff4%27/%3E%3Ctext x=%27100%27 y=%27108%27 font-size=%2714%27 text-anchor=%27middle%27 fill=%27%239aa3b2%27 font-family=%27sans-serif%27%3Eno image%3C/text%3E%3C/svg%3E"; } return; }   // فشلت تاني: صورة بديلة بدل الأيقونة المكسورة
+  const src = im.getAttribute("src") || "";
+  if (!src || /^(https?:)?\/\/|^data:/.test(src) || location.hostname.endsWith("vercel.app")) { im.dataset.fb = "1"; im.dataset.fb2 = "1"; if (src) im.src = "data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect width=%27200%27 height=%27200%27 fill=%27%23eceff4%27/%3E%3Ctext x=%27100%27 y=%27108%27 font-size=%2714%27 text-anchor=%27middle%27 fill=%27%239aa3b2%27 font-family=%27sans-serif%27%3Eno image%3C/text%3E%3C/svg%3E"; return; }
+  im.dataset.fb = "1"; im.src = "https://kashmair.vercel.app/" + src.replace(/^(\.\.\/|\.\/)+/, "");
+}, true);
+const cleanImg = u => { u = String(u || "").trim(); return (!u || /^(https?:)?\/\/|^data:|^\//.test(u)) ? u : u.replace(/^(\.\.\/|\.\/)+/, ""); };
+function imageOf(p){
+  if (p.img && String(p.img).trim()) return cleanImg(p.img);
+  const k = Object.keys(p).filter(k => /^color\d+_img$/.test(k)).sort()[0];
+  return (k && cleanImg(p[k])) || PLACEHOLDER;
+}
+
+let offerItems = [];
+
+function render(items){
+  offerItems = items;
+  const box = $("content");
+  if (!items.length){ box.innerHTML = '<div class="of-msg">لا توجد منتجات في العرض حالياً</div>'; return; }
+
+  const sum = items.reduce((t,p) => t + p.price, 0);
+  const save = sum - OFFER.price;
+  const pct = save > 0 ? Math.round(save / sum * 100) : 0;
+
+  box.innerHTML = videoHTML() + `
+    <div class="of-head"><h2>منتجات العرض</h2><div class="of-head-r"><span>${items.length} منتج</span><button type="button" class="of-vt" aria-label="تغيير طريقة العرض"></button></div></div>
+    <div class="of-grid${localStorage.getItem("kashmirViewMode") === "list" ? " of-list" : ""}">${items.map((p, i) => `
+      <div class="of-card" data-i="${i}">
+        <span class="of-tag">عروض</span>
+        <a class="of-lnk" href="${itemHref(p)}">
+          <img src="${curImg(p)}" alt="${p.nameTxt}" loading="lazy">
+          <h3>${p.nameTxt}</h3>
+        </a>
+        ${p.options.length > 1
+          ? `<div class="of-cols">${p.options.map((c, j) => `<button type="button" class="of-col${j === p.chosen ? " on" : ""}" data-i="${i}" data-j="${j}">${c.name}</button>`).join("")}</div>`
+          : p.options.length === 1 ? `<div class="of-colfix">اللون: ${p.options[0].name}</div>` : ""}
+        <div class="of-price"><s>${p.price} ج.م</s></div>
+        <div class="of-in"><i class="fa-solid fa-circle-check"></i> ضمن العرض</div>
+      </div>`).join("")}
+    </div>
+
+    <div class="of-deal">
+      ${pct ? `<span class="of-save"> وفّر ${save} ج.م — خصم ${pct}%</span>` : ""}
+      <div class="of-bigprice"><b id="bigPrice">${OFFER.price}</b><small>ج.م  بدلا من </small>${save > 0 ? `<s>${sum} ج.م</s>` : ""}</div>
+      ${save > 0 ? `<div class="of-back">بعد انتهاء العرض السعر بيرجع ${sum} ج.م</div>` : ""}
+      <ul class="of-points">
+        <li><i class="fa-solid fa-circle-check"></i> ${items.length} منتجات في عرض واحد بسعر واحد</li>
+        ${items.length > 1 ? `<li><i class="fa-solid fa-circle-check"></i> القطعة بتطلع على ${Math.round(OFFER.price / items.length)} ج.م تقريباً${save > 0 ? ` بدل ${Math.round(sum / items.length)} ج.م` : ""}</li>` : ""}
+        <li><i class="fa-solid fa-circle-check"></i> العرض ينتهي ${endLabel}</li>
+      </ul>
+      ${OFFER_TIERS.length ? `<div class="of-tiers"><div class="of-tiers-h"> كل ما تشتري أكتر… توفّر أكتر</div>${OFFER_TIERS.map(t => `
+        <div class="of-tier"><b>اشترِ ${t.qty} أو أكتر</b><span>خصم ${t.type === "fixed" ? t.value + " ج.م" : t.value + "%"} ${t.mode === "code" ? "بكود هيظهرلك في السلة" : "يتطبق تلقائي في السلة"}</span></div>`).join("")}</div>` : ""}
+      <button class="of-addall js-add"></button>
+      <div class="of-trust">
+        <div><i class="fa-solid fa-truck-fast"></i>توصيل سريع</div>
+        <div><i class="fa-solid fa-medal"></i>جودة عالية</div>
+        <div><i class="fa-solid fa-headset"></i>خدمة عملاء ممتازة</div>
+      </div>
+      <a class="of-wa" target="_blank" href="https://wa.me/201028604523?text=${encodeURIComponent('عايز أسأل عن ' + OFFER.name)}"><i class="fa-brands fa-whatsapp"></i> عندك سؤال؟ كلمنا على واتساب</a>
+    </div>
+
+    <div id="cartBtns" style="display:none">
+      <span class="btn_add_cart" id="offerBtn" data-id="${OFFER.id}" data-name="${OFFER.cartName || OFFER.name}" data-price="${OFFER.price}"
+        data-img="${cartImg()}" data-color="${cartColor()}"></span>
+    </div>`;
+  $("ofCta").style.display = "flex";
+  $("ofCta").innerHTML = `<div class="p"><b>${OFFER.price} ج.م</b>${save > 0 ? `<s>${sum} ج.م</s>` : ""}</div><button class="of-addall js-add"></button>`;
+  if (save > 0){ const hs = $("heroSave"); hs.style.display = "block"; hs.textContent = "وفّر " + save + " ج.م 🔥 خصم " + pct + "%"; }
+  syncBtns();
+  paintVt();
+  if (OFFER_VIDEO && OFFER_VIDEO.auto && !window.__ofAutoShown) {      // الفيديو يطلع لوحده أول ما العميل يفتح العرض
+    let hidden = false; try { hidden = !!localStorage.getItem(vidKey()); } catch (_) {}
+    if (!hidden) {
+      window.__ofAutoShown = true;
+      setTimeout(() => { const c = document.querySelector(".of-vcard"); if (c && !document.querySelector(".of-vm")) openVideo(c, { auto: true }); }, 700);
+    }
+  }
+  countUp($("bigPrice"), OFFER.price);
+  if (end <= Date.now()) tick();
+}
+
+function itemHref(p){
+  const o = p.options[p.chosen];
+  const c = o ? "&color=" + encodeURIComponent(o.name) + (o.idx !== undefined ? "&ci=" + o.idx : "") : "";
+  return `${ITEM_PAGE}?col=${p.col}&docId=${p.docId}${c}&offer=${encodeURIComponent(OFFER_KEY)}`;
+}
+function curImg(p){ return (p.options.length && p.options[p.chosen].img) || p.imgBase; }
+function cartImg(){ return cleanImg(OFFER.img) || (offerItems[0] ? curImg(offerItems[0]) : ""); }
+function cartColor(){
+  return OFFER.note || offerItems.map(p => p.options.length ? p.nameTxt + ": " + p.options[p.chosen].name : p.nameTxt).join(" + ");
+}
+document.addEventListener("click", e => {
+  const c = e.target.closest(".of-col");
+  if (!c) return;
+  const p = offerItems[+c.dataset.i]; if (!p) return;
+  p.chosen = +c.dataset.j;
+  const card = c.closest(".of-card");
+  card.querySelectorAll(".of-col").forEach(b => b.classList.toggle("on", b === c));
+  card.querySelector("img").src = curImg(p);
+  card.querySelector(".of-lnk").href = itemHref(p);
+  const btn = $("offerBtn");
+  if (btn){ btn.dataset.color = cartColor(); btn.dataset.img = cartImg(); }
+});
+
+function paintVt(){
+  const g = document.querySelector(".of-grid"), b = document.querySelector(".of-vt"); if (!g || !b) return;
+  const list = g.classList.contains("of-list");
+  b.innerHTML = list ? '<i class="fa-solid fa-table-cells-large"></i>' : '<i class="fa-solid fa-list-ul"></i>';
+  b.title = list ? "عرض شبكة" : "عرض قائمة";
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".of-vt"); if (!b) return;
+  const g = document.querySelector(".of-grid"); if (!g) return;
+  g.classList.toggle("of-list");
+  try { localStorage.setItem("kashmirViewMode", g.classList.contains("of-list") ? "list" : "grid"); } catch (_) {}
+  paintVt();
+});
+
+const escH = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function parseVideo(u){
+  u = String(u || "").trim(); if (!u) return null;
+  const im = u.match(/<iframe[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);          // لو اتلزق كود iframe كامل
+  if (im) u = im[1].replace(/&amp;/g, "&");
+  if (u.startsWith("//")) u = "https:" + u;
+  let m;
+  if (/facebook\.com\/plugins\/video\.php/.test(u)) {                       // كود تضمين فيسبوك
+    let w = 0, h = 0, href = "";
+    try { const q = new URL(u).searchParams; w = +q.get("width") || 0; h = +q.get("height") || 0; href = q.get("href") || ""; } catch (_) {}
+    if (!w || !h) { const reel = /\/reel\//.test(href); w = reel ? 268 : 560; h = reel ? 476 : 315; }
+    return { t: "fb", src: u, ratio: w / h };
+  }
+  if (/^https?:\/\//.test(u) && /facebook\.com\/(reel|watch|[^\/?#]+\/videos|share\/[rv])|fb\.watch\//.test(u)) {   // لينك فيسبوك عادي
+    const reel = /facebook\.com\/(reel|share\/r)/.test(u), w = reel ? 268 : 560, h = reel ? 476 : 315;
+    return { t: "fb", src: `https://www.facebook.com/plugins/video.php?height=${h}&href=${encodeURIComponent(u)}&show_text=false&width=${w}&t=0`, ratio: w / h };
+  }
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/))) return { t: "yt", id: m[1] };
+  if ((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/))) return { t: "vimeo", id: m[1] };
+  if ((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))) return { t: "drive", id: m[1] };
+  if (/^https?:\/\//.test(u) || /^data:video/.test(u)) return { t: "file", url: u };
+  return null;
+}
+function videoHTML(){
+  const v = OFFER_VIDEO && parseVideo(OFFER_VIDEO.url); if (!v) return "";
+  const title = escH(OFFER_VIDEO.title || "فيديو توضيحي للعرض");
+  const ratio = v.t === "fb" ? v.ratio : 16 / 9;
+  const thumb = v.t === "yt" ? `style="background-image:url(https://img.youtube.com/vi/${v.id}/hqdefault.jpg)"` : "";
+  const brand = v.t === "fb" ? '<span class="of-vbrand"><i class="fa-brands fa-facebook"></i></span>' : "";
+  return `<div class="of-vcard" role="button" tabindex="0" data-t="${v.t}" data-id="${escH(v.id || "")}" data-src="${escH(v.src || v.url || "")}" data-r="${ratio.toFixed(4)}">
+    <div class="of-vthumb ${v.t === "fb" ? "fb" : ""}" ${thumb}>${brand}<span class="of-play"><i class="fa-solid fa-play"></i></span></div>
+    <div class="of-vinfo"><div class="of-vtitle">${title}</div><div class="of-vsub"><i class="fa-solid fa-expand"></i> اضغط للمشاهدة بحجم كبير</div></div>
+  </div>`;
+}
+
+// تشغيل الفيديو في نافذة مكبّرة
+const vidKey = () => "kashmirVidHide:" + OFFER_KEY + ":" + (OFFER_VIDEO ? OFFER_VIDEO.url.length + ":" + OFFER_VIDEO.url.slice(-16) : "");
+function openVideo(card, opts = {}){
+  const mute = !!opts.auto;                             // الظهور التلقائي لازم يبدأ بدون صوت (قواعد المتصفح)
+  const t = card.dataset.t, id = card.dataset.id, src0 = card.dataset.src, r = parseFloat(card.dataset.r) || 16 / 9;
+  let inner;
+  if (t === "file") inner = `<video src="${escH(src0)}" controls autoplay ${mute ? "muted" : ""} playsinline></video>`;
+  else {
+    const src = t === "fb" ? src0 + (src0.includes("?") ? "&" : "?") + "autoplay=true"
+      : t === "yt" ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0${mute ? "&mute=1" : ""}`
+      : t === "vimeo" ? `https://player.vimeo.com/video/${id}?autoplay=1${mute ? "&muted=1" : ""}`
+      : `https://drive.google.com/file/d/${id}/preview`;
+    inner = `<iframe src="${escH(src)}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen" allowfullscreen></iframe>`;
+  }
+  const bg = document.createElement("div");
+  bg.className = "of-vm";
+  bg.innerHTML = `<button type="button" class="of-vm-x" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+    <div class="of-vm-p ${r < 1 ? "v" : "h"}" style="--r:${r}">${inner}</div>
+    ${opts.auto ? '<button type="button" class="of-vm-no">لا أريد ظهوره مجدداً</button>' : ""}`;
+  if (opts.auto) bg.classList.add("has-no");
+  const close = () => { bg.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  bg.addEventListener("click", e => {
+    if (e.target.closest(".of-vm-no")) { try { localStorage.setItem(vidKey(), "1"); } catch (_) {} close(); return; }
+    if (e.target === bg || e.target.closest(".of-vm-x")) close();
+  });
+  document.addEventListener("keydown", onKey);
+  document.body.style.overflow = "hidden";
+  document.body.appendChild(bg);
+}
+document.addEventListener("click", e => { const c = e.target.closest(".of-vcard"); if (c) openVideo(c); });
+document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("of-vcard")) { e.preventDefault(); openVideo(e.target); } });
+
+function countUp(el, to){
+  if (!el || !to) return;
+  const t0 = performance.now(), dur = 800;
+  (function f(t){ const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); })(t0);
+}
+
+function isLoggedIn(){
+  return !!(localStorage.getItem("kashmirSessionId") && localStorage.getItem("kashmirUser"));
+}
+function offerInCart(){
+  try { return (JSON.parse(localStorage.getItem("cart")) || []).some(i => String(i.id) === String(OFFER.id)); }
+  catch(_){ return false; }
+}
+const ADD_HTML  = '<i class="fa-solid fa-bag-shopping"></i> أضف العرض للسلة';
+const DONE_HTML = '<i class="fa-solid fa-check"></i> العرض في سلتك — إتمام الشراء <i class="fa-solid fa-arrow-left"></i>';
+function syncBtns(){
+  const inCart = offerInCart();
+  document.querySelectorAll(".js-add").forEach(b => { b.innerHTML = inCart ? DONE_HTML : ADD_HTML; b.classList.toggle("done", inCart); });
+}
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".js-add");
+  if (!btn) return;
+  if (end <= Date.now()) return alert("انتهى العرض");
+  if (offerInCart()) { location.href = "chexkout.html"; return; }   // العرض في السلة ← كمّل الشراء
+  if (!isLoggedIn()){
+    return typeof window.openModal === "function" ? window.openModal() : alert("لازم تسجل دخول الأول");
+  }
+  try {                                            // تفاصيل العرض عشان السلة تعرضها تحت زرار "تفاصيل"
+    const all = JSON.parse(localStorage.getItem("offerDetails") || "{}");
+    all[OFFER.id] = { endAt: end, note: OFFER.note || "", items: offerItems.map(p => ({
+      name: p.nameTxt, color: p.options.length ? p.options[p.chosen].name : "", size: p.sizeTxt })) };
+    const ks = Object.keys(all); if (ks.length > 12) delete all[ks[0]];
+    localStorage.setItem("offerDetails", JSON.stringify(all));
+  } catch (_) {}
+  $("offerBtn").click();                                           // نفس زرار الموقع: بيضيف العرض كمنتج واحد
+  document.querySelectorAll(".js-add").forEach(b => { b.innerHTML = '<i class="fa-solid fa-check"></i> تمت إضافة العرض للسلة'; b.classList.add("done"); });
+  setTimeout(syncBtns, 1800);
+});
+
+async function load(){
+  try{
+    // الصيغة الدقيقة "القسم-docId": بنجيب المستند مباشرة. الـ ids القديمة (رقم لوحده) بنبحث عنها في الأقسام.
+    const fetchExact = async key => {
+      const m = key.match(/^([A-Za-z_][A-Za-z0-9_]*)-(.+)$/); if (!m) return null;
+      try { const s = await getDoc(doc(db, m[1], m[2])); return s.exists() ? { col: m[1], docId: m[2], ...s.data() } : null; }
+      catch (e) { console.warn("[offers] تعذر قراءة", key, e); return null; }
+    };
+    let _all = null;
+    const scan = async () => {
+      if (_all) return _all;
+      const snaps = await Promise.all(COLLECTIONS.map(c => getDocs(collection(db, c))));
+      _all = [];
+      snaps.forEach((snap, i) => snap.forEach(d => _all.push({ col: COLLECTIONS[i], docId: d.id, ...d.data() })));
+      return _all;
+    };
+    const items = (await Promise.all(OFFER_PRODUCTS.map(async o => {
+      o = (o && typeof o === "object") ? o : { id: o };
+      const key = String(o.id);
+      let p = await fetchExact(key);                                                // الصيغة الدقيقة: القسم-docId
+      if (!p) {                                                                   // id قديم: ناخد اللي ليه بيانات فعلاً
+        const c = (await scan()).filter(x => String(x.id) === key || x.docId === key);
+        p = c.find(x => x.name && x.price !== undefined) || c.find(x => x.name) || null;
+        if (c.length > 1) console.warn("[offers] الـ id " + key + " موجود في أكتر من قسم — الأفضل تضيفه من اللوحة تاني بالمفتاح الكامل");
+      }
+      if (!p || !p.name) { console.warn("[offers] المنتج مش موجود أو ناقص بيانات:", key); return null; }
+      const every = Object.keys(p).filter(k => /^color\d+$/.test(k) && p[k])
+        .sort((a, b) => parseInt(a.slice(5)) - parseInt(b.slice(5)))
+        .map((k, n) => ({ key: k, idx: n, name: String(p[k]), img: cleanImg(p[k + "_img"]) }));
+      const want = Array.isArray(o.colors) ? o.colors : [];
+      const options = [];
+      want.forEach(tk => {
+        tk = String(tk).trim(); if (!tk) return;
+        const m = tk.match(/^color[_\s-]?(\d+)$/i) || tk.match(/^(\d+)$/);        // color1 / color_1 / 1
+        const low = tk.toLowerCase();
+        const hit = (m && every.find(c => c.key === "color" + m[1]))
+          || every.find(c => c.name.trim().toLowerCase() === low)               // اسم اللون بالظبط
+          || every.find(c => c.name.toLowerCase().includes(low))                // جزء من الاسم
+          || { key: "", name: tk, img: "" };                                    // اسم مكتوب حر
+        if (!options.some(x => x.name === hit.name)) options.push(hit);
+      });
+      if (!options.length) options.push(...every);
+      return { ...p, price: Number(p.price) || 0, nameTxt: p.name ?? "", imgBase: imageOf(p), options, chosen: 0,
+        sizeTxt: String(o.size ?? ["size","sizes","dimensions","dimension","measure","measurement","مقاس","المقاس"].map(k => p[k]).find(v => v) ?? "") };
+    }))).filter(Boolean);
+    render(items);
+  }catch(e){
+    console.error(e);
+    $("content").innerHTML = '<div class="of-msg">تعذر تحميل المنتجات</div>';
+  }
+}
+async function boot(){
+  try{
+    const KEY = (new URLSearchParams(location.search).get("offer") || "comfort").replace(/[^a-z0-9_-]/gi, "");
+    OFFER_KEY = KEY;
+    let o = await (await fetch(RTDB + "/offers/" + KEY + ".json", { cache: "no-store" })).json();
+    if (!o && KEY === "comfort") o = await (await fetch(RTDB + "/offers/current.json", { cache: "no-store" })).json();
+    if (!o || !Array.isArray(o.items) || !o.items.length || !o.endAt) throw 0;
+    OFFER = { id: o.id || "offer", name: o.name || OFFER.name, cartName: o.cartName || o.name || OFFER.name, price: Number(o.price) || 0, img: o.img || "", note: o.note || "" };
+    OFFER_PRODUCTS = o.items;
+    OFFER_VIDEO = o.videoUrl ? { url: o.videoUrl, title: o.videoTitle || "", auto: !!o.videoAuto } : null;
+    OFFER_TIERS = Array.isArray(o.tiers) ? o.tiers.slice().sort((a, b) => a.qty - b.qty) : [];
+    if (o.sub) $("sub").textContent = o.sub;
+    end = Number(o.endAt);
+    endLabel = new Date(end).toLocaleDateString("ar-EG", { day:"numeric", month:"long" });
+  }catch(_){
+    $("timer").style.display = "none";
+    $("content").innerHTML = '<div class="of-msg">لا يوجد عرض متاح حالياً</div>';
+    return;
+  }
+  $("title").textContent = OFFER.name;
+  document.title = OFFER.name + " – كشمير هوم";
+  tick();
+  const iv = setInterval(() => { if (!tick()) clearInterval(iv); }, 1000);
+  load();
+}
+boot();
+</script>
+</body>
+</html>
