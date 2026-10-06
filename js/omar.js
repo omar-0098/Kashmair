@@ -1,3 +1,21 @@
+
+document.addEventListener("DOMContentLoaded", function() {
+    // ابحث عن عنصر الـ logo أو الهيدر وقم بتغيير محتواه
+    const logoElement = document.querySelector(".logo h1");
+    if (logoElement) {
+        logoElement.innerHTML = "بخة <span></span>"; // أو يمكنك تغيير الكلمة بالكامل حسب رغبتك
+    }
+})
+
+
+
+
+
+
+
+
+
+
 /* بيلوّن اللوجو اللي في نص شريط البراندات أثناء الحركة.
    حطه في آخر index.html بعد js/swiper.js */
 (function () {
