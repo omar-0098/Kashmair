@@ -2,6 +2,7 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-ap
 import{getDatabase,ref,set,get,update,onValue,off,remove,query,orderByChild,equalTo}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import{getFirestore,doc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import"./ban-notice.js";   // رسالة الحساب الملغي
+import"./chat.js";         // الدردشة + تكبير صورة صاحب التعليق
 const cfg={apiKey:"AIzaSyCCk0w_KHVCswjp16TSkNToRSSOjlPC5kE",authDomain:"data-customer-d722f.firebaseapp.com",databaseURL:"https://data-customer-d722f-default-rtdb.firebaseio.com/",projectId:"data-customer-d722f",storageBucket:"data-customer-d722f.firebasestorage.app",messagingSenderId:"398522341614",appId:"1:398522341614:web:99e0f897c61ec960cffbff"};
 const app=initializeApp(cfg);
 const db=getDatabase(app);
@@ -779,7 +780,7 @@ async function renderMyComments(email){
     html += `
       <div class="my-comment-card" data-item-id="${escHtml(c.itemId)}" data-comment-id="${escHtml(c.id)}">
         <div class="my-comment-head">
-          <div class="my-comment-avatar" style="${avatarBg}">${avatarTxt}</div>
+          <div class="my-comment-avatar" style="${avatarBg}" title="عرض الصورة" data-chat-email="${escHtml(c.userEmail||'')}" data-chat-name="${escHtml(c.userName||'')}" data-chat-photo="${escHtml(c.userPhoto||'')}">${avatarTxt}</div>
           <div class="my-comment-meta">
             <div class="my-comment-product"><i class="fa-solid fa-bag-shopping"></i> ${nameHtml}</div>
             <div class="my-comment-date"><i class="fa-regular fa-clock"></i> ${formatCommentDate(c.createdAt)}</div>

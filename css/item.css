@@ -1041,6 +1041,9 @@ body.item-page .nono {
   opacity: 1;
 }
 
+
+
+
 /* استجابة للشاشات الصغيرة */
 @media (max-width: 700px) {
   .image-lightbox {

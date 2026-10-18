@@ -4,7 +4,7 @@
 // ============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getDatabase, ref, push, set, get, onValue, update, remove
+  getDatabase, ref, push, set, get, onValue, update, remove, increment
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // ─── Firebase Config ─────────────────────────────────────────
@@ -586,7 +586,7 @@ window.closeEditModal = function () {
 
 // دالة حذف التعليق من Firebase Direct
 window.deleteComment = async function (commentId) {
-  if (confirm("هل أنت تأكد من رغبتك في حذف هذا التعليق؟")) {
+  if ((await uiConfirm("هل تريد حذف هذا التعليق؟"))) {
     try {
       await remove(ref(db, `comments/${ITEM_ID}/${commentId}`));
       showToast("تم حذف التعليق بنجاح", "info");
@@ -651,7 +651,318 @@ function starsMarkup(rating) {
   return html;
 }
 
-function createCommentElement({ id, userName, text, createdAt, userPhoto, userEmail, rating, likes = 0, dislikes = 0 }) {
+// ─── بطاقة التعريف: بتظهر لما تدوس على صورة صاحب التعليق ─────────────────────
+const PC_COVERS = {
+  sky: "radial-gradient(ellipse at 28% 62%,rgba(255,255,255,.95),transparent 52%),radial-gradient(ellipse at 74% 38%,rgba(255,255,255,.85),transparent 48%),linear-gradient(180deg,#9db7d3,#e1eaf3)",
+  sunset: "linear-gradient(135deg,#ff9a8b,#ff6a88 55%,#ff99ac)",
+  mint: "linear-gradient(135deg,#84fab0,#8fd3f4)",
+  lavender: "linear-gradient(135deg,#a18cd1,#fbc2eb)",
+  night: "linear-gradient(135deg,#0f2027,#2c5364)",
+  gold: "linear-gradient(135deg,#f6d365,#fda085)",
+};
+function pcCover(v) {
+  v = String(v || "");
+  if (v.startsWith("g:") && PC_COVERS[v.slice(2)]) return PC_COVERS[v.slice(2)];
+  if (/^data:image\/(jpeg|png|webp);base64,/.test(v) && v.length < 500000) return "url(" + JSON.stringify(v) + ") center/cover no-repeat";
+  return PC_COVERS.sky;
+}
+const pcFmt = (n) => {
+  n = Number(n) || 0;
+  if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "K";
+  return String(n);
+};
+function pcStyle() {
+  if (document.getElementById("avbox-style")) return;
+  const st = document.createElement("style");
+  st.id = "avbox-style";
+  st.textContent = ".kc-avatar{cursor:pointer}#avbox{position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit;direction:rtl;overflow-y:auto}#avbox .pcw{position:relative;width:min(400px,100%);margin:auto}#avbox .pc-x{position:absolute;top:18px;left:18px;z-index:5;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:#333;font-size:15px;cursor:pointer}#avbox .pcard{background:#fff;border-radius:30px;padding:10px 10px 22px;box-shadow:0 12px 40px rgba(30,40,70,.25);text-align:center;color:#1d2433;width:100%;box-sizing:border-box}#avbox .pc-cover{height:150px;border-radius:24px 24px 30px 30px;position:relative}#avbox .pc-plus{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:#1d2433;font-size:17px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;transition:transform .15s}#avbox .pc-plus:hover{transform:scale(1.06)}#avbox .pc-plus.on{background:#2bb58f;color:#fff}#avbox .pc-ring{width:118px;height:118px;border-radius:50%;padding:5px;margin:-60px auto 0;position:relative;background:conic-gradient(from 210deg,#ff5f7e,#c05cf0,#4aa8ff,#38d9a9,#ffd43b,#ff5f7e);box-sizing:border-box}#avbox .pc-ava{width:100%;height:100%;border-radius:50%;border:4px solid #fff;box-sizing:border-box;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:40px}#avbox .pc-name{margin:14px 0 2px;font-size:22px;font-weight:800;color:#1d2433}#avbox .pc-un{font-size:13px;color:#8a93a3;direction:ltr}#avbox .pc-un:empty{display:none}#avbox .pc-bio{margin:10px 22px 0;color:#7b8598;font-size:14.5px;line-height:1.8;white-space:pre-wrap;word-break:break-word}#avbox .pc-bio.mut{color:#a3a9b8}#avbox .pc-stats{display:flex;margin:18px 14px 0;background:#f6f7f9;border:1px solid #e9ebf0;border-radius:18px;padding:14px 6px;box-shadow:0 4px 12px rgba(30,40,70,.06)}#avbox .pc-stats div{flex:1;display:flex;flex-direction:column;gap:3px}#avbox .pc-stats b{font-size:19px;font-weight:800}#avbox .pc-stats span{font-size:13px;color:#8a93a3}#avbox .pc-soc{display:flex;gap:24px;justify-content:center;margin-top:20px;font-size:20px}#avbox .pc-soc a,#avbox .pc-soc span{color:#111;text-decoration:none}#avbox .pc-soc .off{opacity:.2}#avbox .pc-acts{display:flex;justify-content:center;margin-top:12px}#avbox .cb{background:#2b3248;color:#fff;border:none;border-radius:14px;padding:12px 34px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer}#avbox .cb:hover{background:#3b4075}";
+  document.head.appendChild(st);
+}
+function pcEl(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function pcPlusSet(btn, rel) {
+  btn.dataset.st = rel;
+  btn.innerHTML = rel === "a" ? '<i class="fa-solid fa-check"></i>' : rel === "p" ? '<i class="fa-regular fa-clock"></i>' : '<i class="fa-solid fa-plus"></i>';
+  btn.title = rel === "a" ? "بتتابعه — اضغط لإلغاء المتابعة" : rel === "p" ? "في انتظار الموافقة — اضغط لإلغاء الطلب" : "متابعة";
+  btn.classList.toggle("on", rel === "a");
+}
+// متابعة: فورية افتراضياً، وبموافقة لو صاحب الحساب مفعّل «لازم أوافق»
+async function pcFollow(targetEmail, targetName, targetUn) {
+  const me = String(getCurrentUserEmail() || "").toLowerCase();
+  const target = String(targetEmail).toLowerCase();
+  const meK = emailKey(me), tk = emailKey(target);
+  const ex = await get(ref(db, `follows/${meK}/${tk}/st`));
+  if (ex.val()) return ex.val();
+  let need = false;
+  try { need = (await get(ref(db, `chatProfiles/${tk}/approve`))).val() === true; } catch (e) {}
+  let myUn = "";
+  try { myUn = (await get(ref(db, `chatProfiles/${meK}/username`))).val() || ""; } catch (e) {}
+  const st = need ? "p" : "a", ts = Date.now();
+  const up = {
+    [`follows/${meK}/${tk}`]: { st, ts, email: target, name: targetName || "", un: targetUn || "" },
+    [`followers/${tk}/${meK}`]: { st, ts, email: me, name: getCurrentUserName() || me, un: myUn },
+  };
+  if (!need) up[`followerCount/${tk}`] = increment(1);
+  await update(ref(db), up);
+  return st;
+}
+async function pcUnfollow(targetEmail) {
+  const me = String(getCurrentUserEmail() || "").toLowerCase();
+  const meK = emailKey(me), tk = emailKey(String(targetEmail).toLowerCase());
+  const sn = await get(ref(db, `follows/${meK}/${tk}/st`));
+  const up = { [`follows/${meK}/${tk}`]: null, [`followers/${tk}/${meK}`]: null };
+  if (sn.val() === "a") up[`followerCount/${tk}`] = increment(-1);
+  await update(ref(db), up);
+}
+function showAvatarBox(email, name, photo) {
+  pcStyle();
+  document.getElementById("avbox")?.remove();
+  const meEmail = String(getCurrentUserEmail() || "").toLowerCase();
+  const em = String(email || "").trim().toLowerCase();
+  const own = !!em && em === meEmail;
+  const okPhoto = /^(data:image\/|https:\/\/)/.test(photo || "");
+
+  const box = pcEl("div"); box.id = "avbox";
+  const wrap = pcEl("div", "pcw");
+  const x = pcEl("button", "pc-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "إغلاق");
+  const card = pcEl("div", "pcard");
+  const cover = pcEl("div", "pc-cover"); cover.style.background = PC_COVERS.sky;
+  const plus = pcEl("button", "pc-plus"); plus.type = "button"; plus.style.display = "none";
+  cover.appendChild(plus);
+  const ring = pcEl("div", "pc-ring");
+  const ava = pcEl("div", "pc-ava");
+  if (okPhoto) ava.style.backgroundImage = `url("${photo.replace(/"/g, "%22")}")`;
+  else { ava.style.background = getColorForName(name || "م"); ava.textContent = (name || "م").charAt(0); }
+  ring.appendChild(ava);
+  const nameEl = pcEl("h3", "pc-name", name || "");
+  const unEl = pcEl("div", "pc-un");
+  const bioEl = pcEl("p", "pc-bio mut", em ? "…" : "");
+  const stats = pcEl("div", "pc-stats");
+  const statVals = [];
+  ["المتابعين", "بتابعهم", "القصص"].forEach((lab) => {
+    const d = pcEl("div"), b = pcEl("b", null, "…"), sp = pcEl("span", null, lab);
+    d.appendChild(b); d.appendChild(sp); stats.appendChild(d); statVals.push(b);
+  });
+  const soc = pcEl("div", "pc-soc");
+  const socDefs = [["facebook", "fa-facebook-f"], ["instagram", "fa-instagram"], ["tiktok", "fa-tiktok"]];
+  const socEls = socDefs.map(([k, ic]) => { const sp = pcEl("span", "off"); sp.innerHTML = `<i class="fa-brands ${ic}"></i>`; soc.appendChild(sp); return sp; });
+  card.append(cover, ring, nameEl, unEl, bioEl, stats, soc);
+  wrap.append(x, card);
+  if (em && !own) {
+    const acts = pcEl("div", "pc-acts");
+    const cb = pcEl("button", "cb", "💬 دردشة");
+    cb.type = "button";
+    cb.onclick = () => { location.href = "../user/accoun.html?chat=" + encodeURIComponent(em) + "&name=" + encodeURIComponent(name || ""); };
+    acts.appendChild(cb); wrap.appendChild(acts);
+  }
+  box.appendChild(wrap);
+  box.onclick = (e) => { if (e.target === box || e.target === x) box.remove(); };
+  document.body.appendChild(box);
+  if (em) pcFill({ em, own, name, box, cover, plus, nameEl, unEl, bioEl, statVals, soc, socEls, socDefs, meEmail });
+}
+async function pcFill(r) {
+  const { em, own, name, box } = r;
+  const ek = emailKey(em);
+  try {
+    const [pSn, cvSn, fcSn, fgSn, stSn, relSn, ver] = await Promise.all([
+      get(ref(db, `chatProfiles/${ek}`)), get(ref(db, `chatCovers/${ek}`)), get(ref(db, `followerCount/${ek}`)),
+      get(ref(db, `follows/${ek}`)), get(ref(db, `stories/${ek}`)),
+      (!own && r.meEmail) ? get(ref(db, `follows/${emailKey(r.meEmail)}/${ek}/st`)) : Promise.resolve(null),
+      isVerifiedEmail(em),
+    ]);
+    if (!box.isConnected) return;
+    const p = pSn.val() || {};
+    r.cover.style.background = pcCover(cvSn.val());
+    const un = UN_OK.test(p.username || "") ? p.username : "";
+    r.unEl.textContent = un ? "@" + un : "";
+    if (ver) r.nameEl.appendChild(vfIcon());
+    const now = Date.now();
+    let following = 0, stories = 0;
+    fgSn.forEach((c) => { if ((c.val() || {}).st === "a") following++; });
+    stSn.forEach((c) => { if ((Number((c.val() || {}).ts) || 0) + 864e5 > now) stories++; });
+    [Math.max(0, Number(fcSn.val()) || 0), following, stories].forEach((v, i) => { r.statVals[i].textContent = pcFmt(v); });
+    // زرار + (متابعة) أو قلم (حسابي)
+    r.plus.style.display = "";
+    if (own) {
+      r.plus.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      r.plus.title = "تعديل بياناتي";
+      r.plus.onclick = () => { location.href = "../user/accoun.html"; };
+    } else {
+      pcPlusSet(r.plus, relSn && relSn.val() === "a" ? "a" : (relSn && relSn.val() === "p" ? "p" : "none"));
+      r.plus.onclick = async () => {
+        if (!getCurrentUserEmail()) { notify("سجّل دخول الأول عشان تتابع"); return; }
+        if (r.plus.dataset.st !== "none" && em === OWNER_EMAIL) { notify("متابعة كشمير هوم إجبارية ومينفعش تتلغي"); return; }
+        r.plus.disabled = true;
+        try {
+          if (r.plus.dataset.st === "none") {
+            const st = await pcFollow(em, name, un);
+            pcPlusSet(r.plus, st === "a" ? "a" : "p");
+            notify(st === "a" ? "تمت المتابعة ✓ تقدر تبعتله رسالة دلوقتي" : "طلب المتابعة اتبعت — مستني موافقته", "ok");
+          } else {
+            const pend = r.plus.dataset.st === "p";
+            if (await uiConfirm(pend ? "هل تريد إلغاء طلب المتابعة؟" : `هل تريد إلغاء متابعة ${name || "الشخص"}؟`, { danger: !pend, ok: pend ? "إلغاء الطلب" : "إلغاء المتابعة" })) {
+              await pcUnfollow(em);
+              pcPlusSet(r.plus, "none");
+            }
+          }
+        } catch (e) { console.error(e); notify("تعذّر تنفيذ العملية"); }
+        r.plus.disabled = false;
+      };
+    }
+    // الخصوصية: النبذة والروابط
+    const privacy = ["all", "followers", "none"].includes(p.privacy) ? p.privacy : "all";
+    const visible = await canSeeProfile(em, privacy);
+    if (!box.isConnected) return;
+    if (!visible) { r.bioEl.textContent = "🔒 النبذة والروابط خاصة"; return; }
+    const bio = String(p.bio || "").slice(0, 400);
+    r.bioEl.textContent = bio || (own ? "اكتب نبذة عن نفسك من الإعدادات ✏️" : "لسه ما كتبش نبذة");
+    r.bioEl.className = bio ? "pc-bio" : "pc-bio mut";
+    r.socDefs.forEach(([k, ic], i) => {
+      const u = /^https:\/\//.test(p[k] || "") ? String(p[k]).slice(0, 300) : "";
+      if (!u) return;
+      const a = document.createElement("a");
+      a.href = u; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = k;
+      a.innerHTML = `<i class="fa-brands ${ic}"></i>`;
+      r.socEls[i].replaceWith(a);
+    });
+  } catch (e) { console.error("profile card:", e); }
+}
+
+// ============================================================
+//  ✔ التوثيق + 🔒 الخصوصية + @ المنشن
+// ============================================================
+const OWNER_EMAIL = "oo9mar9988@gmail.com";
+let _verifyAtP = null;
+const _vfMem = new Map();
+function isVerifiedEmail(email) {
+  const em = String(email || "").trim().toLowerCase();
+  if (!em) return Promise.resolve(false);
+  if (em === OWNER_EMAIL) return Promise.resolve(true);
+  if (_vfMem.has(em)) return _vfMem.get(em);
+  const p = (async () => {
+    try {
+      const ek = emailKey(em);
+      if (!_verifyAtP) _verifyAtP = get(ref(db, "chatSettings/verifyAt")).then((x) => Number(x.val()) || 0).catch(() => 0);
+      const [m1, c1, at] = await Promise.all([get(ref(db, `verified/${ek}`)), get(ref(db, `followerCount/${ek}`)), _verifyAtP]);
+      const mv = m1.val();
+      return mv === true ? true : (mv === false ? false : (at > 0 && (Number(c1.val()) || 0) >= at));
+    } catch (e) { return false; }
+  })();
+  _vfMem.set(em, p);
+  return p;
+}
+function vfIcon() {
+  const i = document.createElement("i");
+  i.className = "fa-solid fa-circle-check";
+  i.title = "حساب موثّق";
+  i.style.cssText = "color:#1d9bf0;margin-inline-start:4px;font-size:.9em";
+  return i;
+}
+async function canSeeProfile(ownerEmail, privacy) {
+  const viewer = String(getCurrentUserEmail() || "").toLowerCase();
+  const owner = String(ownerEmail || "").toLowerCase();
+  if (viewer && (viewer === owner || viewer === OWNER_EMAIL)) return true;
+  if (privacy === "none") return false;
+  if (privacy !== "followers") return true;
+  if (!viewer) return false;
+  try { const x = await get(ref(db, `follows/${emailKey(viewer)}/${emailKey(owner)}/st`)); return x.val() === "a"; } catch (e) { return false; }
+}
+const UN_OK = /^[\w\u0600-\u06FF]{6,20}$/;
+let _myFollowers = null;
+async function loadMyFollowers(force) {
+  const me = String(getCurrentUserEmail() || "").toLowerCase();
+  if (!me) return [];
+  if (_myFollowers && !force) return _myFollowers;
+  try {
+    const sn = await get(ref(db, `followers/${emailKey(me)}`));
+    const seen = new Set();
+    _myFollowers = Object.values(sn.val() || {})
+      .filter((x) => x && x.st === "a" && UN_OK.test(x.un || "") && x.email && !seen.has(String(x.email).toLowerCase()) && seen.add(String(x.email).toLowerCase()))
+      .map((x) => ({ u: x.un, e: String(x.email).toLowerCase(), n: String(x.name || "").slice(0, 60) }));
+  } catch (e) { _myFollowers = []; }
+  return _myFollowers;
+}
+async function collectMentions(text) {
+  const list = await loadMyFollowers();
+  const out = [];
+  list.forEach((f) => {
+    if (out.length >= 5) return;
+    if (new RegExp("@" + f.u + "(?![\\w\\u0600-\\u06FF])").test(text)) out.push({ u: f.u, e: f.e, n: f.n });
+  });
+  return out;
+}
+function applyMentions(html, mentions) {
+  const known = new Map();
+  (Array.isArray(mentions) ? mentions : []).slice(0, 5).forEach((m) => { if (m && UN_OK.test(m.u || "")) known.set(m.u, m); });
+  return html.replace(/(^|[\s>(،,.:؛!؟?])@([\w\u0600-\u06FF]{6,20})(?![\w\u0600-\u06FF])/g, (all, pre, u) => {
+    const m = known.get(u);
+    const attrs = m
+      ? ` data-e="${escapeHtml(String(m.e || "").toLowerCase())}" data-n="${escapeHtml(String(m.n || ""))}"`
+      : ` data-u="${u}"`;
+    return `${pre}<span class="kc-mention"${attrs}>@${u}</span>`;
+  });
+}
+// إشعار للشخص المذكور في الدردشة (هو من متابعيني فالدردشة مسموحة)
+async function notifyMentions(mentions, commentText) {
+  const me = String(getCurrentUserEmail() || "").toLowerCase();
+  if (!me || !mentions.length) return;
+  const meK = emailKey(me);
+  const myName = getCurrentUserName() || me;
+  let myUn = "";
+  try { const x = await get(ref(db, `chatProfiles/${meK}/username`)); myUn = x.val() || ""; } catch (e) {}
+  const url = location.href.split("#")[0];
+  const preview = "📌 ذكرك في تعليق على منتج";
+  const pName = (document.getElementById("productName")?.textContent || "").trim().slice(0, 100) || "منتج";
+  let pImg = "";
+  try { const src = document.getElementById("bidImg")?.src || ""; if (/^https?:\/\//.test(src) && src.length < 700) pImg = src; } catch (e) {}
+  const cm = String(commentText || "").replace(/\s+/g, " ").trim().slice(0, 80);
+  for (const m of mentions) {
+    try {
+      const tk = emailKey(m.e);
+      const [b1, b2] = await Promise.all([get(ref(db, `chatBlocks/${meK}/${tk}`)), get(ref(db, `chatBlocks/${tk}/${meK}`))]);
+      if (b1.val() || b2.val()) continue;
+      const cid = [meK, tk].sort().join("~~");
+      const mk = push(ref(db, `chats/${cid}/messages`)).key;
+      const ts = Date.now();
+      await update(ref(db), {
+        [`chats/${cid}/messages/${mk}`]: { from: me, ts, type: "mention", text: `${preview}: ${pName}`, url, pt: pName, pi: pImg, cm },
+        [`userChats/${meK}/${tk}/email`]: m.e, [`userChats/${meK}/${tk}/name`]: m.n || m.u,
+        [`userChats/${meK}/${tk}/last`]: "أنت: " + preview, [`userChats/${meK}/${tk}/ts`]: ts, [`userChats/${meK}/${tk}/un`]: m.u,
+        [`userChats/${tk}/${meK}/email`]: me, [`userChats/${tk}/${meK}/name`]: myName,
+        [`userChats/${tk}/${meK}/last`]: preview, [`userChats/${tk}/${meK}/ts`]: ts, [`userChats/${tk}/${meK}/un`]: myUn,
+        [`userChats/${tk}/${meK}/unread`]: increment(1),
+      });
+    } catch (e) { console.error("mention notify:", e); }
+  }
+}
+(function () {
+  const st = document.createElement("style");
+  st.textContent = ".kc-mention{color:#1d9bf0;font-weight:700;cursor:pointer}.kc-mpop{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;max-width:340px;background:#fff;border:1px solid #e2e2e2;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);z-index:50;overflow:hidden}.kc-mpop.open{display:block}.kc-mi{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;cursor:pointer;font-family:'Readex Pro',sans-serif;font-size:13.5px;color:#222}.kc-mi.on,.kc-mi:hover{background:#f2f2f2}.kc-mi em{font-style:normal;color:#888;direction:ltr;font-size:12px}.kc-mi.none{cursor:default;color:#888}";
+  document.head.appendChild(st);
+  document.addEventListener("click", async (e) => {
+    const mEl = e.target.closest && e.target.closest(".kc-mention");
+    if (!mEl) return;
+    let em = mEl.dataset.e, nm = mEl.dataset.n;
+    if (!em && mEl.dataset.u) {
+      try {
+        const x = await get(ref(db, `chatUsernames/${mEl.dataset.u.toLowerCase()}`));
+        em = x.val() ? String(x.val()) : "";
+      } catch (er) { em = ""; }
+      if (!em) { notify("مفيش مستخدم بالاسم ده"); return; }
+      nm = "@" + mEl.dataset.u;
+    }
+    const ph = await fetchUserPhoto(em);
+    showAvatarBox(em, nm, ph);
+  });
+})();
+
+
+function createCommentElement({ id, userName, text, createdAt, userPhoto, userEmail, rating, likes = 0, dislikes = 0, mentions = [] }) {
   const commentDiv = document.createElement("div");
   commentDiv.className = "kc-comment";
   commentDiv.dataset.commentId = id;
@@ -660,7 +971,12 @@ function createCommentElement({ id, userName, text, createdAt, userPhoto, userEm
   const avatar = document.createElement("div");
   avatar.className = "kc-avatar";
 
+  let currentPhoto = userPhoto || "";
+  avatar.title = "عرض الصورة";
+  avatar.addEventListener("click", (e) => { e.stopPropagation(); showAvatarBox(userEmail, userName, currentPhoto); });
+
   const setAvatarImage = (photoUrl) => {
+    currentPhoto = photoUrl || "";
     if (photoUrl) {
       avatar.style.backgroundImage = `url(${photoUrl})`;
       avatar.style.backgroundColor = "transparent";
@@ -690,7 +1006,7 @@ function createCommentElement({ id, userName, text, createdAt, userPhoto, userEm
       <span class="kc-time" title="${formatDate(createdAt)}">${timeAgo(createdAt)}</span>
     </div>
     <div class="kc-stars" aria-label="التقييم ${rating || 0} من 5">${starsMarkup(rating)}</div>
-    <p class="kc-text">${formatRich(escapeHtml(text || ""))}</p>
+    <p class="kc-text">${applyMentions(formatRich(escapeHtml(text || "")), mentions)}</p>
     <div class="kc-actions">
       <button type="button" class="kc-vote kc-like">
         <i class="fa-regular fa-thumbs-up"></i><span class="like-count">${likes}</span>
@@ -708,6 +1024,11 @@ function createCommentElement({ id, userName, text, createdAt, userPhoto, userEm
       </div>` : ""}
     </div>
   `;
+
+  if (userEmail) {
+    const nameEl = body.querySelector(".kc-name");
+    isVerifiedEmail(userEmail).then((v) => { if (v && nameEl && !nameEl.querySelector(".fa-circle-check")) nameEl.appendChild(vfIcon()); });
+  }
 
   if (isEditable) {
     const menu = body.querySelector(".kc-menu");
@@ -1052,8 +1373,12 @@ window.postComment = async function () {
     if (fetchedPhoto) userPhoto = fetchedPhoto;
   }
 
+  let mentions = [];
+  try { mentions = await collectMentions(text); } catch (e) { mentions = []; }
+
   try {
     await push(ref(db, `comments/${ITEM_ID}`), {
+      ...(mentions.length ? { mentions } : {}),
       userName,
       userEmail: email || "",
       userPhoto: userPhoto || "",
@@ -1064,6 +1389,7 @@ window.postComment = async function () {
       createdAt: Date.now()
     });
 
+    if (mentions.length) notifyMentions(mentions, text).catch(() => {});
     commentInput.value = "";
     selectedRating = 0;
     updateStarDisplay();
@@ -1195,4 +1521,104 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pop && !pop.contains(e.target)) pop.classList.remove("open");
     document.getElementById("kcSortMenu")?.classList.remove("open");
   });
+
+  // ----- @ : قايمة الناس اللي بيتابعوني عشان أذكرهم -----
+  const comp = input.closest(".kc-composer") || input.parentElement;
+  comp.style.position = "relative";
+  const mpop = document.createElement("div");
+  mpop.className = "kc-mpop";
+  comp.appendChild(mpop);
+  let mItems = [], mIdx = 0, mStart = -1;
+  const closeM = () => { mpop.classList.remove("open"); mItems = []; mStart = -1; };
+  const renderM = (hint) => {
+    if (hint) { mpop.innerHTML = `<div class="kc-mi none">${hint}</div>`; mpop.classList.add("open"); return; }
+    mpop.innerHTML = mItems.map((f, i) => `<div class="kc-mi${i === mIdx ? " on" : ""}" data-i="${i}"><b>${escapeHtml(f.n || f.u)}</b><em>@${escapeHtml(f.u)}</em></div>`).join("");
+    mpop.classList.toggle("open", mItems.length > 0);
+  };
+  const pick = (f) => {
+    const pos = input.selectionStart;
+    const before = input.value.slice(0, mStart);
+    const after = input.value.slice(pos);
+    input.value = before + "@" + f.u + " " + after;
+    const np = (before + "@" + f.u + " ").length;
+    input.focus(); input.setSelectionRange(np, np);
+    closeM();
+  };
+  async function updateM() {
+    const pos = input.selectionStart;
+    const m = input.value.slice(0, pos).match(/(^|\s)@([\w\u0600-\u06FF]{0,20})$/);
+    if (!m) { closeM(); return; }
+    if (!getCurrentUserEmail()) { closeM(); return; }
+    mStart = pos - m[2].length - 1;
+    const q = m[2].toLowerCase();
+    const list = await loadMyFollowers();
+    if (!list.length) { mItems = []; renderM("مفيش متابعين تقدر تذكرهم لسه"); return; }
+    mItems = list.filter((f) => !q || f.u.toLowerCase().includes(q) || f.n.toLowerCase().includes(q)).slice(0, 6);
+    mIdx = 0;
+    if (!mItems.length) { renderM("مفيش نتايج"); return; }
+    renderM();
+  }
+  input.addEventListener("input", updateM);
+  input.addEventListener("click", updateM);
+  input.addEventListener("keydown", (e) => {
+    if (!mpop.classList.contains("open") || !mItems.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); mIdx = (mIdx + 1) % mItems.length; renderM(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); mIdx = (mIdx - 1 + mItems.length) % mItems.length; renderM(); }
+    else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); pick(mItems[mIdx]); }
+    else if (e.key === "Escape") closeM();
+  });
+  mpop.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const r = e.target.closest(".kc-mi[data-i]");
+    if (r) pick(mItems[Number(r.dataset.i)]);
+  });
+  document.getElementById("kcMentionBtn")?.addEventListener("click", () => setTimeout(updateM, 0));
+  document.addEventListener("click", (e) => { if (!mpop.contains(e.target) && e.target !== input) closeM(); });
 })();
+
+// ============================================================
+//  رسايل التأكيد والتنبيه داخل الصفحة (بدل نوافذ المتصفح)
+// ============================================================
+function _uiStyle(){
+  if(document.getElementById("ui-dlg-style"))return;
+  const st=document.createElement("style");st.id="ui-dlg-style";
+  st.textContent="#uiToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#2b3248;color:#fff;padding:12px 20px;border-radius:14px;font-family:inherit;font-size:14px;z-index:2147483600;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;transition:opacity .25s,transform .25s;max-width:min(92vw,460px);text-align:center;direction:rtl;pointer-events:none;display:flex;align-items:center;gap:10px;line-height:1.7}#uiToast.show{opacity:1;transform:translateX(-50%) translateY(0)}#uiToast.err{background:#c62828}#uiToast.ok{background:#1b9a74}.ui-ov{position:fixed;inset:0;background:rgba(15,20,40,.55);z-index:2147483500;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit;direction:rtl;animation:uiFade .15s}.ui-box{background:#fff;border-radius:20px;padding:24px 22px 18px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;animation:uiPop .18s;box-sizing:border-box}.ui-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:#eaf8f2;color:#1b9a74}.ui-box.danger .ui-ic{background:#fdecea;color:#e53935}.ui-box h4{margin:0 0 8px;font-size:17px;color:#1d2433}.ui-box p{margin:0 0 18px;font-size:14px;color:#5b6475;line-height:1.9;white-space:pre-line}.ui-btns{display:flex;gap:10px}.ui-btns button{flex:1;border:none;border-radius:12px;padding:12px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer}.ui-btns .no{background:#eef1f6;color:#4a5468}.ui-btns .yes{background:#2bb58f;color:#fff}.ui-box.danger .yes{background:#e53935}@keyframes uiFade{from{opacity:0}to{opacity:1}}@keyframes uiPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}";
+  document.head.appendChild(st);
+}
+function notify(msg,type){
+  _uiStyle();
+  const text=String(msg==null?"":msg);
+  const t=type||(/تعذّر|مشكلة|راجع قواعد|مش بيدعم|لازم تسمح|أكبر|غير متاح|مفيش/.test(text)?"err":"info");
+  let el=document.getElementById("uiToast");
+  if(!el){el=document.createElement("div");el.id="uiToast";document.body.appendChild(el);}
+  clearTimeout(el._t);
+  el.className=t;
+  el.innerHTML='<i class="fa-solid '+(t==="err"?"fa-circle-exclamation":t==="ok"?"fa-circle-check":"fa-circle-info")+'"></i><span></span>';
+  el.querySelector("span").textContent=text;
+  void el.offsetWidth;
+  el.classList.add("show");
+  el._t=setTimeout(()=>el.classList.remove("show"),3400);
+}
+function uiConfirm(msg,o){
+  _uiStyle();
+  o=o||{};
+  const text=String(msg==null?"":msg);
+  const danger=o.danger!==undefined?o.danger:/حذف|مسح|حظر|إلغاء|رفض|إزالة|نهائي/.test(text);
+  const yesTxt=o.ok||(/حذف/.test(text)?"حذف":/مسح/.test(text)?"مسح":/حظر/.test(text)?"حظر":/إزالة/.test(text)?"إزالة":/رفض/.test(text)?"رفض":/إرسال/.test(text)?"إرسال":"تأكيد");
+  return new Promise(res=>{
+    document.getElementById("uiConfirm")?.remove();
+    const ov=document.createElement("div");ov.id="uiConfirm";ov.className="ui-ov";
+    ov.innerHTML='<div class="ui-box'+(danger?" danger":"")+'" role="dialog" aria-modal="true"><div class="ui-ic"><i class="fa-solid '+(danger?"fa-triangle-exclamation":"fa-circle-question")+'"></i></div><h4></h4><p></p><div class="ui-btns"><button type="button" class="no">إلغاء</button><button type="button" class="yes"></button></div></div>';
+    ov.querySelector("h4").textContent=o.title||(danger?"تأكيد العملية":"تأكيد");
+    ov.querySelector("p").textContent=text;
+    ov.querySelector(".yes").textContent=yesTxt;
+    document.body.appendChild(ov);
+    const key=e=>{if(e.key==="Escape"){e.stopPropagation();done(false);}};
+    const done=v=>{document.removeEventListener("keydown",key,true);ov.remove();res(v);};
+    document.addEventListener("keydown",key,true);
+    ov.querySelector(".no").onclick=()=>done(false);
+    ov.querySelector(".yes").onclick=()=>done(true);
+    ov.addEventListener("click",e=>{if(e.target===ov)done(false);});
+    (danger?ov.querySelector(".no"):ov.querySelector(".yes")).focus();
+  });
+}

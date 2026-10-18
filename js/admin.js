@@ -3,10 +3,11 @@
 //  أقسام: لوحة التحكم | الطلبات | التعليقات | الحسابات (تعديل بيانات العملاء) | الإحصائيات
 // ============================================================
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,get,set,update,remove,onValue,runTransaction}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{getDatabase,ref,get,set,update,remove,onValue,runTransaction,increment}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import{ADMIN_EMAIL,isAdminAccount,hasAdminAuth,clearAdminAuth}from"./admin-config.js";
 import{initStats}from"./admin-stats.js";
 import{initCoupons}from"./admin-coupons.js";
+import{initProducts}from"./admin-products.js";
 
 // ---------- بوابة الحماية ----------
 if(!(isAdminAccount() && await hasAdminAuth())){ location.replace("accoun.html"); throw new Error("not admin"); }
@@ -61,7 +62,7 @@ function openWalletEntry(ek,id,after){
   const done=async(mode)=>{
     const amt=Number($("weAmt").value);
     if(mode==="edit"&&!(amt>=0)){toast("❌ اكتب مبلغ صحيح");return;}
-    if(mode==="delete"&&!confirm("حذف الحركة دي؟ رصيد العميل هيتعدّل."))return;
+    if(mode==="delete"&&!(await uiConfirm("حذف الحركة دي؟ رصيد العميل هيتعدّل.")))return;
     $("weSave").disabled=$("weDel").disabled=true;
     try{
       const r=await walletEntryApply(ek,id,mode,amt,$("weNote").value.trim());
@@ -296,13 +297,14 @@ async function loadAll(){
   const [u,o,uo,c,a,an,cp]=await Promise.all(["users","orders","userOrders","comments","userAddresses","analytics","coupons"].map(read));
   if([u,o,uo,c,a,an].some(x=>x===undefined)) toast("⚠️ بعض البيانات ما اتحمّلتش — راجع Rules في Firebase");
   D.gameCfg=(await read("gameConfig"))||{};
+  D.towerCfg=(await read("towerConfig"))||{};
   D.coupons=Object.entries(cp||{}).map(([key,v])=>({key,...v}));
   D.analytics=an||{};
   Object.keys(PH).forEach(k=>delete PH[k]);
   D.orderRoot=new Set(Object.keys(o||{}));
 
   D.users=Object.entries(u||{}).map(([key,v])=>({key,...v}));
-  [D.wallet,D.gameClaims]=await Promise.all([loadWallets(),loadGameClaims()]);   // بعد تحميل الحسابات (ممكن نحتاجها للقراءة حساب حساب)
+  [D.wallet,D.gameClaims,D.towerWins]=await Promise.all([loadWallets(),loadGameClaims(),readByUsers("towerWins")]);   // بعد تحميل الحسابات (ممكن نحتاجها للقراءة حساب حساب)
 
   const map={};
   Object.values(o||{}).forEach(x=>{if(x&&x.id)map[x.id]=x;});
@@ -326,6 +328,7 @@ async function loadAll(){
   const ccp=$("cntCoupons");if(ccp)ccp.textContent=fNum(D.coupons.length);
   render();
   watchUsers();
+  if(!window._chatsWatching){window._chatsWatching=true;watchChats();watchSongs();watchVerify();sweepStories();setInterval(sweepStories,3600000);}
 }
 
 const uName=u=>[u.firstName,u.lastName].filter(Boolean).join(" ")||u.name||u.email||"—";
@@ -581,6 +584,10 @@ const{vStats,vRevenue,bestSellersRows,computeStats,statsTable,BEST_HEAD}=ST_;
 const CP_=initCoupons({D,$,esc,fNum,toast,match,emptyBox,render:()=>render(),openModal,fb:{db,ref,update,remove}});
 const{vCoupons}=CP_;
 
+// ---------- المنتجات (عرض/إضافة/تعديل/حذف): في ملف لوحده (admin-products.js) ----------
+const PR_=initProducts({$,esc,fNum,toast,match,emptyBox,render:()=>render(),openModal,uiConfirm});
+const{vProducts}=PR_;
+
 // ---------- حذف الطلب (بكتابة الكود) + قائمة الطلبات الملغية ----------
 // الحذف هنا "إلغاء": الطلب بيتعلّم cancelled في Firebase (مش بيتمسح)، فيظهر للعميل رسالة الحذف وبيتنقل لقائمة الملغي.
 const normCode=s=>String(s||"").replace(/\s+/g,"").toUpperCase();
@@ -696,10 +703,376 @@ function cancelledDetail(o){
   };
 }
 
+// ============================================================
+//  💬 دردشات العملاء (العملاء مع بعض) — بتوصل هنا لحظياً، للقراءة والمتابعة والحذف
+// ============================================================
+(()=>{const st=document.createElement("style");st.textContent=".adc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}.adc-top .pp{display:flex;align-items:center;gap:8px}.adc-msgs{background:#f4f6fa;border-radius:12px;padding:14px;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.adc-m{max-width:78%;display:flex;flex-direction:column;gap:3px}.adc-m small{font-size:11px;color:#6b7486;font-weight:700}.adc-m .b{background:#fff;padding:9px 14px;border-radius:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 4px rgba(0,0,0,.05)}.adc-m.a{align-self:flex-start}.adc-m.b2{align-self:flex-end}.adc-m.b2 .b{background:#cfd3ec}.adc-m .x{background:none;border:none;color:#e53935;cursor:pointer;font-size:11px;padding:0;align-self:flex-start}.adc-new{background:#e53935!important;color:#fff!important}";document.head.appendChild(st);})();
+const ck=e=>eKey(String(e||"").trim().toLowerCase());
+D.chats=[];
+function chPart(k,msgs){
+  const u=D.users.find(x=>ck(x.email)===k);
+  if(u)return{k,u,email:u.email||"",name:uName(u)||u.email||k};
+  const m=msgs.find(x=>ck(x.from)===k);
+  return{k,u:null,email:m?m.from:"",name:(m&&m.from)||k};
+}
+function buildChats(raw){
+  D.chats=Object.entries(raw||{}).map(([cid,v])=>{
+    const [ka,kb]=cid.split("~~");
+    const msgs=Object.entries((v&&v.messages)||{}).map(([id,m])=>({id,...m})).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    const last=msgs[msgs.length-1];
+    return{cid,ka,kb,msgs,count:msgs.length,last:last?last.ts:0,lastText:last?last.text:"",A:chPart(ka,msgs),B:chPart(kb,msgs)};
+  }).filter(c=>c.count>0).sort((a,b)=>b.last-a.last);
+}
+let _chatFirst=true,_chatMax=0;
+function chatNewCount(){const seen=Number(localStorage.getItem("admChatSeen"))||0;return D.chats.reduce((n,c)=>n+c.msgs.filter(m=>(m.ts||0)>seen).length,0);}
+function updChatBadge(){
+  const el=$("cntChats");if(!el)return;
+  const n=view==="chats"?0:chatNewCount();
+  el.textContent=n?fNum(n):fNum(D.chats.length);
+  el.classList.toggle("adc-new",n>0);
+}
+function watchChats(){
+  onValue(ref(db,"chats"),sn=>{
+    buildChats(sn.val());
+    const mx=D.chats.reduce((m,c)=>Math.max(m,c.last||0),0);
+    if(!_chatFirst&&mx>_chatMax&&view!=="chats"){
+      const c=D.chats.find(x=>x.last===mx);
+      if(c)toast(`💬 رسالة جديدة بين ${c.A.name} و ${c.B.name}`);
+    }
+    _chatFirst=false;_chatMax=Math.max(_chatMax,mx);
+    if(view==="chats"){
+      localStorage.setItem("admChatSeen",String(Date.now()));
+      if(!$("modal").classList.contains("open"))render();
+    }
+    updChatBadge();
+    if(window._chatOpen&&$("modal").classList.contains("open")){
+      const c=D.chats.find(x=>x.cid===window._chatOpen);
+      if(c&&$("admChatMsgs"))drawAdmMsgs(c);
+    }
+  },e=>{console.error("chats:",e);toast("⚠️ مش قادر أقرا الدردشات — راجع Rules في Firebase");});
+}
+// ============================================================
+//  💬 مركز الدردشات — المحادثات / إرسال رسائل / أغاني القصص / التوثيق والمتابعة
+// ============================================================
+let chatTab="convs";
+(()=>{const st=document.createElement("style");st.textContent=".hub-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;background:#fff;border-radius:14px;padding:6px;box-shadow:0 1px 4px rgba(0,0,0,.06)}.hub-tabs button{flex:1;min-width:130px;border:none;background:transparent;border-radius:10px;padding:11px 14px;font-family:inherit;font-size:14px;font-weight:700;color:#5b6475;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}.hub-tabs button:hover{background:#f1f4f9}.hub-tabs button.on{background:#2b3248;color:#fff}.hub-tabs .n{background:rgba(0,0,0,.08);border-radius:10px;padding:1px 8px;font-size:12px}.hub-tabs button.on .n{background:rgba(255,255,255,.2)}.snd-list{max-height:300px;overflow-y:auto;border:1px solid #e6eaf1;border-radius:12px}.snd-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #eef1f6;cursor:pointer}.snd-row:hover{background:#f7f9fc}.snd-row input{width:auto}.snd-row .mut{margin-inline-start:auto;direction:ltr;font-size:12px}";document.head.appendChild(st);})();
+function vChats(){
+  const tabs=[["convs","fa-comments","المحادثات",D.chats.length],["send","fa-paper-plane","إرسال رسائل",null],["songs","fa-music","أغاني القصص",D.songs.length],["verify","fa-circle-check","التوثيق والمتابعة",null]];
+  const head=`<div class="hub-tabs">${tabs.map(([k,ic,t,n])=>`<button type="button" data-ctab="${k}" class="${chatTab===k?"on":""}"><i class="fa-solid ${ic}"></i> ${t}${n!=null?` <span class="n">${fNum(n)}</span>`:""}</button>`).join("")}</div>`;
+  const body=chatTab==="send"?vSend():chatTab==="songs"?vSongs():chatTab==="verify"?vVerify():vConvs();
+  return head+body;
+}
+// ----- إرسال رسائل من الإدارة (لشخص / أشخاص محددين / كل الناس) -----
+const sendState={mode:"pick",sel:new Set(),text:"",filter:""};
+function vSend(){
+  const users=D.users.filter(u=>u.email&&String(u.email).trim().toLowerCase()!==OWNER_EMAIL);
+  const f=sendState.filter.trim().toLowerCase();
+  const shown=users.filter(u=>!f||[uName(u),u.email].join(" ").toLowerCase().includes(f));
+  const rows=shown.slice(0,200).map(u=>{const em=String(u.email).trim().toLowerCase();return `<label class="snd-row"><input type="checkbox" data-sel="${esc(em)}" ${sendState.sel.has(em)?"checked":""}><span>${esc(uName(u))}</span><span class="mut">${esc(u.email)}</span></label>`;}).join("");
+  const inp='style="padding:10px 12px;border:1px solid #dfe5ee;border-radius:10px;font-family:inherit;font-size:14px;width:100%;box-sizing:border-box"';
+  return `<div class="card" id="sendForm"><div class="card-h"><span>إرسال رسالة من الإدارة</span></div>
+    <div style="padding:16px;display:grid;gap:14px;max-width:720px">
+      <div style="display:flex;gap:22px;flex-wrap:wrap">
+        <label style="cursor:pointer"><input type="radio" name="sndMode" value="pick" ${sendState.mode==="pick"?"checked":""}> أشخاص محددين</label>
+        <label style="cursor:pointer"><input type="radio" name="sndMode" value="all" ${sendState.mode==="all"?"checked":""}> كل المستخدمين (${fNum(users.length)})</label>
+      </div>
+      <div id="sndPicker" style="display:${sendState.mode==="pick"?"block":"none"}">
+        <input id="sndFilter" ${inp} placeholder="ابحث بالاسم أو الإيميل" value="${esc(sendState.filter)}">
+        <div class="mut" style="margin:8px 0">المحدد: <b id="sndCount">${sendState.sel.size}</b> — <a href="#" id="sndAllShown">تحديد كل الظاهر</a> · <a href="#" id="sndClear">مسح التحديد</a></div>
+        <div class="snd-list">${rows||'<div class="mut" style="padding:14px">مفيش نتايج</div>'}</div>
+        ${shown.length>200?`<div class="mut" style="margin-top:6px">بيظهر أول 200 — استخدم البحث</div>`:""}
+      </div>
+      <textarea id="sndText" maxlength="500" rows="4" ${inp} placeholder="اكتب الرسالة...">${esc(sendState.text)}</textarea>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="sndGo"><i class="fa-solid fa-paper-plane"></i> إرسال</button><span id="sndMsg" class="mut"></span></div>
+      <div class="mut">بتوصل في دردشة الموقع من حساب المالك (${OWNER_EMAIL})، ويقدروا يردوا عليها.</div>
+    </div></div>`;
+}
+function bindSend(){
+  const form=$("sendForm");if(!form)return;
+  form.querySelectorAll('input[name="sndMode"]').forEach(r=>r.onchange=()=>{sendState.mode=r.value;$("sndPicker").style.display=r.value==="pick"?"block":"none";});
+  $("sndText").oninput=e=>{sendState.text=e.target.value;};
+  $("sndFilter").oninput=e=>{
+    sendState.filter=e.target.value;
+    window._forceRender=true;render();window._forceRender=false;
+    const f=$("sndFilter");if(f){f.focus();f.setSelectionRange(f.value.length,f.value.length);}
+  };
+  form.querySelectorAll("[data-sel]").forEach(c=>c.onchange=()=>{c.checked?sendState.sel.add(c.dataset.sel):sendState.sel.delete(c.dataset.sel);$("sndCount").textContent=sendState.sel.size;});
+  $("sndAllShown").onclick=e=>{e.preventDefault();form.querySelectorAll("[data-sel]").forEach(c=>{c.checked=true;sendState.sel.add(c.dataset.sel);});$("sndCount").textContent=sendState.sel.size;};
+  $("sndClear").onclick=e=>{e.preventDefault();sendState.sel.clear();form.querySelectorAll("[data-sel]").forEach(c=>c.checked=false);$("sndCount").textContent=0;};
+  $("sndGo").onclick=adminSend;
+}
+async function adminSend(){
+  const text=sendState.text.trim().slice(0,500),msg=$("sndMsg"),btn=$("sndGo");
+  const users=D.users.filter(u=>u.email&&String(u.email).trim().toLowerCase()!==OWNER_EMAIL);
+  const targets=sendState.mode==="all"?users:users.filter(u=>sendState.sel.has(String(u.email).trim().toLowerCase()));
+  if(!text){msg.textContent="اكتب الرسالة الأول";return;}
+  if(!targets.length){msg.textContent="اختار شخص واحد على الأقل";return;}
+  if(!(await uiConfirm(`هل تريد إرسال الرسالة لـ ${fNum(targets.length)} مستخدم؟`)))return;
+  btn.disabled=true;msg.textContent="جاري الإرسال...";
+  try{
+    const ownerK=ck(OWNER_EMAIL);
+    const ou=D.users.find(u=>String(u.email||"").trim().toLowerCase()===OWNER_EMAIL);
+    const ownerName=ou?uName(ou):"كشمير هوم";
+    let ownerUn="";
+    try{const s=await get(ref(db,`chatProfiles/${ownerK}/username`));ownerUn=s.val()||"";}catch(e){}
+    const ts=Date.now(),preview=text.slice(0,60),all=sendState.mode==="all";
+    for(let i=0;i<targets.length;i+=60){
+      const up={};
+      targets.slice(i,i+60).forEach((u,j)=>{
+        const em=String(u.email).trim().toLowerCase(),pk=ck(em),cid=[ownerK,pk].sort().join("~~");
+        const mk="a"+ts.toString(36)+(i+j).toString(36)+Math.random().toString(36).slice(2,5);
+        up[`chats/${cid}/messages/${mk}`]=all?{from:OWNER_EMAIL,ts,text,adm:1,bc:1}:{from:OWNER_EMAIL,ts,text,adm:1};
+        up[`chatOpen/${cid}`]=true;
+        up[`userChats/${ownerK}/${pk}/email`]=em;up[`userChats/${ownerK}/${pk}/name`]=uName(u);up[`userChats/${ownerK}/${pk}/last`]="أنت: "+preview;up[`userChats/${ownerK}/${pk}/ts`]=ts;
+        up[`userChats/${pk}/${ownerK}/email`]=OWNER_EMAIL;up[`userChats/${pk}/${ownerK}/name`]=ownerName;up[`userChats/${pk}/${ownerK}/last`]=preview;up[`userChats/${pk}/${ownerK}/ts`]=ts;up[`userChats/${pk}/${ownerK}/un`]=ownerUn;
+        up[`userChats/${pk}/${ownerK}/unread`]=increment(1);
+      });
+      await update(ref(db),up);
+      msg.textContent=`تم الإرسال لـ ${fNum(Math.min(targets.length,i+60))} من ${fNum(targets.length)}...`;
+    }
+    toast(`✅ اتبعتت لـ ${fNum(targets.length)} مستخدم`);
+    sendState.text="";sendState.sel.clear();
+    window._forceRender=true;render();window._forceRender=false;
+  }catch(e){console.error(e);msg.textContent="تعذّر الإرسال — راجع قواعد Firebase";btn.disabled=false;}
+}
+
+function vConvs(){
+  localStorage.setItem("admChatSeen",String(Date.now()));updChatBadge();
+  const rows=D.chats.filter(c=>match([c.A.name,c.A.email,c.B.name,c.B.email,c.lastText].join(" ")));
+  const tr=rows.map(c=>`<tr class="click" data-chat="${esc(c.cid)}">
+    <td><div class="adc-top" style="margin:0"><div class="pp">${avaFor(c.A.email,c.A.name)}<span><b>${esc(c.A.name)}</b></span></div><i class="fa-solid fa-arrows-left-right mut"></i><div class="pp">${avaFor(c.B.email,c.B.name)}<span><b>${esc(c.B.name)}</b></span></div></div></td>
+    <td style="max-width:320px"><span class="mut">${esc((c.lastText||"").slice(0,80))}</span></td>
+    <td>${fNum(c.count)}</td><td>${fDT(c.last)}</td>
+    <td><button class="btn" data-chat="${esc(c.cid)}"><i class="fa-solid fa-eye"></i> عرض</button></td></tr>`).join("");
+  return `<div class="card"><div class="card-h"><span>دردشات العملاء (${fNum(rows.length)})</span></div>
+    ${rows.length?`<div class="tw"><table><thead><tr><th>المشاركين</th><th>آخر رسالة</th><th>عدد الرسائل</th><th>آخر نشاط</th><th></th></tr></thead><tbody>${tr}</tbody></table></div>`:emptyBox("fa-comments","مفيش دردشات لسه")}</div>`;
+}
+function drawAdmMsgs(c){
+  const box=$("admChatMsgs");if(!box)return;
+  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.innerHTML=c.msgs.map(m=>{const isA=ck(m.from)===c.ka;const who=isA?c.A:c.B;
+    return `<div class="adc-m ${isA?"a":"b2"}"><small>${esc(who.name)} · ${fDT(m.ts)}</small><div class="b">${(m.mid&&["image","video","audio"].includes(m.type))?`<div class="adc-media" data-mid="${esc(m.mid)}" data-type="${m.type}">${esc(m.text)}</div>`:(m.del?"🚫 رسالة محذوفة":esc(m.text))}</div><button class="x" data-delmsg="${esc(m.id)}" data-mid="${esc(m.mid||"")}"><i class="fa-solid fa-trash"></i> حذف الرسالة</button></div>`;}).join("")||`<div class="mut">مفيش رسائل</div>`;
+  if(atBottom)box.scrollTop=box.scrollHeight;
+  box.querySelectorAll(".adc-media").forEach(async el=>{
+    try{
+      const sn=await get(ref(db,`chatMedia/${c.cid}/${el.dataset.mid}`));
+      const u=sn.val();
+      if(typeof u!=="string"||!/^data:(image|audio|video)\/[\w.+-]+(;[\w=.+-]+)*;base64,/.test(u)||!el.isConnected)return;
+      const t=el.dataset.type;
+      const n=document.createElement(t==="image"?"img":t==="video"?"video":"audio");
+      n.src=u;if(t!=="image")n.controls=true;
+      n.style.cssText="max-width:100%;max-height:260px;border-radius:10px;display:block";
+      el.innerHTML="";el.appendChild(n);
+    }catch(e){}
+  });
+}
+function chatDetail(c){
+  window._chatOpen=c.cid;
+  openModal(`دردشة — ${c.A.name} و ${c.B.name}`,`
+    <div class="adc-top">
+      <div class="pp">${avaFor(c.A.email,c.A.name)}<span><b>${esc(c.A.name)}</b><br><span class="mut">${esc(c.A.email)}</span></span></div>
+      <i class="fa-solid fa-arrows-left-right mut"></i>
+      <div class="pp">${avaFor(c.B.email,c.B.name)}<span><b>${esc(c.B.name)}</b><br><span class="mut">${esc(c.B.email)}</span></span></div>
+    </div>
+    <div class="adc-msgs" id="admChatMsgs"></div>
+    <div style="margin-top:14px"><button class="btn red" id="admDelChat"><i class="fa-solid fa-trash"></i> حذف المحادثة كلها</button></div>
+    <p class="mut" style="font-size:12px;margin:10px 0 0">الدردشة دي بين عميلين، وبتتحدّث لحظياً وانت بتتابعها.</p>`);
+  drawAdmMsgs(c);$("admChatMsgs").scrollTop=$("admChatMsgs").scrollHeight;
+  $("mbody").onclick=async e=>{
+    const d=e.target.closest("[data-delmsg]");
+    if(d){if(!(await uiConfirm("هل تريد حذف الرسالة؟")))return;
+      try{await remove(ref(db,`chats/${c.cid}/messages/${d.dataset.delmsg}`));if(d.dataset.mid)await remove(ref(db,`chatMedia/${c.cid}/${d.dataset.mid}`));}catch(er){toast("❌ تعذّر الحذف");}return;}
+    if(e.target.closest("#admDelChat")){
+      if(!(await uiConfirm("هل تريد حذف المحادثة كلها نهائياً عند الطرفين؟")))return;
+      try{await update(ref(db),{[`chats/${c.cid}`]:null,[`chatMedia/${c.cid}`]:null,[`userChats/${c.ka}/${c.kb}`]:null,[`userChats/${c.kb}/${c.ka}`]:null});
+        $("modal").classList.remove("open");toast("✅ تم حذف المحادثة");}catch(er){toast("❌ تعذّر الحذف");}
+    }
+  };
+}
+
+// ============================================================
+//  🎵 أغاني القصص — المكتبة اللي العملاء بيختاروا منها لقصصهم (من عندك إنت بس)
+// ============================================================
+D.songs=[];
+const SONG_URL_OK=u=>/^https:\/\//.test(u)||/^(\.{0,2}\/)?[\w\-.\/%]+\.(mp3|m4a|ogg|wav|aac)$/i.test(u);
+function watchSongs(){
+  onValue(ref(db,"storySongs"),sn=>{
+    const v=sn.val()||{};
+    D.songs=Object.entries(v).map(([id,m])=>({id,...m})).sort((x,y)=>(y.ts||0)-(x.ts||0));
+    const c=$("cntSongs");if(c)c.textContent=fNum(D.songs.length);
+    if(view==="chats"&&chatTab==="songs"&&!$("modal").classList.contains("open")&&!window._sgBusy)render();
+  },e=>console.error("songs:",e));
+}
+// مسح القصص اللي عدّى عليها 24 ساعة (مع الصور/الفيديوهات والمشاهدات)
+async function sweepStories(){
+  try{
+    const sn=await get(ref(db,"stories"));const now=Date.now(),up={};
+    sn.forEach(o=>{o.forEach(st=>{
+      const v=st.val()||{};
+      if((Number(v.ts)||0)+864e5<=now){
+        up[`stories/${o.key}/${st.key}`]=null;
+        up[`storyMedia/${o.key}/${st.key}`]=null;
+        up[`storyViews/${o.key}/${st.key}`]=null;
+      }
+    });});
+    if(Object.keys(up).length)await update(ref(db),up);
+  }catch(e){console.error("sweep:",e);}
+}
+function vSongs(){
+  const rows=D.songs.filter(s=>match([s.title,s.artist].join(" ")));
+  const inp='style="padding:10px 12px;border:1px solid #dfe5ee;border-radius:10px;font-family:inherit;font-size:14px;width:100%;box-sizing:border-box"';
+  const tr=rows.map(s=>`<tr><td><b>${esc(s.title||"")}</b></td><td>${esc(s.artist||"—")}</td>
+    <td>${s.src==="file"?`ملف (${((s.size||0)/1048576).toFixed(1)} MB)`:"رابط"}</td><td>${fDT(s.ts)}</td>
+    <td><button class="btn" data-playsong="${esc(s.id)}"><i class="fa-solid fa-play"></i> تشغيل</button> <button class="btn red" data-delsong="${esc(s.id)}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join("");
+  return `<div class="card"><div class="card-h"><span>إضافة أغنية للقصص</span></div>
+    <div style="padding:16px;display:grid;gap:10px;max-width:560px">
+      <input id="sgTitle" ${inp} placeholder="اسم الأغنية" maxlength="60">
+      <input id="sgArtist" ${inp} placeholder="الفنان (اختياري)" maxlength="60">
+      <label class="mut">ملف الصوت (mp3 / m4a — لحد 6 ميجا)<input type="file" id="sgFile" accept="audio/*" style="display:block;margin-top:6px"></label>
+      <div class="mut" style="text-align:center">أو</div>
+      <input id="sgUrl" ${inp} dir="ltr" placeholder="رابط أو مسار الملف على موقعك مثل /songs/song1.mp3">
+      <button class="btn" id="sgAdd" style="justify-self:start"><i class="fa-solid fa-plus"></i> إضافة</button>
+      <div id="sgMsg" class="mut" style="min-height:18px"></div>
+    </div></div>
+    <div class="card" style="margin-top:16px"><div class="card-h"><span>أغاني القصص (${fNum(rows.length)})</span></div>
+    ${rows.length?`<div class="tw"><table><thead><tr><th>الأغنية</th><th>الفنان</th><th>المصدر</th><th>تاريخ الإضافة</th><th></th></tr></thead><tbody>${tr}</tbody></table></div>`:emptyBox("fa-music","مفيش أغاني لسه — العملاء مش هيقدروا يضيفوا أغنية لقصصهم غير من هنا")}</div>`;
+}
+let _admAud=null;
+function bindSongs(){
+  const add=$("sgAdd");if(!add)return;
+  add.onclick=async()=>{
+    const title=$("sgTitle").value.trim().slice(0,60),artist=$("sgArtist").value.trim().slice(0,60),url=$("sgUrl").value.trim(),f=$("sgFile").files[0],msg=$("sgMsg");
+    if(!title){msg.textContent="اكتب اسم الأغنية";return;}
+    if(!f&&!url){msg.textContent="اختار ملف صوت أو اكتب رابط/مسار";return;}
+    if(f&&!(f.type.startsWith("audio/")||/\.(mp3|m4a|ogg|wav|aac)$/i.test(f.name))){msg.textContent="الملف لازم يكون ملف صوت";return;}
+    if(f&&f.size>6*1024*1024){msg.textContent="الملف أكبر من 6 ميجا";return;}
+    if(!f&&!SONG_URL_OK(url)){msg.textContent="الرابط لازم يبدأ بـ https:// أو يكون مسار زي /songs/song1.mp3";return;}
+    add.disabled=true;msg.textContent="جاري الإضافة...";window._sgBusy=true;
+    try{
+      const id="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      const rec={title,artist,ts:Date.now()};
+      if(f){
+        const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f);});
+        await set(ref(db,`storySongData/${id}`),data);
+        rec.src="file";rec.size=f.size;
+      }else{rec.url=url;rec.src="url";}
+      await set(ref(db,`storySongs/${id}`),rec);
+      toast("✅ تمت إضافة الأغنية");
+    }catch(e){console.error(e);msg.textContent="تعذّر الإضافة — راجع Rules في Firebase أو قلّل حجم الملف";}
+    finally{window._sgBusy=false;add.disabled=false;}
+  };
+  document.querySelectorAll("[data-delsong]").forEach(b=>b.onclick=async()=>{
+    if(!(await uiConfirm("هل تريد حذف الأغنية؟")))return;
+    const id=b.dataset.delsong;
+    try{await update(ref(db),{[`storySongs/${id}`]:null,[`storySongData/${id}`]:null});toast("✅ اتحذفت");}
+    catch(e){toast("❌ تعذّر الحذف");}
+  });
+  document.querySelectorAll("[data-playsong]").forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.playsong,s=D.songs.find(x=>x.id===id);if(!s)return;
+    let u=s.url||"";
+    try{if(!u){const d=await get(ref(db,`storySongData/${id}`));u=d.val()||"";}}catch(e){}
+    if(!(/^data:audio\//.test(u)||SONG_URL_OK(u))){toast("❌ تعذّر التشغيل");return;}
+    if(_admAud){_admAud.pause();}
+    _admAud=new Audio(u);_admAud.play().catch(()=>toast("❌ تعذّر التشغيل"));
+  });
+}
+
+// ============================================================
+//  ✔ التوثيق والمتابعة — الحد اللي لما المستخدم يوصله بياخد علامة التوثيق
+// ============================================================
+const OWNER_EMAIL="oo9mar9988@gmail.com";
+D.fc={};D.vman={};D.verifyAt=0;
+function watchVerify(){
+  const re=()=>{if(view==="chats"&&chatTab==="verify"&&!$("modal").classList.contains("open")&&!window._vfBusy)render();};
+  onValue(ref(db,"followerCount"),sn=>{D.fc=sn.val()||{};re();},e=>console.error("fc:",e));
+  onValue(ref(db,"verified"),sn=>{D.vman=sn.val()||{};re();},e=>console.error("verified:",e));
+  onValue(ref(db,"chatSettings/verifyAt"),sn=>{D.verifyAt=Number(sn.val())||0;re();},e=>console.error("verifyAt:",e));
+}
+function vfStatus(u){
+  const k=ck(u.email),n=Math.max(0,Number(D.fc[k])||0),m=D.vman[k];
+  if(String(u.email||"").trim().toLowerCase()===OWNER_EMAIL)return{t:"المالك — موثّق دايماً",ok:true,n,owner:true,m};
+  if(m===true)return{t:"موثّق يدوياً",ok:true,n,m};
+  if(m===false)return{t:"التوثيق ملغي يدوياً",ok:false,n,m};
+  if(D.verifyAt>0&&n>=D.verifyAt)return{t:"موثّق تلقائياً",ok:true,n,m};
+  return{t:D.verifyAt>0?`ناقص ${fNum(D.verifyAt-n)} متابع`:"—",ok:false,n,m};
+}
+function vVerify(){
+  const rows=D.users.map(u=>({u,...vfStatus(u)})).filter(r=>match([uName(r.u),r.u.email].join(" "))).sort((x,y)=>y.n-x.n);
+  const inp='style="padding:10px 12px;border:1px solid #dfe5ee;border-radius:10px;font-family:inherit;font-size:14px;width:140px"';
+  const tr=rows.map(r=>`<tr>
+    <td><b>${esc(uName(r.u))}</b>${r.ok?` <i class="fa-solid fa-circle-check" style="color:#1d9bf0"></i>`:""}<br><span class="mut" dir="ltr">${esc(r.u.email||"")}</span></td>
+    <td>${fNum(r.n)}</td><td>${esc(r.t)}</td>
+    <td>${r.owner?"—":`<button class="btn" data-vf="true" data-k="${esc(ck(r.u.email))}">توثيق</button> <button class="btn red" data-vf="false" data-k="${esc(ck(r.u.email))}">إلغاء التوثيق</button>${(r.m===true||r.m===false)?` <button class="btn" data-vf="clear" data-k="${esc(ck(r.u.email))}">رجّعه تلقائي</button>`:""}`}</td></tr>`).join("");
+  return `<div class="card" style="margin-bottom:16px"><div class="card-h"><span>المتابعة الإجبارية لحساب المالك</span></div>
+    <div style="padding:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span>كل مستخدم بيتابع حساب المالك تلقائياً أول ما يفتح الدردشة، ومينفعش يلغي المتابعة.</span>
+      <button class="btn" id="forceFollowAll"><i class="fa-solid fa-user-check"></i> طبّقها على كل المستخدمين دلوقتي</button>
+      <span id="ffMsg" class="mut"></span>
+    </div></div>
+    <div class="card"><div class="card-h"><span>حد التوثيق التلقائي</span></div>
+    <div style="padding:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span>أي مستخدم يوصل لـ</span><input id="vfAt" type="number" min="0" ${inp} value="${D.verifyAt||0}"><span>متابع بياخد علامة التوثيق ✔</span>
+      <button class="btn" id="vfSave"><i class="fa-solid fa-floppy-disk"></i> حفظ</button>
+      <span class="mut">(0 = التوثيق التلقائي متوقف)</span>
+    </div></div>
+    <div class="card" style="margin-top:16px"><div class="card-h"><span>المستخدمين والمتابعين (${fNum(rows.length)})</span></div>
+    ${rows.length?`<div class="tw"><table><thead><tr><th>المستخدم</th><th>المتابعين</th><th>الحالة</th><th></th></tr></thead><tbody>${tr}</tbody></table></div>`:emptyBox("fa-circle-check","مفيش مستخدمين")}</div>`;
+}
+async function adminForceFollowAll(){
+  const btn=$("forceFollowAll"),msg=$("ffMsg");
+  const ownerK=ck(OWNER_EMAIL);
+  btn.disabled=true;msg.textContent="جاري التجهيز...";
+  try{
+    const have=(await get(ref(db,`followers/${ownerK}`))).val()||{};
+    const ou=D.users.find(u=>String(u.email||"").trim().toLowerCase()===OWNER_EMAIL);
+    const ownerName=ou?uName(ou):"كشمير هوم";
+    let ownerUn="";try{ownerUn=(await get(ref(db,`chatProfiles/${ownerK}/username`))).val()||"";}catch(e){}
+    const todo=D.users.filter(u=>u.email&&String(u.email).trim().toLowerCase()!==OWNER_EMAIL);
+    const missing=todo.filter(u=>{const h=have[ck(u.email)];return !(h&&h.st==="a");});
+    if(!missing.length){msg.textContent="كل المستخدمين بيتابعوا المالك بالفعل ✓";btn.disabled=false;return;}
+    if(!(await uiConfirm(`هل تريد جعل ${fNum(missing.length)} مستخدم يتابعوا حساب المالك؟`,{danger:false,ok:"تطبيق"}))){btn.disabled=false;msg.textContent="";return;}
+    const ts=Date.now();
+    for(let i=0;i<missing.length;i+=100){
+      const chunk=missing.slice(i,i+100),up={};
+      chunk.forEach(u=>{
+        const em=String(u.email).trim().toLowerCase(),k=ck(em);
+        up[`follows/${k}/${ownerK}`]={st:"a",ts,email:OWNER_EMAIL,name:ownerName,un:ownerUn,auto:1};
+        up[`followers/${ownerK}/${k}`]={st:"a",ts,email:em,name:uName(u),un:"",auto:1};
+      });
+      up[`followerCount/${ownerK}`]=increment(chunk.length);
+      await update(ref(db),up);
+      msg.textContent=`تم ${fNum(Math.min(missing.length,i+100))} من ${fNum(missing.length)}...`;
+    }
+    msg.textContent=`✓ تم تطبيقها على ${fNum(missing.length)} مستخدم`;
+    toast("✅ تم");
+  }catch(e){console.error(e);msg.textContent="تعذّر التنفيذ — راجع قواعد Firebase";}
+  btn.disabled=false;
+}
+function bindVerify(){
+  const ff=$("forceFollowAll");if(ff)ff.onclick=adminForceFollowAll;
+  const sv=$("vfSave");if(!sv)return;
+  sv.onclick=async()=>{
+    const n=Math.max(0,Math.floor(Number($("vfAt").value)||0));
+    sv.disabled=true;
+    try{await set(ref(db,"chatSettings/verifyAt"),n);toast(n?`✅ التوثيق التلقائي عند ${fNum(n)} متابع`:"✅ التوثيق التلقائي متوقف");}
+    catch(e){console.error(e);toast("❌ تعذّر الحفظ");}
+    sv.disabled=false;
+  };
+  document.querySelectorAll("[data-vf]").forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.k,v=b.dataset.vf;
+    try{
+      if(v==="clear")await remove(ref(db,`verified/${k}`));
+      else await set(ref(db,`verified/${k}`),v==="true");
+      toast("✅ تم");
+    }catch(e){console.error(e);toast("❌ تعذّر التنفيذ");}
+  });
+}
+
 // ---------- الأقسام ----------
 function render(){
+  if(view==="chats"&&chatTab==="send"&&!window._forceRender){const ae=document.activeElement;if(ae&&ae.closest&&ae.closest("#sendForm"))return;}
   document.querySelectorAll(".nv[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-  const fn={dashboard:vDash,orders:vOrders,cancelled:vCancelled,comments:vComments,accounts:vAccounts,analytics:vStats,revenue:vRevenue,coupons:vCoupons,wallets:vWallets}[view];
+  const fn={dashboard:vDash,orders:vOrders,cancelled:vCancelled,comments:vComments,chats:vChats,songs:vSongs,verify:vVerify,accounts:vAccounts,analytics:vStats,revenue:vRevenue,coupons:vCoupons,wallets:vWallets,products:vProducts}[view];
   $("view").innerHTML=fn();
   bind();
   refreshPresence();
@@ -864,8 +1237,9 @@ function vWallets(){
   const stat=(l,v,c)=>`<div class="mini" style="flex:1;min-width:150px"><div class="mut" style="font-size:12px">${l}</div><div style="font-size:19px;font-weight:800;color:${c||"inherit"}">${v}</div></div>`;
   const stats=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">${stat("إجمالي الأرصدة عند العملاء",fMoney(ents.reduce((t,x)=>t+x.bal,0)),"#00a15c")}${stat("إجمالي اللي ضفته",fMoney(sum("credit")))}${stat("إجمالي اللي صرفوه",fMoney(sum("debit")),"#c81e37")}${stat("عملاء ليهم رصيد",fNum(ents.filter(x=>x.bal>0).length))}</div>`;
   const pend=Object.entries(D.gameClaims||{}).flatMap(([ek,g])=>Object.entries(g||{}).filter(([,c])=>c&&c.status==="pending").map(([lv,c])=>({ek,lv,...c}))).sort((a,b)=>(b.at||0)-(a.at||0));
+  const twPend=Object.entries(D.towerWins||{}).flatMap(([ek,g])=>Object.entries(g||{}).filter(([,c])=>c&&c.status==="pending").map(([rk,c])=>({ek,rk,...c}))).sort((a,b)=>(b.at||0)-(a.at||0));
   const tabs=[["add","➕ إضافة رصيد"],["customers","👥 أرصدة العملاء"],["log","🧾 سجل الحركات"],["game","🎮 اللعبة والجوائز"]];
-  const bar=`<div class="seg" style="flex-wrap:wrap;margin-bottom:16px">${tabs.map(([k,l])=>`<button type="button" data-wt="${k}" class="${tab===k?"on":""}">${l}${k==="game"&&pend.length?` <span class="badge" style="background:#fde8ec;color:var(--err)">${fNum(pend.length)}</span>`:""}</button>`).join("")}</div>`;
+  const bar=`<div class="seg" style="flex-wrap:wrap;margin-bottom:16px">${tabs.map(([k,l])=>`<button type="button" data-wt="${k}" class="${tab===k?"on":""}">${l}${k==="game"&&(pend.length+twPend.length)?` <span class="badge" style="background:#fde8ec;color:var(--err)">${fNum(pend.length+twPend.length)}</span>`:""}</button>`).join("")}</div>`;
 
   let body="";
   if(tab==="add"){
@@ -927,6 +1301,24 @@ function vWallets(){
       <div style="padding:0 18px 18px"><button type="button" class="btn solid" id="gcSave" style="padding:11px 22px"><i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات</button>
         <span class="mut" style="font-size:12.5px;margin-inline-start:10px">اللي اتصرف كجوائز لحد دلوقتي: <b>${fMoney(gamePaid)}</b></span></div>
     </div>`;
+    // 🏰 Tower Rush (اللعبة الجماعية)
+    const tc=D.towerCfg||{};
+    const twTr=twPend.map(c=>`<tr><td>${fDT(c.at)}</td><td>${esc(c.name||nameOf(c.ek))}</td><td>${fNum(c.humans||0)} لاعب حقيقي</td><td><b>${fMoney(c.amount)}</b></td><td style="white-space:nowrap"><button class="btn solid" data-twok="${esc(c.ek)}|${esc(c.rk)}">موافقة وإضافة</button> <button class="btn red" data-twno="${esc(c.ek)}|${esc(c.rk)}">رفض</button></td></tr>`).join("");
+    const twAll=Object.values(D.towerWins||{}).flatMap(g=>Object.values(g||{}));
+    const twPaid=twAll.filter(c=>c&&c.status==="paid").reduce((t,c)=>t+(Number(c.amount)||0),0);
+    body+=`${twPend.length?`<div class="card" style="border:2px solid #f3b8c4"><div class="card-h"><span>⏳ جوايز Tower Rush بانتظار موافقتك (${fNum(twPend.length)})</span></div><div class="tw"><table><thead><tr><th>التاريخ</th><th>الفايز</th><th>الغرفة</th><th>المبلغ</th><th></th></tr></thead><tbody>${twTr}</tbody></table></div></div>`:""}
+      <div class="card"><div class="card-h"><span>🏰 لعبة Tower Rush (الجماعية)</span><a class="btn" href="../tower.html" target="_blank" rel="noopener" data-stop>فتح اللعبة</a></div>
+      <div style="padding:14px 18px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;margin-bottom:10px;padding:10px 12px;background:#eef6ff;border-radius:10px"><input type="checkbox" id="tcEnabled"${tc.enabled?" checked":""}> 👁️ تفعيل اللعبة <span class="mut" style="font-weight:400">(لو مقفولة: محدش يقدر يعمل غرفة ولا يدخل ولا يتدرّب)</span></label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div><div class="k">جايزة الفايز (ج.م.) — 0 = من غير جايزة</div><input class="inp" id="tcPrize" type="number" min="0" step="0.01" inputmode="decimal" style="width:190px" value="${Number(tc.prize)>0?Number(tc.prize):""}" placeholder="مثال: 50"></div>
+          <div><div class="k">أقل عدد لاعبين حقيقيين في الغرفة (من غير البوتات)</div><input class="inp" id="tcMin" type="number" min="1" max="10" step="1" style="width:190px" value="${Math.max(1,parseInt(tc.minHumans)||2)}"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-top:12px;cursor:pointer"><input type="checkbox" id="tcApproval"${tc.approval?" checked":""}> الجايزة لازم أوافق عليها الأول <span class="mut" style="font-weight:400">(مش بتتضاف أوتوماتيك — أأمن)</span></label>
+        <div class="mut" style="font-size:12.5px;line-height:1.8;margin-top:10px">• الجايزة بتروح للاعب اللي يكسب (آخر واحد عايش) لو الغرفة فيها العدد المطلوب من اللاعبين الحقيقيين. الفوز على بوتات بس مايدّيش جايزة.<br>• لازم الفايز يكون مسجّل دخول في الموقع عشان الفلوس تتضاف لرصيده.</div>
+        <div style="margin-top:12px"><button type="button" class="btn solid" id="tcSave" style="padding:11px 22px"><i class="fa-solid fa-floppy-disk"></i> حفظ إعدادات Tower Rush</button>
+        <span class="mut" style="font-size:12.5px;margin-inline-start:10px">اللي اتصرف: <b>${fMoney(twPaid)}</b> — عدد الفايزين: <b>${fNum(twAll.length)}</b></span></div>
+      </div></div>`;
   }
   return `${stats}${bar}${body}`;
 }
@@ -1225,7 +1617,7 @@ function commentDetail(c){
     }catch(e){console.error(e);toast("❌ فشل حفظ التعديل");}
   };
   $("delCommentBtn").onclick=async()=>{
-    if(!confirm("متأكد إنك عايز تحذف التعليق ده نهائياً من كل حتة؟"))return;
+    if(!(await uiConfirm("متأكد إنك عايز تحذف التعليق ده نهائياً من كل حتة؟")))return;
     const btn=$("delCommentBtn");btn.disabled=true;
     try{
       await remove(ref(db,`comments/${c.itemId}/${c.id}`));
@@ -1266,7 +1658,7 @@ async function changeEmail(u,ne,fields){
   if(rd.some(x=>x===undefined)){toast("⚠️ معرفتش أقرا بيانات العميل — راجع Rules في Firebase");return false;}
   const[na,nuo,nph,oa,ouo,oph]=rd;
   if(na||nuo||nph){toast("❌ فيه بيانات متسجّلة على البريد الجديد ده بالفعل");return false;}
-  if(!confirm(`تغيير البريد من\n${old}\nإلى\n${ne}\n\nهتتنقل كل عناوين وطلبات وتعليقات العميل للبريد الجديد، وهيتسجّل خروجه من كل أجهزته ويدخل بالبريد الجديد.\nمتأكد؟`))return false;
+  if(!(await uiConfirm(`تغيير البريد من\n${old}\nإلى\n${ne}\n\nهتتنقل كل عناوين وطلبات وتعليقات العميل للبريد الجديد، وهيتسجّل خروجه من كل أجهزته ويدخل بالبريد الجديد.\nمتأكد؟`)))return false;
 
   const upd={};
   Object.entries(fields).forEach(([k,v])=>upd[`users/${u.key}/${k}`]=v);
@@ -1368,7 +1760,7 @@ async function userDetail(u){
     const amt=r2($("wlAmt").value),note=$("wlNote").value.trim();
     if(!(amt>0)){toast("❌ اكتب مبلغ صحيح");return;}
     if(!email){toast("❌ العميل ده ملوش بريد");return;}
-    if(!confirm(`${type==="credit"?"إضافة":"خصم"} ${fMoney(amt)} ${type==="credit"?"إلى":"من"} رصيد ${uName(u)}؟`))return;
+    if(!(await uiConfirm(`${type==="credit"?"إضافة":"خصم"} ${fMoney(amt)} ${type==="credit"?"إلى":"من"} رصيد ${uName(u)}؟`)))return;
     $("wlAdd").disabled=$("wlSub").disabled=true;
     try{
       const ok=await walletAdjust(email,amt,type,note);
@@ -1404,14 +1796,14 @@ async function userDetail(u){
   if(acb)acb.onclick=async()=>{
     const reason=$("acReason").value.trim();
     if(reason.length<3){toast("❌ اكتب سبب إلغاء الحساب الأول (هيظهر للعميل)");$("acReason").focus();return;}
-    if(!confirm(`إلغاء حساب ${uName(u)}؟\n\nالسبب اللي هيظهر للعميل:\n${reason}`))return;
+    if(!(await uiConfirm(`إلغاء حساب ${uName(u)}؟\n\nالسبب اللي هيظهر للعميل:\n${reason}`)))return;
     acb.disabled=true;
     try{await cancelAccount(u,reason);toast("🚫 تم إلغاء الحساب");userDetail(u);render();}
     catch(e){console.error(e);toast("❌ فشل إلغاء الحساب");acb.disabled=false;}
   };
   const arb=$("acReactBtn");
   if(arb)arb.onclick=async()=>{
-    if(!confirm(`إعادة تفعيل حساب ${uName(u)}؟`))return;
+    if(!(await uiConfirm(`إعادة تفعيل حساب ${uName(u)}؟`)))return;
     arb.disabled=true;
     try{await reactivateAccount(u);toast("✅ تم إعادة تفعيل الحساب");userDetail(u);render();}
     catch(e){console.error(e);toast("❌ فشل إعادة التفعيل");arb.disabled=false;}
@@ -1440,7 +1832,7 @@ async function userDetail(u){
     const db_=e.target.closest("[data-adel]");
     if(db_){
       const id=db_.dataset.adel;
-      if(!confirm("متأكد إنك عايز تحذف العنوان ده؟"))return;
+      if(!(await uiConfirm("متأكد إنك عايز تحذف العنوان ده؟")))return;
       try{
         const wasDef=(D.addr[ek]||[]).find(a=>a.id===id)?.isDefault;
         await remove(ref(db,`userAddresses/${ek}/${id}`));
@@ -1455,6 +1847,13 @@ async function userDetail(u){
 
 // ---------- ربط الأحداث ----------
 function bind(){
+  document.querySelectorAll("[data-ctab]").forEach(b=>b.onclick=()=>{chatTab=b.dataset.ctab;window._forceRender=true;render();window._forceRender=false;});
+  if(view==="chats"){
+    if(chatTab==="songs")bindSongs();
+    else if(chatTab==="verify")bindVerify();
+    else if(chatTab==="send")bindSend();
+  }
+  document.querySelectorAll("[data-chat]").forEach(el=>el.onclick=e=>{e.stopPropagation();if(e.target.closest(".zoomable"))return;const c=D.chats.find(x=>x.cid===el.dataset.chat);if(c)chatDetail(c);});
   document.querySelectorAll("[data-order]").forEach(el=>el.onclick=e=>{if(e.target.closest(".zoomable"))return;const o=D.orders.find(x=>x.id===el.dataset.order);if(o)orderDetail(o);});
   document.querySelectorAll("[data-user]").forEach(el=>el.onclick=e=>{if(e.target.closest(".zoomable"))return;const u=D.users.find(x=>x.key===el.dataset.user);if(u)userDetail(u);});
   document.querySelectorAll("[data-comment]").forEach(el=>el.onclick=e=>{
@@ -1495,7 +1894,7 @@ function bind(){
   document.querySelectorAll("[data-react]").forEach(el=>el.onclick=async e=>{
     e.stopPropagation();
     const u=D.users.find(x=>x.key===el.dataset.react);if(!u)return;
-    if(!confirm(`إعادة تفعيل حساب ${uName(u)}؟`))return;
+    if(!(await uiConfirm(`إعادة تفعيل حساب ${uName(u)}؟`)))return;
     el.disabled=true;
     try{await reactivateAccount(u);toast("✅ تم إعادة تفعيل الحساب");render();}
     catch(err){console.error(err);toast("❌ فشل إعادة التفعيل");el.disabled=false;}
@@ -1534,7 +1933,7 @@ function bind(){
   if(delSelBtn)delSelBtn.onclick=async()=>{
     const keys=[...window._csel];
     if(!keys.length)return;
-    if(!confirm(`متأكد إنك عايز تحذف ${keys.length} تعليق نهائياً من كل حتة؟`))return;
+    if(!(await uiConfirm(`متأكد إنك عايز تحذف ${keys.length} تعليق نهائياً من كل حتة؟`)))return;
     delSelBtn.disabled=true;
     try{
       for(const k of keys){
@@ -1566,7 +1965,7 @@ function bind(){
     const u=D.users.find(x=>lc(x.email)===em);
     if(!u){toast("❌ مفيش عميل بالبريد ده — اختاره من القائمة");return;}
     if(!(amt>0)){toast("❌ اكتب مبلغ صحيح");return;}
-    if(!confirm(`إضافة ${fMoney(amt)} لرصيد ${uName(u)}؟`))return;
+    if(!(await uiConfirm(`إضافة ${fMoney(amt)} لرصيد ${uName(u)}؟`)))return;
     wqAdd.disabled=true;
     try{
       await walletAdjust(u.email,amt,"credit",note);
@@ -1589,7 +1988,7 @@ function bind(){
   const gcAct=async(raw,ok)=>{
     const [ek,lv]=raw.split("|"),c=((D.gameClaims||{})[ek]||{})[lv],u=D.users.find(x=>x.email&&eKey(x.email)===ek);
     if(!c||!u){toast("⚠️ مقدرتش ألاقي الطلب أو العميل");return;}
-    if(!confirm(ok?`إضافة ${fMoney(c.amount)} لرصيد ${uName(u)}؟`:"رفض الجائزة دي؟"))return;
+    if(!(await uiConfirm(ok?`إضافة ${fMoney(c.amount)} لرصيد ${uName(u)}؟`:"رفض الجائزة دي؟")))return;
     try{
       if(ok)await walletAdjust(u.email,Number(c.amount)||0,"credit",`جائزة لعبة Gravity Surge — المستوى ${lv}`);
       await update(ref(db,`gameClaims/${ek}/${lv}`),{status:ok?"paid":"rejected",decidedAt:Date.now()});
@@ -1597,9 +1996,30 @@ function bind(){
       toast(ok?"✅ اتضافت للرصيد":"تم الرفض");render();
     }catch(e){console.error(e);toast("❌ فشلت العملية");}
   };
+  const tcSave=$("tcSave");
+  if(tcSave)tcSave.onclick=async()=>{
+    const conf={enabled:$("tcEnabled").checked,prize:Math.max(0,r2($("tcPrize").value)),minHumans:Math.min(10,Math.max(1,parseInt($("tcMin").value)||2)),approval:$("tcApproval").checked};
+    tcSave.disabled=true;
+    try{await set(ref(db,"towerConfig"),conf);D.towerCfg=conf;toast(conf.enabled?"✅ تم الحفظ — Tower Rush شغالة":"✅ تم الحفظ — Tower Rush مقفولة");render();}
+    catch(e){console.error(e);toast("❌ فشل الحفظ — راجع Rules في Firebase");tcSave.disabled=false;}
+  };
+  const twAct=async(raw,ok)=>{
+    const [ek,rk]=raw.split("|"),c=((D.towerWins||{})[ek]||{})[rk],u=D.users.find(x=>x.email&&eKey(x.email)===ek);
+    if(!c||!u){toast("⚠️ مقدرتش ألاقي الجايزة أو العميل");return;}
+    if(!(await uiConfirm(ok?`إضافة ${fMoney(c.amount)} لرصيد ${uName(u)}؟`:"رفض الجايزة دي؟")))return;
+    try{
+      if(ok)await walletAdjust(u.email,Number(c.amount)||0,"credit","جايزة الفوز في Tower Rush");
+      await update(ref(db,`towerWins/${ek}/${rk}`),{status:ok?"paid":"rejected",decidedAt:Date.now()});
+      [D.towerWins,D.wallet]=await Promise.all([readByUsers("towerWins"),loadWallets()]);
+      toast(ok?"✅ اتضافت للرصيد":"تم الرفض");render();
+    }catch(e){console.error(e);toast("❌ فشلت العملية");}
+  };
+  document.querySelectorAll("[data-twok]").forEach(b=>b.onclick=()=>twAct(b.dataset.twok,true));
+  document.querySelectorAll("[data-twno]").forEach(b=>b.onclick=()=>twAct(b.dataset.twno,false));
   document.querySelectorAll("[data-gcok]").forEach(b=>b.onclick=()=>gcAct(b.dataset.gcok,true));
   document.querySelectorAll("[data-gcno]").forEach(b=>b.onclick=()=>gcAct(b.dataset.gcno,false));
   ST_.bind();   // أحداث الإحصائيات والإيرادات (admin-stats.js)
+  PR_.bind();   // أحداث المنتجات (admin-products.js)
   CP_.bind();   // أحداث أكواد الخصم (admin-coupons.js)
   hydratePhotos();
   document.querySelectorAll("[data-goto]").forEach(el=>el.onclick=()=>{view=el.dataset.goto;q="";$("q").value="";render();});
@@ -1807,3 +2227,50 @@ function openDelivery(o,onDone){
 
 loadAll();
 loadProducts();
+
+// ============================================================
+//  رسايل التأكيد والتنبيه داخل الصفحة (بدل نوافذ المتصفح)
+// ============================================================
+function _uiStyle(){
+  if(document.getElementById("ui-dlg-style"))return;
+  const st=document.createElement("style");st.id="ui-dlg-style";
+  st.textContent="#uiToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#2b3248;color:#fff;padding:12px 20px;border-radius:14px;font-family:inherit;font-size:14px;z-index:2147483600;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;transition:opacity .25s,transform .25s;max-width:min(92vw,460px);text-align:center;direction:rtl;pointer-events:none;display:flex;align-items:center;gap:10px;line-height:1.7}#uiToast.show{opacity:1;transform:translateX(-50%) translateY(0)}#uiToast.err{background:#c62828}#uiToast.ok{background:#1b9a74}.ui-ov{position:fixed;inset:0;background:rgba(15,20,40,.55);z-index:2147483500;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit;direction:rtl;animation:uiFade .15s}.ui-box{background:#fff;border-radius:20px;padding:24px 22px 18px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;animation:uiPop .18s;box-sizing:border-box}.ui-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;background:#eaf8f2;color:#1b9a74}.ui-box.danger .ui-ic{background:#fdecea;color:#e53935}.ui-box h4{margin:0 0 8px;font-size:17px;color:#1d2433}.ui-box p{margin:0 0 18px;font-size:14px;color:#5b6475;line-height:1.9;white-space:pre-line}.ui-btns{display:flex;gap:10px}.ui-btns button{flex:1;border:none;border-radius:12px;padding:12px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer}.ui-btns .no{background:#eef1f6;color:#4a5468}.ui-btns .yes{background:#2bb58f;color:#fff}.ui-box.danger .yes{background:#e53935}@keyframes uiFade{from{opacity:0}to{opacity:1}}@keyframes uiPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}";
+  document.head.appendChild(st);
+}
+function notify(msg,type){
+  _uiStyle();
+  const text=String(msg==null?"":msg);
+  const t=type||(/تعذّر|مشكلة|راجع قواعد|مش بيدعم|لازم تسمح|أكبر|غير متاح|مفيش/.test(text)?"err":"info");
+  let el=document.getElementById("uiToast");
+  if(!el){el=document.createElement("div");el.id="uiToast";document.body.appendChild(el);}
+  clearTimeout(el._t);
+  el.className=t;
+  el.innerHTML='<i class="fa-solid '+(t==="err"?"fa-circle-exclamation":t==="ok"?"fa-circle-check":"fa-circle-info")+'"></i><span></span>';
+  el.querySelector("span").textContent=text;
+  void el.offsetWidth;
+  el.classList.add("show");
+  el._t=setTimeout(()=>el.classList.remove("show"),3400);
+}
+function uiConfirm(msg,o){
+  _uiStyle();
+  o=o||{};
+  const text=String(msg==null?"":msg);
+  const danger=o.danger!==undefined?o.danger:/حذف|مسح|حظر|إلغاء|رفض|إزالة|نهائي/.test(text);
+  const yesTxt=o.ok||(/حذف/.test(text)?"حذف":/مسح/.test(text)?"مسح":/حظر/.test(text)?"حظر":/إزالة/.test(text)?"إزالة":/رفض/.test(text)?"رفض":/إرسال/.test(text)?"إرسال":"تأكيد");
+  return new Promise(res=>{
+    document.getElementById("uiConfirm")?.remove();
+    const ov=document.createElement("div");ov.id="uiConfirm";ov.className="ui-ov";
+    ov.innerHTML='<div class="ui-box'+(danger?" danger":"")+'" role="dialog" aria-modal="true"><div class="ui-ic"><i class="fa-solid '+(danger?"fa-triangle-exclamation":"fa-circle-question")+'"></i></div><h4></h4><p></p><div class="ui-btns"><button type="button" class="no">إلغاء</button><button type="button" class="yes"></button></div></div>';
+    ov.querySelector("h4").textContent=o.title||(danger?"تأكيد العملية":"تأكيد");
+    ov.querySelector("p").textContent=text;
+    ov.querySelector(".yes").textContent=yesTxt;
+    document.body.appendChild(ov);
+    const key=e=>{if(e.key==="Escape"){e.stopPropagation();done(false);}};
+    const done=v=>{document.removeEventListener("keydown",key,true);ov.remove();res(v);};
+    document.addEventListener("keydown",key,true);
+    ov.querySelector(".no").onclick=()=>done(false);
+    ov.querySelector(".yes").onclick=()=>done(true);
+    ov.addEventListener("click",e=>{if(e.target===ov)done(false);});
+    (danger?ov.querySelector(".no"):ov.querySelector(".yes")).focus();
+  });
+}
